@@ -31,7 +31,7 @@ bool FAngelscriptScenarioActorUPropertyTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -89,7 +89,7 @@ bool FAngelscriptScenarioActorUFunctionTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -149,7 +149,7 @@ bool FAngelscriptScenarioActorDefaultValuesTest::RunTest(const FString& Paramete
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(

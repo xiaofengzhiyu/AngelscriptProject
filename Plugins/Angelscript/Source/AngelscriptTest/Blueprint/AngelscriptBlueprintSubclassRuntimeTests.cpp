@@ -212,7 +212,7 @@ bool FAngelscriptScenarioBlueprintChildInheritsScriptBeginPlayTest::RunTest(cons
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(
@@ -279,7 +279,7 @@ bool FAngelscriptScenarioBlueprintChildInheritsScriptTickTest::RunTest(const FSt
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(
@@ -370,7 +370,7 @@ bool FAngelscriptScenarioBlueprintChildScriptUFunctionStillCallableTest::RunTest
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(
@@ -456,7 +456,7 @@ bool FAngelscriptScenarioBlueprintChildRecreateDoesNotLeakPreviousStateTest::Run
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(
@@ -566,7 +566,7 @@ bool FAngelscriptScenarioBlueprintChildNoOverrideUsesScriptParentDefaultTest::Ru
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(
@@ -672,7 +672,7 @@ bool FAngelscriptScenarioBlueprintChildOverrideChainHasDeterministicCountsTest::
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptChildClass = CompileScriptModule(

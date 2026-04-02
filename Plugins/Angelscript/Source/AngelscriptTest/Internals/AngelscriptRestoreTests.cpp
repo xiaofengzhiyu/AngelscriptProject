@@ -117,7 +117,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptRestoreRoundTripTest::RunTest(const FString& Parameters)
 {
-	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateCloneTestEngine();
+	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateIsolatedCloneEngine();
 	if (!TestNotNull(TEXT("Restore roundtrip should create an isolated clone test engine"), SourceEngineOwner.Get()))
 	{
 		return false;
@@ -187,7 +187,7 @@ bool FAngelscriptRestoreRoundTripTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptRestoreStripDebugInfoRoundTripTest::RunTest(const FString& Parameters)
 {
-	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateCloneTestEngine();
+	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateIsolatedCloneEngine();
 	if (!TestNotNull(TEXT("Restore strip roundtrip should create an isolated clone test engine"), SourceEngineOwner.Get()))
 	{
 		return false;

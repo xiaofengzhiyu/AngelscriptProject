@@ -15,7 +15,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptTestEngineHelperCompileModuleTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("HelperCompileModule"));
@@ -38,7 +38,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptTestEngineHelperExecuteIntFunctionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("HelperExecuteInt"));
@@ -112,7 +112,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptTestEngineHelperGeneratedSymbolLookupTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("HelperAnnotatedModule"));
@@ -151,7 +151,7 @@ class UAnnotatedHelperObject : UObject
 
 bool FAngelscriptTestEngineHelperFailedAnnotatedIsolationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("HelperBrokenAnnotated"));
@@ -224,10 +224,10 @@ bool FAngelscriptTestEngineHelperSharedEngineNeverAttachesToProductionTest::RunT
 	FAngelscriptEngine& SharedEngine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	return TestTrue(
 		TEXT("Explicit shared clone helper should resolve to the shared clone engine instance"),
-		&AngelscriptTestSupport::GetSharedTestEngine() == &SharedEngine)
+		&AngelscriptTestSupport::GetOrCreateSharedCloneEngine() == &SharedEngine)
 		&& TestTrue(
-		TEXT("Initialized compatibility alias should still resolve to the shared clone engine instance"),
-		&AngelscriptTestSupport::GetSharedInitializedTestEngine() == &SharedEngine);
+		TEXT("Clean shared clone helper should keep using the shared clone engine instance"),
+		&AngelscriptTestSupport::AcquireCleanSharedCloneEngine() == &SharedEngine);
 }
 
 bool FAngelscriptTestEngineHelperProductionHelperRejectsMissingProductionTest::RunTest(const FString& Parameters)

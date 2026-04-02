@@ -147,7 +147,7 @@ bool FAngelscriptScenarioScriptClassCompilesToUClassTest::RunTest(const FString&
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -196,7 +196,7 @@ bool FAngelscriptScenarioScriptClassCanSpawnInTestWorldTest::RunTest(const FStri
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -251,7 +251,7 @@ bool FAngelscriptScenarioScriptClassMultiSpawnKeepsStateIsolationTest::RunTest(c
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -316,7 +316,7 @@ bool FAngelscriptScenarioScriptClassBlueprintChildCompilesTest::RunTest(const FS
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -391,7 +391,7 @@ bool FAngelscriptScenarioScriptClassCDOHasExpectedDefaultsTest::RunTest(const FS
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -478,7 +478,7 @@ bool FAngelscriptScenarioScriptClassRecompileDoesNotCrashClassSwitchTest::RunTes
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* InitialClass = CompileScriptModule(
@@ -567,7 +567,7 @@ bool FAngelscriptScenarioScriptClassNonUClassTypeCannotSpawnTest::RunTest(const 
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* NonActorClass = CompileScriptModule(

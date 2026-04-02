@@ -68,7 +68,7 @@ bool FAngelscriptScenarioWorldSubsystemLifecycleTest::RunTest(const FString& Par
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
@@ -112,7 +112,7 @@ bool FAngelscriptScenarioWorldSubsystemTickTest::RunTest(const FString& Paramete
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
@@ -151,7 +151,7 @@ bool FAngelscriptScenarioWorldSubsystemActorAccessTest::RunTest(const FString& P
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
@@ -196,7 +196,7 @@ bool FAngelscriptScenarioGameInstanceSubsystemLifecycleTest::RunTest(const FStri
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	ECompileResult CompileResult = ECompileResult::FullyHandled;

@@ -26,7 +26,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptNativeActorBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeActorBindingTest"),
@@ -86,7 +86,7 @@ class ABindingExampleActor : AActor
 
 bool FAngelscriptNativeComponentBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeComponentBindingTest"),
@@ -197,7 +197,7 @@ class UBindingSceneComponent : USceneComponent
 
 bool FAngelscriptComponentDestroyBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASComponentDestroyCompat"),

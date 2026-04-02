@@ -43,7 +43,7 @@ bool FAngelscriptTestModuleLifecycleTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	if (!TestNotNull(TEXT("Compile test should create an initialized engine"), &Engine))
 	{
 		return false;
@@ -69,7 +69,7 @@ bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters
 
 bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetSharedTestEngine();
+	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
 	if (!TestNotNull(TEXT("Execute test should create an initialized engine"), &Engine))
 	{
 		return false;

@@ -18,25 +18,24 @@
 - `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptExecutionTests.cpp`：9 处
 - `Plugins/Angelscript/Source/AngelscriptTest/Compiler/AngelscriptCompilerPipelineTests.cpp`：8 处
 
-## 2. 测试 helper 旧命名盘点
+## 2. 测试 helper 命名现状
 
-### 旧入口定义位置
+### 当前入口定义位置
 
-- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:86`：`GetSharedTestEngine()`
-- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:98`：`GetSharedInitializedTestEngine()`（当前直接转发到 `GetSharedTestEngine()`）
-- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:119`：`GetResetSharedTestEngine()`
-- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:134`：`GetProductionEngine()`
-- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:145`：`GetProductionEngineForParity()`（当前直接转发到 `GetProductionEngine()`）
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:30`：`FScopedGlobalEngineOverride`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:47`：`TryGetRunningProductionEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:61`：`CreateIsolatedFullEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:70`：`CreateIsolatedCloneEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:77`：`GetOrCreateSharedCloneEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:88`：`ResetSharedCloneEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:100`：`AcquireCleanSharedCloneEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:107`：`AcquireCleanSharedCloneEngineAndOverrideGlobal()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:115`：`RequireRunningProductionEngine()`
 
-### 当前引用规模
+### 迁移结论
 
-- 旧 helper 名称在 `Plugins/Angelscript/Source/AngelscriptTest/` 下共命中 **185** 处引用，覆盖 **37** 个文件。
-- 当前高频热点文件：
-  - `Plugins/Angelscript/Source/AngelscriptTest/Compiler/AngelscriptCompilerPipelineTests.cpp`：16 处
-  - `Plugins/Angelscript/Source/AngelscriptTest/Core/AngelscriptEngineParityTests.cpp`：14 处
-  - `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptTypeTests.cpp`：11 处
-  - `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptExecutionTests.cpp`：9 处
-  - `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h`：8 处
+- 旧 helper 兼容别名已从 `Shared/AngelscriptTestUtilities.h` 删除。
+- `Plugins/Angelscript/Source/AngelscriptTest/` 下的 helper 调用点已完成向显式命名迁移；后续不再把 `Initialized` / `Shared` / `Production` 的混合语义保留为并行入口。
 
 ## 3. 构建与运行时开放债务锚点
 

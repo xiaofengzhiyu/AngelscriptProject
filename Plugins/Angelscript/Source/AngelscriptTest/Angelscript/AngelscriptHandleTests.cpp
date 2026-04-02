@@ -24,7 +24,7 @@ bool FAngelscriptHandleBasicTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASHandleBasic"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -50,7 +50,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleImplicitTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASHandleImplicit"),
@@ -89,7 +89,7 @@ bool FAngelscriptHandleAutoTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASHandleAuto"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -115,7 +115,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleRefArgumentTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASHandleRefArgument"),

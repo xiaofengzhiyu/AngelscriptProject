@@ -55,7 +55,7 @@ bool FAngelscriptScenarioInterfaceInheritedInterfaceTest::RunTest(const FString&
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -136,7 +136,7 @@ bool FAngelscriptScenarioInterfaceMissingMethodTest::RunTest(const FString& Para
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	AddExpectedError(TEXT("missing required method"), EAutomationExpectedErrorFlags::Contains, 1);
@@ -192,7 +192,7 @@ bool FAngelscriptScenarioInterfaceNoPropertyTest::RunTest(const FString& Paramet
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* InterfaceClass = CompileScriptModule(
@@ -231,7 +231,7 @@ bool FAngelscriptScenarioInterfaceGCSafeTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -291,7 +291,7 @@ bool FAngelscriptScenarioInterfaceHotReloadTest::RunTest(const FString& Paramete
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString ScriptV1 = TEXT(R"AS(
@@ -390,7 +390,7 @@ bool FAngelscriptScenarioInterfaceCppInterfaceTest::RunTest(const FString& Param
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -449,7 +449,7 @@ bool FAngelscriptScenarioInterfaceMultipleInheritanceChainTest::RunTest(const FS
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(

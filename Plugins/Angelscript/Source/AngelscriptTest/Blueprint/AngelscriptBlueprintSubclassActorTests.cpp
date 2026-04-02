@@ -109,7 +109,7 @@ bool FAngelscriptScenarioBlueprintSubclassBeginPlayTest::RunTest(const FString& 
 		}
 
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(

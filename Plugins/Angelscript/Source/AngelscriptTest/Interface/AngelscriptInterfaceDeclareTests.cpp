@@ -25,7 +25,7 @@ bool FAngelscriptScenarioInterfaceDeclareBasicTest::RunTest(const FString& Param
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* InterfaceClass = CompileScriptModule(
@@ -57,7 +57,7 @@ bool FAngelscriptScenarioInterfaceDeclareInheritanceTest::RunTest(const FString&
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ChildInterface = CompileScriptModule(

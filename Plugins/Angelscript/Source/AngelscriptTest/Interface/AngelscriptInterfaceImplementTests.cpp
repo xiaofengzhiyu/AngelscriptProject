@@ -32,7 +32,7 @@ bool FAngelscriptScenarioInterfaceImplementBasicTest::RunTest(const FString& Par
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -90,7 +90,7 @@ bool FAngelscriptScenarioInterfaceImplementMultipleTest::RunTest(const FString& 
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -168,7 +168,7 @@ bool FAngelscriptScenarioInterfaceImplementsInterfaceMethodTest::RunTest(const F
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(

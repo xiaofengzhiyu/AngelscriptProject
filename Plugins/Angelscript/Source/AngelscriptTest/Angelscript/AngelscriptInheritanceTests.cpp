@@ -19,7 +19,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptInheritanceBasicTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASInheritanceBasic"),
@@ -58,7 +58,7 @@ bool FAngelscriptInheritanceInterfaceTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASInheritanceInterface"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -84,7 +84,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptInheritanceVirtualMethodTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetSharedInitializedTestEngine();
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASInheritanceVirtualMethod"),
@@ -123,7 +123,7 @@ bool FAngelscriptInheritanceCastOpTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASInheritanceCastOp"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -154,7 +154,7 @@ bool FAngelscriptInheritanceMixinTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASInheritanceMixin"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);

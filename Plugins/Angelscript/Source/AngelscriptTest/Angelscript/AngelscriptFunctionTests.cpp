@@ -126,7 +126,7 @@ bool FAngelscriptFunctionPointerTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASFunctionPointer"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -208,7 +208,7 @@ bool FAngelscriptFunctionTemplateTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASFunctionTemplate"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
@@ -236,7 +236,7 @@ bool FAngelscriptFunctionFactoryTest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASFunctionFactory"));
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);

@@ -600,6 +600,8 @@ private:
 	FAngelscriptEngine* PreviousGlobalEngine;
 };
 
+using FScopedGlobalEngineOverride = FScopedTestEngineGlobalScope;
+
 struct FAngelscriptContextPool
 {
 	TArray<asCContext*> FreeContexts;

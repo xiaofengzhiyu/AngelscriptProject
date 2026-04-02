@@ -42,7 +42,7 @@ bool FAngelscriptScenarioInheritanceScriptToScriptTest::RunTest(const FString& P
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString BaselineScript = TEXT(R"AS(
@@ -105,7 +105,7 @@ bool FAngelscriptScenarioInheritanceSuperTest::RunTest(const FString& Parameters
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString BaselineScript = TEXT(R"AS(
@@ -168,7 +168,7 @@ bool FAngelscriptScenarioInheritanceIsATest::RunTest(const FString& Parameters)
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString BaselineScript = TEXT(R"AS(

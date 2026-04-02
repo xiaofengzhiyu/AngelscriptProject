@@ -64,9 +64,9 @@
 | Shared.EngineHelper.ExecuteIntFunction | `ExecuteIntFunction` 能执行入口并返回正确整型结果（42） |
 | Shared.EngineHelper.GeneratedSymbolLookup | 带注解模块编译后，`FindGeneratedClass` / `FindGeneratedFunction` 能定位生成的类与 UFUNCTION |
 | Shared.EngineHelper.FailedAnnotatedModuleDoesNotPolluteLaterCompiles | 无效注解模块编译失败后，后续有效模块仍能编译并生成符号 |
-| Shared.EngineHelper.SharedTestEngineNeverSilentlyAttachesToProductionEngine | 共享测试引擎不会静默附着到生产引擎 |
-| Shared.EngineHelper.ProductionHelperRejectsMissingProductionEngine | 无生产子系统/全局引擎时 `TryGetCurrentProductionEngine` 为 null |
-| Shared.EngineHelper.CompileUsesScopedGlobalEngine | 在 `FScopedTestEngineGlobalScope` 下编译后，全局引擎指针恢复为共享引擎 |
+| Shared.EngineHelper.SharedTestEngineNeverSilentlyAttachesToProductionEngine | `GetOrCreateSharedCloneEngine` / `AcquireCleanSharedCloneEngine` 始终指向同一个共享 clone 引擎，不会静默附着到生产引擎 |
+| Shared.EngineHelper.ProductionHelperRejectsMissingProductionEngine | 无生产子系统/全局引擎时 `TryGetRunningProductionEngine` 为 null |
+| Shared.EngineHelper.CompileUsesScopedGlobalEngine | 在 `FScopedGlobalEngineOverride` 下编译后，全局引擎指针恢复为共享 clone 引擎 |
 | Shared.EngineHelper.NestedGlobalEngineScopeRestoresPreviousEngine | 嵌套 scope 先装 B 再退出后恢复 A |
 | Shared.EngineHelper.WorldContextScopeRestoresPreviousContext | `FScopedTestWorldContextScope` 正确设置/恢复 `CurrentWorldContext` |
 | Shared.EngineHelper.ExecutingOneTestEngineDoesNotLeakContextIntoNextTest | 两个 clone 引擎分别编译执行不同模块，结果互不串线 |

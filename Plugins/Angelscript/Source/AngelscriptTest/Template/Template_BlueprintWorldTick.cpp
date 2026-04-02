@@ -127,7 +127,7 @@ bool FAngelscriptTemplateBlueprintWorldTickActorChildTest::RunTest(const FString
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptParentClass = CompileScriptModule(

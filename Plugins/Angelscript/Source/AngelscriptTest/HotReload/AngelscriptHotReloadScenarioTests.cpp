@@ -46,7 +46,7 @@ bool FAngelscriptScenarioHotReloadPropertyPreservedTest::RunTest(const FString& 
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString ScriptV1 = TEXT(R"AS(
@@ -153,7 +153,7 @@ bool FAngelscriptScenarioHotReloadAddPropertyTest::RunTest(const FString& Parame
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString ScriptV1 = TEXT(R"AS(
@@ -237,7 +237,7 @@ bool FAngelscriptScenarioHotReloadFunctionChangeTest::RunTest(const FString& Par
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString ScriptV1 = TEXT(R"AS(
@@ -336,7 +336,7 @@ bool FAngelscriptScenarioHotReloadPIEStructuralChangeNeedsFullReloadTest::RunTes
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	const FString ScriptV1 = TEXT(R"AS(

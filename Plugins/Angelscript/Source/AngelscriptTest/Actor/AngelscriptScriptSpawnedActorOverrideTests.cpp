@@ -121,7 +121,7 @@ bool FAngelscriptScenarioScriptActorBeginPlayRunsInWorldTest::RunTest(const FStr
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -176,7 +176,7 @@ bool FAngelscriptScenarioScriptActorNativeUFunctionCanBeInvokedTest::RunTest(con
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -255,7 +255,7 @@ bool FAngelscriptScenarioScriptActorBeginPlayCallsAnotherScriptUFunctionTest::Ru
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -316,7 +316,7 @@ bool FAngelscriptScenarioScriptActorTickRunsNTimesTest::RunTest(const FString& P
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -394,7 +394,7 @@ bool FAngelscriptScenarioScriptActorCrossInstanceCallDoesNotLeakStateTest::RunTe
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -482,7 +482,7 @@ bool FAngelscriptScenarioScriptActorDestroyedActorInvocationFailsSafelyTest::Run
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -605,7 +605,7 @@ bool FAngelscriptScenarioScriptActorMissingFunctionReportsExplicitFailureTest::R
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedInitializedTestEngine(Engine);
+		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
