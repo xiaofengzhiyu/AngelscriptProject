@@ -289,8 +289,19 @@ int asCModule::Build()
 		return asSUCCESS;
 	}
 
-	// Compile the script
-	//r = builder->Build();
+	r = builder->BuildParallelParseScripts();
+	if( r >= 0 )
+		r = builder->BuildGenerateTypes();
+	if( r >= 0 )
+		r = builder->BuildGenerateFunctions();
+	if( r >= 0 )
+		r = builder->BuildLayoutClasses();
+	if( r >= 0 )
+		builder->BuildAllocateGlobalVariables();
+	if( r >= 0 )
+		r = builder->BuildLayoutFunctions();
+	if( r >= 0 )
+		r = builder->BuildCompileCode();
 	asDELETE(builder,asCBuilder);
 	builder = 0;
 

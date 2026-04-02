@@ -267,13 +267,43 @@ CQTest (Code Quality Test) 是 `FAutomationTestBase` 的扩展，提供测试夹
 | `TEST_CLASS_WITH_FLAGS` | 可自定义测试标志 |
 | `TEST_CLASS_WITH_BASE` | 可继承自其他测试对象 |
 
+## Angelscript 测试分层
+
+当前 `Plugins/Angelscript/Source/AngelscriptTest/` 采用三层测试边界：
+
+| 层级 | 目标 | 典型目录 | 允许依赖 |
+|------|------|----------|----------|
+| **Native Core** | 验证原生 AngelScript 公共 API 的最小可信基线（编译、执行、参数、返回值、注册、错误回调） | `Native/` | `AngelscriptInclude.h` / `angelscript.h` / `asIScriptEngine` / `asIScriptModule` / `asIScriptContext` |
+| **Runtime Integration** | 验证 `FAngelscriptEngine`、模块管理、预处理、热重载分析、辅助工具等封装层行为 | `Angelscript/`、`Core/`、`Shared/`、`HotReload/` 中的非场景测试、`ClassGenerator/ClassGeneratorTests.cpp` | `FAngelscriptEngine`、`FAngelscriptModuleDesc`、`Shared` helper、预处理器、运行时封装 |
+| **UE Scenario** | 验证 Actor / Blueprint / Interface / Component / GC / 世界生命周期等 UE 集成场景 | `Actor/`、`Blueprint/`、`Interface/`、`Component/`、`GC/`、`Delegate/`、`Inheritance/`、`Subsystem/`、`HotReload/AngelscriptHotReloadScenarioTests.cpp`、`ClassGenerator/AngelscriptScriptClassCreationTests.cpp` | UE 世界、生成类、Blueprint、场景辅助工具 |
+
+### Native Core 规则
+
+- `Native/` 测试命名采用 `Angelscript.TestModule.Native.<Category>.<TestName>`。
+- `Native/` helper 和测试默认只允许使用 `AngelscriptInclude.h` / `angelscript.h` 暴露的公共 API。
+- `Native/` 中**不要**包含 `AngelscriptEngine.h`、`AngelscriptPreprocessor.h`、`AngelscriptGameInstanceSubsystem.h` 这类项目封装层头。
+- `Native/` 中**不要**直接包含 `source/as_*.h`；若需要验证 parser / bytecode / GC 等内部实现，应放到 `Internals/` 或单独的内部层。
+
+### Internals 规则
+
+- `Internals/` 允许通过 `StartAngelscriptHeaders.h` / `EndAngelscriptHeaders.h` + `source/as_*.h` 访问已导出的内部类型。
+- `AngelscriptRuntime` 已公开 third-party `angelscript` 根目录和 `source/` include path；另外，public C API 通过 `ANGELSCRIPT_EXPORT` / `ANGELSCRIPT_DLL_LIBRARY_IMPORT` 构建定义向外部模块提供导入导出。
+- 需要新增 internal class 导出时，应按需补齐，不要为了测试方便一次性公开所有内部类型。
+
+### 选层决策
+
+- 只想验证原生脚本引擎是否还能编译/执行一个最小片段：放 `Native/`。
+- 需要 `FAngelscriptEngine`、`BuildModule()`、`CompileModuleFromMemory()`、模块记录或热重载封装行为：放 Runtime Integration。
+- 需要 `UWorld`、`Actor`、`Blueprint`、`Component`、`Interface`、GC 生命周期或生成类交互：放 UE Scenario。
+
 ## 源文件位置约定
 
 - 自动化测试放置在模块的 `Private\Tests` 目录中
 - 文件命名为 `[ClassFilename]Test.cpp`，如 `FText` 的测试放在 `TextTest.cpp`
-- 本仓库的 `Plugins/Angelscript/Source/AngelscriptTest/` 采用按主题拆分的目录布局，例如 `Shared/`、`Actor/`、`Blueprint/`、`Interface/`、`HotReload/`、`ClassGenerator/` 等。
-- 新增测试应优先放入具体主题目录，不再把不相关的集成测试统一堆到笼统的 `Scenarios/` 目录下。
+- 本仓库的 `Plugins/Angelscript/Source/AngelscriptTest/` 采用按层级与主题结合的目录布局：`Native/` 负责 Native Core，`Angelscript/` / `Core/` / `Shared/` 负责 Runtime Integration，`Actor/` / `Blueprint/` / `Interface/` 等目录负责 UE Scenario。
+- 新增测试应先决定层级，再落到该层级下的具体主题目录中；不要把不相关的集成测试重新堆回笼统的 `Scenarios/` 目录。
 - 自动化测试路径已去掉历史上的 `Scenario` 中间层，例如 `Angelscript.TestModule.Actor.*`、`Angelscript.TestModule.BlueprintChild.*`、`Angelscript.TestModule.Interface.*`。
+- 自动化测试名与目录不必一一同名，但必须能从前缀看出层级，例如 `Angelscript.TestModule.Native.*`、`Angelscript.TestModule.Angelscript.*`、`Angelscript.TestModule.Actor.*`。
 
 ---
 

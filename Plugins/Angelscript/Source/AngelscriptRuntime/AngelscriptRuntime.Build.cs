@@ -8,6 +8,8 @@ namespace UnrealBuildTool.Rules
 		public AngelscriptRuntime(ReadOnlyTargetRules Target) : base(Target)
 		{
 			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+			PrivateDefinitions.Add("ANGELSCRIPT_EXPORT=1");
+			PublicDefinitions.Add("ANGELSCRIPT_DLL_LIBRARY_IMPORT=1");
 
 			PublicIncludePaths.Add(ModuleDirectory);
 			PrivateIncludePaths.Add(ModuleDirectory);

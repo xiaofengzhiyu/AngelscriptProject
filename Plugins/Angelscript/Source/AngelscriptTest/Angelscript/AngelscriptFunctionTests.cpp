@@ -2,6 +2,7 @@
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 
+// Test Layer: Runtime Integration
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;

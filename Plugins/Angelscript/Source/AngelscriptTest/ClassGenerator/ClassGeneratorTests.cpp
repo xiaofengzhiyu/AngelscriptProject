@@ -8,6 +8,7 @@
 #include "source/as_scriptengine.h"
 #include "EndAngelscriptHeaders.h"
 
+// Test Layer: Runtime Integration
 #if WITH_DEV_AUTOMATION_TESTS
 
 namespace

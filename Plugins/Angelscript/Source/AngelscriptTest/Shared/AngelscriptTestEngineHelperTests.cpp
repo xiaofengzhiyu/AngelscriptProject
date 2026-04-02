@@ -6,6 +6,7 @@
 #include "Misc/ScopeExit.h"
 #include "UObject/UObjectGlobals.h"
 
+// Test Layer: Runtime Integration
 #if WITH_DEV_AUTOMATION_TESTS
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

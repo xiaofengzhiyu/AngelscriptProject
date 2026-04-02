@@ -6,6 +6,7 @@
 #include "Misc/ScopeExit.h"
 #include "UObject/GarbageCollection.h"
 
+// Test Layer: UE Scenario
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;
@@ -44,8 +45,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptScenarioInterfaceInheritedMethodDispatchTest,
+	"Angelscript.TestModule.Interface.InheritedMethodDispatch",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceMultipleInheritanceChainTest,
 	"Angelscript.TestModule.Interface.MultipleInheritanceChain",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptScenarioInterfaceMultipleInheritanceDispatchTest,
+	"Angelscript.TestModule.Interface.MultipleInheritanceDispatch",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioInterfaceInheritedInterfaceTest::RunTest(const FString& Parameters)
@@ -442,6 +453,116 @@ class AScenarioInterfaceCppBase : AAngelscriptActor, UICppTestInterface
 	return true;
 }
 
+bool FAngelscriptScenarioInterfaceInheritedMethodDispatchTest::RunTest(const FString& Parameters)
+{
+	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
+	static const FName ModuleName(TEXT("ScenarioInterfaceInheritedDispatch"));
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(*ModuleName.ToString());
+		ResetSharedInitializedTestEngine(Engine);
+	};
+
+	UClass* ScriptClass = CompileScriptModule(
+		*this,
+		Engine,
+		ModuleName,
+		TEXT("ScenarioInterfaceInheritedDispatch.as"),
+		TEXT(R"AS(
+UINTERFACE()
+interface UIDamageableDispatch
+{
+	int GetDamageLevel();
+}
+
+UINTERFACE()
+interface UIKillableDispatch : UIDamageableDispatch
+{
+	int GetKillCount();
+}
+
+UCLASS()
+class AScenarioInterfaceInheritedDispatch : AAngelscriptActor, UIKillableDispatch
+{
+	UPROPERTY()
+	int ParentCastWorked = 0;
+
+	UPROPERTY()
+	int ChildCastWorked = 0;
+
+	UPROPERTY()
+	int ParentResult = 0;
+
+	UPROPERTY()
+	int ChildResult = 0;
+
+	UFUNCTION()
+	int GetDamageLevel()
+	{
+		return 3;
+	}
+
+	UFUNCTION()
+	int GetKillCount()
+	{
+		return 5;
+	}
+
+	UFUNCTION(BlueprintOverride)
+	void BeginPlay()
+	{
+		UObject Self = this;
+		UIDamageableDispatch ParentRef = Cast<UIDamageableDispatch>(Self);
+		if (ParentRef != nullptr)
+		{
+			ParentCastWorked = 1;
+			ParentResult = ParentRef.GetDamageLevel();
+		}
+
+		UIKillableDispatch ChildRef = Cast<UIKillableDispatch>(Self);
+		if (ChildRef != nullptr)
+		{
+			ChildCastWorked = 1;
+			ChildResult = ChildRef.GetKillCount();
+		}
+	}
+}
+)AS"),
+		TEXT("AScenarioInterfaceInheritedDispatch"));
+	if (ScriptClass == nullptr)
+	{
+		return false;
+	}
+
+	FActorTestSpawner Spawner;
+	Spawner.InitializeGameSubsystems();
+	AActor* Actor = SpawnScriptActor(*this, Spawner, ScriptClass);
+	if (Actor == nullptr)
+	{
+		return false;
+	}
+
+	BeginPlayActor(*Actor);
+
+	int32 ParentCastWorked = 0;
+	int32 ChildCastWorked = 0;
+	int32 ParentResult = 0;
+	int32 ChildResult = 0;
+	if (!ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("ParentCastWorked"), ParentCastWorked)
+		|| !ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("ChildCastWorked"), ChildCastWorked)
+		|| !ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("ParentResult"), ParentResult)
+		|| !ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("ChildResult"), ChildResult))
+	{
+		return false;
+	}
+
+	TestEqual(TEXT("Parent interface cast should succeed for inherited script interface"), ParentCastWorked, 1);
+	TestEqual(TEXT("Child interface cast should succeed for inherited script interface"), ChildCastWorked, 1);
+	TestEqual(TEXT("Parent interface method should dispatch through inherited interface reference"), ParentResult, 3);
+	TestEqual(TEXT("Child interface method should dispatch through child interface reference"), ChildResult, 5);
+	return true;
+}
+
 bool FAngelscriptScenarioInterfaceMultipleInheritanceChainTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
@@ -524,6 +645,125 @@ class AScenarioInterfaceMultiChain : AAngelscriptActor, UILeafChain
 		TestTrue(TEXT("Actor implementing leaf should satisfy leaf interface"), Actor->GetClass()->ImplementsInterface(LeafInterface));
 	}
 
+	return true;
+}
+
+bool FAngelscriptScenarioInterfaceMultipleInheritanceDispatchTest::RunTest(const FString& Parameters)
+{
+	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
+	static const FName ModuleName(TEXT("ScenarioInterfaceMultiDispatch"));
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(*ModuleName.ToString());
+		ResetSharedInitializedTestEngine(Engine);
+	};
+
+	UClass* ScriptClass = CompileScriptModule(
+		*this,
+		Engine,
+		ModuleName,
+		TEXT("ScenarioInterfaceMultiDispatch.as"),
+		TEXT(R"AS(
+UINTERFACE()
+interface UIBaseDispatchChain
+{
+	int BaseValue();
+}
+
+UINTERFACE()
+interface UIMidDispatchChain : UIBaseDispatchChain
+{
+	int MidValue();
+}
+
+UINTERFACE()
+interface UILeafDispatchChain : UIMidDispatchChain
+{
+	int LeafValue();
+}
+
+UCLASS()
+class AScenarioInterfaceMultiDispatch : AAngelscriptActor, UILeafDispatchChain
+{
+	UPROPERTY()
+	int BaseResult = 0;
+
+	UPROPERTY()
+	int MidResult = 0;
+
+	UPROPERTY()
+	int LeafResult = 0;
+
+	UFUNCTION()
+	int BaseValue()
+	{
+		return 2;
+	}
+
+	UFUNCTION()
+	int MidValue()
+	{
+		return 4;
+	}
+
+	UFUNCTION()
+	int LeafValue()
+	{
+		return 8;
+	}
+
+	UFUNCTION(BlueprintOverride)
+	void BeginPlay()
+	{
+		UObject Self = this;
+		UIBaseDispatchChain BaseRef = Cast<UIBaseDispatchChain>(Self);
+		UIMidDispatchChain MidRef = Cast<UIMidDispatchChain>(Self);
+		UILeafDispatchChain LeafRef = Cast<UILeafDispatchChain>(Self);
+
+		if (BaseRef != nullptr)
+		{
+			BaseResult = BaseRef.BaseValue();
+		}
+		if (MidRef != nullptr)
+		{
+			MidResult = MidRef.MidValue();
+		}
+		if (LeafRef != nullptr)
+		{
+			LeafResult = LeafRef.LeafValue();
+		}
+	}
+}
+)AS"),
+		TEXT("AScenarioInterfaceMultiDispatch"));
+	if (ScriptClass == nullptr)
+	{
+		return false;
+	}
+
+	FActorTestSpawner Spawner;
+	Spawner.InitializeGameSubsystems();
+	AActor* Actor = SpawnScriptActor(*this, Spawner, ScriptClass);
+	if (Actor == nullptr)
+	{
+		return false;
+	}
+
+	BeginPlayActor(*Actor);
+
+	int32 BaseResult = 0;
+	int32 MidResult = 0;
+	int32 LeafResult = 0;
+	if (!ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("BaseResult"), BaseResult)
+		|| !ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("MidResult"), MidResult)
+		|| !ReadPropertyValue<FIntProperty>(*this, Actor, TEXT("LeafResult"), LeafResult))
+	{
+		return false;
+	}
+
+	TestEqual(TEXT("Base interface method should dispatch through a leaf implementation"), BaseResult, 2);
+	TestEqual(TEXT("Mid interface method should dispatch through a leaf implementation"), MidResult, 4);
+	TestEqual(TEXT("Leaf interface method should dispatch through a leaf implementation"), LeafResult, 8);
 	return true;
 }
 

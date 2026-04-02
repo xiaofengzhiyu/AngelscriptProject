@@ -1,4 +1,5 @@
 # Knot 搜索
+可以通过 `knot_knowledgebase_search` 工具获取 UE 的各种知识，包括 API 定义、函数签名、类结构等
 
 遇到不确定的 UE API、引擎机制、类继承关系等问题时，**优先使用 Knot MCP 工具（`knowledgebase_search`）查询 UE5 知识库**，而不是凭记忆猜测。
 

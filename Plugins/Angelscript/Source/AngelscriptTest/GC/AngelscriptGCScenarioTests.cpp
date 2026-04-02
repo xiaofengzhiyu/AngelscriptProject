@@ -8,6 +8,7 @@
 #include "Misc/ScopeExit.h"
 #include "UObject/GarbageCollection.h"
 
+// Test Layer: UE Scenario
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;

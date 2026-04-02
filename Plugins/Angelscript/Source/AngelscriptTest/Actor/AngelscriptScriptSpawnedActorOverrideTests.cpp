@@ -7,6 +7,7 @@
 #include "Misc/StringOutputDevice.h"
 #include "UObject/UObjectGlobals.h"
 
+// Test Layer: UE Scenario
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;

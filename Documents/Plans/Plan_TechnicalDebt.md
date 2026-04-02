@@ -4,342 +4,441 @@
 
 ### 背景
 
-当前 `Plugins/Angelscript` 已完成 P0-P8 主线（模块改名、引擎重构、Subsystem 托管、多实例基础设施、目录重构、场景测试模板），275/275 C++ 测试全部通过。但在快速推进主线功能的过程中，积累了以下几类技术债：
+当前仓库的主目标不是继续扩展宿主工程 `Source/AngelscriptProject/`，而是把 `Plugins/Angelscript/` 收敛成可独立复用、可持续验证的 Unreal Engine Angelscript 插件。此前的技术债计划已经覆盖了不少真实问题，但经过本轮代码与文档复核后，可以确认它把**未解决问题、已落地能力、以及仅适合先审计后实现的事项混在了一起**，继续按旧口径执行会重复规划已经完成的工作。
 
-1. **构建稳定性风险**：`TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 在 `AngelscriptType.h` 中的模板特化可能与 UE 引擎侧定义冲突，缺少条件保护。
-2. **代码安全隐患**：`Bind_BlueprintEvent.cpp` 缺少运行时参数类型校验、`AngelscriptDebugServer.cpp` 线程挂起路径缺 mutex 保护、`StaticJIT/StaticJITHeader.cpp` 异常路径对象生命周期不明确。
-3. **过时 API 残留**：`PrecompiledData.cpp` / `as_string.h` 使用 `FCrc::StrCrc_DEPRECATED` / `FCrc::Strihash_DEPRECATED`，`StaticJITHeader.h` 全局压制弃用警告，`AngelscriptType.cpp` 存在空默认值分支。
-4. **内部模块测试缺口**：`AngelscriptMemoryTests.cpp` 缺少内存池分配/释放/泄漏检测用例；`AngelscriptRestoreTests.cpp` 缺少 `SaveByteCode`/`LoadByteCode` 往返与损坏数据处理用例。
-5. **Bind API 差距**：`Bind_TOptional.cpp` 缺 Intrusive Optional、`Bind_UStruct.cpp` 缺 `TStructType<T>` 模板、`Bind_BlueprintType.cpp` 缺 `HasGetter`/`HasSetter`、6 个 Minor Drift 文件与 UEAS2 参考源存在功能缺口。
-6. **测试 Helper 命名混杂**：`GetSharedTestEngine()` / `GetResetSharedTestEngine()` / `GetProductionEngine()` 等 helper 命名不够显式，存在语义误用风险，但批量改名影响面过大，需分层迁移。
-7. **全局状态依赖**：`FAngelscriptEngine::Get()` / `CurrentWorldContext` 仍在编译/绑定/测试路径中充当全局入口，去全局化仅为规划阶段。
+本次重新收敛后的事实包括：
+
+1. **构建兼容性风险仍存在**：`Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:732-740` 仍无条件声明 `TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 特化，且保留了 `//WILL-EDIT` 标记；`Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:28-29` 仍无条件 `OptimizeCode = CodeOptimization.Never`。
+2. **运行时安全待办注释仍未收口**：`Bind_BlueprintEvent.cpp:144,169,343,353` 仍缺事件/委托签名校验；`AngelscriptDebugServer.cpp:161,185` 仍有线程挂起与异常路径并发保护待办注释；`StaticJIT/StaticJITHeader.cpp:255` 仍明确写着异常路径对象销毁待审计。
+3. **弃用 API 与警告压制尚未清理干净**：`ThirdParty/angelscript/source/as_string.h:108` 仍使用 `FCrc::Strihash_DEPRECATED`；`StaticJIT/StaticJITHeader.h:65` 仍在文件级使用 `PRAGMA_DISABLE_DEPRECATION_WARNINGS`。
+4. **测试基础设施债务重心已经变化**：`Internals/AngelscriptMemoryTests.cpp` 已经有 5 个内存相关回归；`Internals/AngelscriptRestoreTests.cpp` 已经覆盖 round-trip 与 strip-debug-info 正向路径。当前债务不再是“从零补测试”，而是**补负向边界、把现有基线写进文档并维持不回退**。
+5. **测试 helper 命名债务仍然很重**：`Shared/AngelscriptTestUtilities.h:86-147` 仍保留 `GetSharedTestEngine()`、`GetSharedInitializedTestEngine()`、`GetResetSharedTestEngine()`、`GetProductionEngine()` 等语义重叠入口。源码扫描显示这些 helper 名称在 `Plugins/Angelscript/Source/AngelscriptTest/` 下约有 306 处引用，分布于 66 个文件。
+6. **全局状态依赖仍在插件核心路径中**：`Core/AngelscriptEngine.h:118-123` 仍公开 `FAngelscriptEngine::Get()` 与 `CurrentWorldContext`；运行时调用点仍出现在 `Bind_SystemTimers.cpp`、`Bind_UUserWidget.cpp`、`AngelscriptGameInstanceSubsystem.cpp`、`ClassGenerator` 与测试辅助路径。
+7. **Bind 差距必须先审计再收敛**：当前仓库里能直接确认的只有 `Bind_BlueprintType.cpp:156-157` 仍注释掉 `CPF_TObjectPtr` 相关判断；`Bind_TOptional.cpp`、`Bind_UStruct.cpp`、`Bind_Delegates.cpp` 等文件与 Hazelight/UEAS2 参考源的差距，需要先建立符号级 diff 矩阵，不能继续沿用旧计划里未经复核的“固定缺口列表”。
+8. **测试文档口径已经漂移**：`Documents/Guides/TestCatalog.md` 仍记录 `275/275 PASS` 文档化基线，但当前源码扫描已能匹配到 340+ 处 automation/spec 定义，说明后续技术债治理必须先把“已编目基线”和“实时清单”分开管理。
 
 ### 目标
 
-1. 消除构建阶段的宏/模板重定义风险，确保全量编译稳定。
-2. 修补运行时安全隐患，防止生产环境下参数类型不匹配导致崩溃、线程竞争导致死锁。
-3. 替换全部已弃用 UE API 调用，消除编译警告。
-4. 补齐内部模块（Memory / Restore）测试基线。
-5. 缩小 Bind API 与 UEAS2 参考源的差距。
-6. 为测试 Helper 命名重构和去全局化提供可执行的分层迁移路线。
+1. 把 `Plan_TechnicalDebt.md` 收敛成一份**只保留真实未完成事项**的执行计划。
+2. 优先解决高影响、低到中风险的构建/运行时稳定性问题，避免继续把崩溃点留在插件主线上。
+3. 维持并固化“无显式弃用 API 回归”的基线，缩小全局警告压制范围。
+4. 将已有内测能力（Memory / Restore）从“隐含事实”提升为“有文档、有验收口径、有负向边界”的正式基线。
+5. 分层完成测试 helper 命名迁移，消除当前共享引擎/生产引擎/helper scope 语义混杂的问题。
+6. 把 Bind 差距工作从“猜测式 backlog”改成“参考源审计 + 低风险优先落地 + 高风险拆分 sibling plan”的节奏。
+7. 对 `FAngelscriptEngine::Get()` / `CurrentWorldContext` 做收口与隔离，而不是在本计划里偷偷膨胀成跨模块大重构。
+8. 确保所有实施阶段都严格围绕插件边界推进，并同步更新相关文档与验证入口。
 
-## 当前事实状态
+## 范围与边界
 
-```text
-AngelScript 版本：2.33.0 WIP
-模块：AngelscriptRuntime（3 模块） + AngelscriptEditor + AngelscriptTest
-Binds：148 个文件（集中在 AngelscriptRuntime/Binds/）
-C++ 测试：275/275 PASS
-原生 .as 测试：241 个
+- **纳入范围**
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/`、`Plugins/Angelscript/Source/AngelscriptEditor/`、`Plugins/Angelscript/Source/AngelscriptTest/`
+  - 与上述改动直接相关的 `Documents/Guides/Build.md`、`Documents/Guides/Test.md`、`Documents/Guides/TestCatalog.md`
+  - 与 Bind 审计、测试重构、边界收口直接相关的 sibling plan 同步说明
+- **不纳入范围**
+  - `Source/AngelscriptProject/` 的业务功能扩展或玩法开发
+  - 整体 ThirdParty 一步升级到完整 AngelScript `2.38.0`
+  - `lambda / anonymous function` 路线（交由 `Documents/Plans/Plan_AS238LambdaPort.md`）
+  - 一次性完成 `FAngelscriptEngine::Get()` 的全量去全局化重写
+  - 任何写死本地绝对路径的执行说明；需要本地配置的路径统一通过 `AgentConfig.ini` 获取
 
-已知过时 API 调用：
-  PrecompiledData.cpp L2712,2718,2720 → FCrc::StrCrc_DEPRECATED
-  ThirdParty/angelscript/source/as_string.h L108 → FCrc::Strihash_DEPRECATED
-  StaticJITHeader.h L65 → PRAGMA_DISABLE_DEPRECATION_WARNINGS（全局压制）
-  AngelscriptAbilitySystemComponent.h L178,182 → UE_DEPRECATED 标记
+## 当前事实状态快照
 
-已知安全隐患：
-  Bind_BlueprintEvent.cpp L144,169,343,353 → ProcessEvent 前无参数类型校验
-  AngelscriptDebugServer.cpp L161,185 → 线程挂起/异常处理缺 mutex
-  StaticJIT/StaticJITHeader.cpp L255 → 异常路径 new 对象无 delete
+### 已验证的高优先级债务
 
-已知构建风险：
-  AngelscriptType.h L732-740 → TBaseStructure<FBox>/TBaseStructure<FBoxSphereBounds> 特化
-  AngelscriptType.cpp L859,867 → 对应实现
+- **构建兼容性**
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:732-740`：`TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 仍无条件特化
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:28-29`：`OptimizeCode = CodeOptimization.Never` 带开发期调试注释
+- **运行时安全**
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:144,169,343,353`：`ProcessEvent` / Delegate 调用前未做签名一致性检查
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp:161,185`：线程上下文与异常路径并发保护未完成
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.cpp:255`：异常路径对象生命周期待审计
+- **弃用 API / 警告压制**
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/ThirdParty/angelscript/source/as_string.h:108`：`FCrc::Strihash_DEPRECATED`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.h:65`：文件级 `PRAGMA_DISABLE_DEPRECATION_WARNINGS`
+- **测试基础设施**
+  - `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:86-147`：helper 命名与职责边界不够显式
+  - `Plugins/Angelscript/Source/AngelscriptTest/`：helper 旧命名约 306 处引用，横跨 66 个测试文件
+- **全局状态**
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptEngine.h:118-123`：全局引擎与世界上下文仍为静态入口
+  - `Bind_SystemTimers.cpp`、`Bind_UUserWidget.cpp`、`AngelscriptGameInstanceSubsystem.cpp` 等仍直接依赖 `CurrentWorldContext`
 
-已知 Bind 差距（vs UEAS2）：
-  Bind_TOptional.cpp → 缺 Intrusive Optional / 热重载比较 / 调试器
-  Bind_UStruct.cpp → 缺 TStructType<T> / 静态结构体全局变量 / GC schema
-  Bind_BlueprintType.cpp → 缺 HasGetter / HasSetter / CPF_TObjectPtr
-  Bind_AActor.cpp → 缺 DeprecateOldActorGenericMethods / GetVerifySpawnActor()
-  Bind_USceneComponent.cpp → 缺 FScopedMovementUpdate
-  Bind_FMath.cpp → 部分数学函数缺失
-  Bind_FVector2f.cpp → 部分方法不完整
-  Bind_Delegates.cpp → 缺 DelegateTypeInfo / MulticastTypeInfo
-  Bind_FHitResult.cpp → 部分方法/属性缺失
+### 已验证“不是空白”的区域
+
+- `Plugins/Angelscript/Source/AngelscriptTest/Internals/AngelscriptMemoryTests.cpp`
+  - 已覆盖 Construction、FreeUnused、ScriptNodeReuse、ByteInstructionReuse、PoolLeakTracking 五类回归
+- `Plugins/Angelscript/Source/AngelscriptTest/Internals/AngelscriptRestoreTests.cpp`
+  - 已覆盖 round-trip 与 strip-debug-info round-trip 正向路径
+- `Plugins/Angelscript/Source/AngelscriptRuntime/ThirdParty/angelscript/source/as_module.cpp:1731-1745`
+  - `SaveByteCode()` 在当前带 compiler 的构建路径走正常写入，`asNOT_SUPPORTED` 只在 `AS_NO_COMPILER` 条件编译分支出现
+
+### 需要先审计、不能直接下结论的区域
+
+- `Bind_TOptional.cpp`、`Bind_UStruct.cpp`、`Bind_BlueprintType.cpp`、`Bind_AActor.cpp`、`Bind_USceneComponent.cpp`、`Bind_Delegates.cpp`、`Bind_FHitResult.cpp`、`Bind_FMath.cpp`、`Bind_FVector2f.cpp`
+  - 这些文件与 Hazelight/UEAS2 参考源的差距需要先建立审计矩阵，再决定哪些仍属于本计划
+- `Source/AngelscriptProject/AngelscriptProject.Build.cs:11`
+  - 当前宿主工程模块仍依赖 `EnhancedInput`，需要确认是否仍符合“宿主尽量最小化”的定位
+- `Documents/Guides/TestCatalog.md`
+  - 文档化基线仍为 `275/275 PASS`，但源码 live inventory 已明显超出这一口径，需要拆分“编目基线”与“实时扫描”
+
+## 债务分级与执行策略
+
+为避免再次把高风险重构和低风险修补揉成一团，本计划固定使用“影响 × 风险”的四象限来安排顺序。
+
+| 分类 | 当前事项 | 执行策略 |
+| --- | --- | --- |
+| **立即修复**（高影响 / 低到中风险） | `TBaseStructure` 条件保护、`OptimizeCode` 条件化、BlueprintEvent 签名校验、DebugServer 并发保护、StaticJIT 异常路径、`Strihash_DEPRECATED` 替换、缩小警告压制范围 | 直接纳入本计划主线，要求测试与文档同步 |
+| **分层推进**（高影响 / 高风险） | helper 命名迁移、全局状态收口 | 只允许分层迁移，不允许一次性大重写 |
+| **先审计再实现**（中影响 / 高不确定） | Bind 差距、宿主工程边界最小化 | 先做矩阵，低风险项留本计划，高风险项拆 sibling plan |
+| **顺手收口**（低影响 / 低风险） | `Bind_UEnum` 性能验证、文档基线同步 | 与相邻 Phase 一起做，不单独开大 Phase |
+
+## 验证命令基线
+
+所有实现阶段都统一引用仓库现有指南，不在 Plan 中写死本地机器路径。
+
+### 构建命令模板
+
+- 先读取项目根目录 `AgentConfig.ini` 的 `Paths.EngineRoot`
+- `Paths.ProjectFile` 为空时，默认回退到仓库根目录下的 `AngelscriptProject.uproject`
+- `Build.EditorTarget` / `Build.Platform` / `Build.Configuration` / `Build.Architecture` 未显式配置时，分别回退到 `AngelscriptProjectEditor` / `Win64` / `Development` / `x64`
+- 参考 `Documents/Guides/Build.md` 组装 PowerShell 命令：
+
+```powershell
+powershell.exe -Command "& '<EngineRoot>\Engine\Build\BatchFiles\Build.bat' <EditorTarget> <Platform> <Configuration> '-Project=<ProjectFile>' -WaitMutex -FromMsBuild -architecture=<Architecture> 2>&1 | Out-String"
 ```
+
+### 自动化测试命令模板
+
+- 先读取 `AgentConfig.ini` 中的 `Paths.EngineRoot` 与默认超时（若存在 `Test.DefaultTimeoutMs` 则优先使用）
+- `Paths.ProjectFile` 为空时同样回退到仓库根目录下的 `AngelscriptProject.uproject`
+- `Test.DefaultTimeoutMs` 未配置时，默认回退到 `600000ms`
+- 参考 `Documents/Guides/Test.md` 使用 `UnrealEditor-Cmd.exe` + `Start-Process -Wait -NoNewWindow`
+
+```powershell
+powershell.exe -Command "Start-Process -FilePath '<EngineRoot>\Engine\Binaries\Win64\UnrealEditor-Cmd.exe' -ArgumentList '\"<ProjectFile>\"','-ExecCmds=\"Automation RunTests <TestName>; Quit\"','-Unattended','-NoPause','-NoSplash','-NullRHI','-NOSOUND' -Wait -NoNewWindow; Write-Host 'DONE'"
+```
+
+### 回归执行纪律
+
+- 每个 Phase 先跑**本 Phase 新增或修改的目标测试**，再跑更大范围回归
+- 涉及 `Shared/AngelscriptTestUtilities.h`、`Core/AngelscriptEngine.*`、`Binds/*`、`ThirdParty/*` 的改动，最终都要补跑完整 `Angelscript.TestModule` 回归
+- 只要测试入口、目录结构或基线口径发生变化，就必须同步更新 `Documents/Guides/TestCatalog.md`
 
 ## 分阶段执行计划
 
-### Phase 1：构建系统稳定性修复
+### Phase 0：重新基线化与审计冻结
 
-> 目标：消除模板/宏重定义风险，确保插件在不同 UE 版本编译时不出现 `redefinition` 错误。
+> 目标：先把“哪些债务还开着、哪些已经部分完成、哪些只能先审计再决定”固定下来，避免后续执行继续基于过期事实。
 
-- [ ] **P1.1** 分析 `AngelscriptType.h` L732-740 的 `TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 特化
-  - 确认 UE 引擎侧是否已有同名特化（对照 `NoExportTypes.h` / `ScriptStruct.h`）
-  - 确认冲突条件：哪些 UE 版本已内建这两个特化
-- [ ] **P1.2** 为 `TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 添加 `#if !defined(...)` 或版本条件保护
-  - 修改 `AngelscriptType.h` 中的 `template<>` 声明
-  - 修改 `AngelscriptType.cpp` 中的 `::Get()` 实现
-  - 确保 `Bind_UStruct.cpp` L1050,1076 和 `AngelscriptStaticJIT.cpp` L2730-2731 的使用侧不受影响
-- [ ] **P1.3** 编译验证：全量构建通过
-- [ ] **P1.3** 📦 Git 提交：`[Build] Fix: guard TBaseStructure<FBox/FBoxSphereBounds> specialization against UE redefinition`
+- [ ] **P0.1** 核对本地执行前置配置并固定 fallback 规则
+  - 先检查 `AgentConfig.ini` 是否已配置 `Paths.EngineRoot`；若未配置，则先运行 `Tools/GenerateAgentConfigTemplate.bat` 生成模板并补齐本地值，再进入任何 build/test 阶段
+  - 明确 `Paths.ProjectFile` 为空时可以回退到仓库根 `.uproject`，以及 `Build.EditorTarget`、`Build.Platform`、`Build.Configuration`、`Build.Architecture` 的默认取值来源，避免执行者在第一次构建前猜参数
+  - 把“缺失配置时立即阻塞、先补配置而不是继续实现”的规则固定下来，避免后续 Phase 失败后才回头补环境
+- [ ] **P0.1** 📦 Git 提交：`[Docs] Feat: define execution prerequisites and AgentConfig fallback rules`
 
-### Phase 2：代码安全性修复
+- [ ] **P0.2** 产出当前技术债 live inventory 与编目基线对照
+  - 以当前源码扫描结果为准，区分 `Documents/Guides/TestCatalog.md` 的“已编目基线”与 `Source/AngelscriptTest/` 的“实时扫描规模”，把两者的差值作为后续文档同步的基准
+  - 对 helper 旧命名引用、运行时待办注释、弃用 API 命中、全局状态调用点、Bind 候选差距分别给出最小可复查清单，避免执行阶段再从零搜一遍
+  - 本项产物可以是本计划附录、配套知识文档或 sibling plan 交叉引用，但必须是仓库内可追溯结果，而不是口头说明
+- [ ] **P0.2** 📦 Git 提交：`[Docs] Feat: capture live debt inventory against documented baseline`
 
-> 目标：修补三处运行时安全隐患，防止生产崩溃和线程竞争。
+- [ ] **P0.3** 验证 build/test 参数可由配置真实展开
+  - 参考 `Tools/GenerateAgentConfigTemplate.bat` 中的默认键位，确认 `EngineRoot`、`ProjectFile`、`EditorTarget`、`Platform`、`Configuration`、`Architecture`、`Test.DefaultTimeoutMs` 都能映射到本计划的命令模板
+  - 除 `EngineRoot` 缺失会直接阻塞外，其余参数统一采用模板默认回退：`ProjectFile -> AngelscriptProject.uproject`，`EditorTarget -> AngelscriptProjectEditor`，`Platform -> Win64`，`Configuration -> Development`，`Architecture -> x64`，`Test.DefaultTimeoutMs -> 600000`
+  - 在真正跑大构建前，先完成一次命令参数展开级 smoke check，确保后续 Phase 的验证步骤都是可执行命令，而不是抽象模板
+- [ ] **P0.3** 📦 Git 提交：`[Build/Test] Chore: validate command-template parameter resolution before debt execution`
 
-- [ ] **P2.1** `Bind_BlueprintEvent.cpp` L144,169,343,353：在 `ProcessEvent` 前校验参数类型与 `UFunction` 签名匹配
-  - 不匹配时 `UE_LOG(Error)` 并安全返回，不进入 `ProcessEvent`
-  - 不改变正常路径性能
-- [ ] **P2.1** 📦 Git 提交：`[Binds] Fix: add runtime parameter type validation before ProcessEvent in BlueprintEvent`
+- [ ] **P0.4** 建立 Bind 差距审计矩阵
+  - 通过 `AgentConfig.ini` 的 `References.HazelightAngelscriptEngineRoot` 指向 Hazelight/UEAS2 参考源，对 `Bind_TOptional.cpp`、`Bind_UStruct.cpp`、`Bind_BlueprintType.cpp`、`Bind_AActor.cpp`、`Bind_USceneComponent.cpp`、`Bind_Delegates.cpp`、`Bind_FHitResult.cpp`、`Bind_FMath.cpp`、`Bind_FVector2f.cpp` 做文件级 diff
+  - 审计结果必须至少包含：本地文件、参考符号/行为、是否依赖可选模块、首批测试落点、风险级别，以及“留在本计划 / 拆 sibling plan”结论
+  - 若 `References.HazelightAngelscriptEngineRoot` 未配置，则本项只允许先生成本地矩阵骨架并把跨参考源比对标记为阻塞项；在参考源缺失时不得直接进入 `P4.2`
+  - 本项完成前，不再沿用旧计划里未经复核的固定缺口列表直接开工
+- [ ] **P0.4** 📦 Git 提交：`[Docs] Feat: add audited bind-gap matrix to technical debt plan`
 
-- [ ] **P2.2** `AngelscriptDebugServer.cpp` L161,185：为线程挂起和异常处理添加 `FCriticalSection` 或 `FRWLock` 保护
-  - 确认当前线程模型（主线程 vs 调试线程）
-  - 为共享状态添加最小范围锁保护
-- [ ] **P2.2** 📦 Git 提交：`[Debug] Fix: add mutex protection for thread suspend and exception handling in DebugServer`
+### Phase 1：构建与运行时高优先级稳定性修复
 
-- [ ] **P2.3** `StaticJIT/StaticJITHeader.cpp` L255：审计异常路径的对象生命周期
-  - 找出 `new` 出来的对象在异常路径是否有对应 `delete`
-  - 补齐 RAII 封装或 `TUniquePtr` 替换裸 `new`
-- [ ] **P2.3** 📦 Git 提交：`[StaticJIT] Fix: ensure exception-path object lifecycle safety in StaticJITHeader`
+> 目标：先消除最容易导致构建失败、崩溃或行为不可控的高影响问题，把插件主线拉回稳定状态。
 
-- [ ] **P2.4** 编译验证 + 运行全量测试确认无回归
-- [ ] **P2.4** 📦 Git 提交：`[Test] Test: verify safety fixes regression — 275/275 pass`
+- [ ] **P1.1** 为 `TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 特化加保护
+  - 先对照 UE 引擎侧定义，确认哪些版本已经内建同名特化，避免插件侧继续无条件重定义
+  - 修改 `Core/AngelscriptType.h` 与对应实现文件时，需要同步核对 `Bind_UStruct.cpp` 和 `StaticJIT` 使用侧，确保不会把脚本侧结构体绑定打断
+  - 如果插件与引擎侧 `UScriptStruct*` 语义不完全等价，本项必须先补适配说明或测试，不允许只“关掉报错”
+- [ ] **P1.1** 📦 Git 提交：`[Build] Fix: guard FBox and FBoxSphereBounds base-structure specializations`
 
-### Phase 3：过时 API 替换
+- [ ] **P1.2** 将 `AngelscriptRuntime.Build.cs` 的优化开关改成条件化策略
+  - 当前 `OptimizeCode = CodeOptimization.Never` 只适合开发期调试，不应继续作为所有构建配置的默认值
+  - 需要把“什么时候关闭优化方便调试、什么时候恢复正常优化”写成可维护规则，而不是把临时调试注释留在 Build.cs 中
+  - 若调试工作流因此变化，必须同步更新 `Documents/Guides/Build.md` 或相邻文档说明
+- [ ] **P1.2** 📦 Git 提交：`[Build] Fix: make AngelscriptRuntime optimization policy configuration-aware`
 
-> 目标：替换全部已弃用 UE API 调用，消除编译警告，移除不再需要的兼容代码。
+- [ ] **P1.3** 为 `Bind_BlueprintEvent.cpp` 补齐运行时签名校验
+  - 在进入 `ProcessEvent`、`ProcessDelegate`、`ProcessMulticastDelegate` 前，核对当前脚本参数缓存与 `UFunction` / delegate 签名是否一致，不一致时记录错误并安全返回
+  - 实现时既要覆盖 `ExecutePreamble()` / `ExecuteEvent()`，也要覆盖 delegate 与 multicast delegate 的通用入口，避免只修一种调用路径
+  - 测试应优先落在现有 `Bindings` 或 `Internals` 体系，不新增无主题归属的 catch-all 测试文件
+- [ ] **P1.3** 📦 Git 提交：`[Binds] Fix: validate BlueprintEvent signatures before dispatch`
 
-- [ ] **P3.1** `PrecompiledData.cpp` L2712,2718,2720：将 `FCrc::StrCrc_DEPRECATED` 替换为 `FCrc::StrCrc32` 或 `GetTypeHash`
-  - 确认替换后哈希值兼容性（是否影响已有缓存数据）
-  - 若影响缓存兼容，增加版本号标记
-- [ ] **P3.1** 📦 Git 提交：`[StaticJIT] Refactor: replace FCrc::StrCrc_DEPRECATED with non-deprecated hash API`
+- [ ] **P1.4** 为 `AngelscriptDebugServer.cpp` 增加并发保护并固定线程模型说明
+  - 先划清哪些共享状态允许在异常处理路径读取、哪些必须提前快照，避免在异常处理器里引入新的分配或锁顺序风险
+  - 优先采用最小范围锁或无分配快照策略；如果某些路径不能安全加锁，要明确写出原因与防护边界，不能保留泛化待办注释
+  - 涉及调试线程 / 游戏线程协作的改动，需要在计划里明确对应的验证场景
+- [ ] **P1.4** 📦 Git 提交：`[Debug] Fix: add thread-safety guards for debug server breakpoint paths`
 
-- [ ] **P3.2** `ThirdParty/angelscript/source/as_string.h` L108：将 `FCrc::Strihash_DEPRECATED` 替换为现代 API
-  - 使用 `//[UE++]` 标记修改
-  - 更新 `AngelscriptChange.md`
-- [ ] **P3.2** 📦 Git 提交：`[ThirdParty] Fix: replace FCrc::Strihash_DEPRECATED in as_string.h [UE++]`
+- [ ] **P1.5** 审计并修复 `StaticJITHeader.cpp` 异常路径对象生命周期
+  - 以 `StaticJIT/StaticJITHeader.cpp:255` 附近逻辑为起点，梳理“返回值走栈 / 返回对象句柄 / 异常退出”三类路径的对象所有权
+  - 能用 RAII、`TUniquePtr` 或明确析构路径替代裸生命周期的地方，优先做最小替换；如果不能替换，也要补充确定性的清理逻辑
+  - 本项只解决对象生命周期与异常路径，不顺手展开成整个 `StaticJIT` 子系统重写
+- [ ] **P1.5** 📦 Git 提交：`[StaticJIT] Fix: close exception-path object lifetime leak risks`
 
-- [ ] **P3.3** `StaticJITHeader.h` L65：评估 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 全局压制
-  - 若压制是为了掩盖已弃用调用，修复根因后移除
-  - 若压制是为了第三方兼容，缩小作用范围到最小必要区域
-- [ ] **P3.3** 📦 Git 提交：`[StaticJIT] Refactor: narrow or remove PRAGMA_DISABLE_DEPRECATION_WARNINGS scope`
+- [ ] **P1.6** 执行构建与稳定性回归
+  - 先跑与本 Phase 直接相关的目标测试，再跑完整 `Angelscript.TestModule` 回归；若某个修复没有现成测试入口，需先补最小回归再进入全量回归
+  - 构建与测试命令必须遵循本计划“验证命令基线”与 `Documents/Guides/Build.md` / `Documents/Guides/Test.md`
+  - 若本 Phase 改动暴露出新的引擎版本差异或目录边界问题，应先回写文档，再继续后续 Phase
+- [ ] **P1.6** 📦 Git 提交：`[Test] Test: verify build and runtime stability debt fixes`
 
-- [ ] **P3.4** `AngelscriptType.cpp`：补齐空默认值分支的实现
-  - 定位空分支（预期在类型默认值处理路径中）
-  - 参照 UEAS2 对应逻辑补齐或添加显式 `checkNoEntry()` 标记不可达
-- [ ] **P3.4** 📦 Git 提交：`[Runtime] Fix: implement or guard empty default value branch in AngelscriptType`
+### Phase 2：弃用 API 收口与内部回归加固
 
-- [ ] **P3.5** `AngelscriptDebugServer.cpp`：评估 VSCode 旧版本兼容代码
-  - 确认当前最低支持的 VSCode DAP 版本
-  - 若兼容代码对应的版本已 EOL，移除
-- [ ] **P3.5** 📦 Git 提交：`[Debug] Refactor: remove obsolete VSCode compatibility code in DebugServer`
+> 目标：把已经暴露的弃用调用和过宽警告压制收口，同时把现有 internal test 基线补成“有正向也有负向边界”的稳定防线。
 
-- [ ] **P3.6** 编译验证 + 全量回归
-- [ ] **P3.6** 📦 Git 提交：`[Test] Test: verify deprecated API replacement regression`
+- [ ] **P2.1** 替换 `as_string.h` 中的 `FCrc::Strihash_DEPRECATED`
+  - 修改 `ThirdParty/angelscript/source/as_string.h` 时延续现有 `[UE++]` 标记习惯，避免 ThirdParty 变更再次成为黑盒补丁
+  - 需要确认替换后的哈希语义仍满足 `asCString` 在当前插件中的比较与映射使用方式，而不是只为了消除 warning 换一个看似可编译的 API
+  - 若替换会影响任何缓存键或查找行为，本项必须补回归测试或兼容说明
+- [ ] **P2.1** 📦 Git 提交：`[ThirdParty] Fix: replace deprecated hash usage in as_string with UE++ marker`
 
-### Phase 4：内部模块测试补全
+- [ ] **P2.2** 缩小 `StaticJITHeader.h` 的 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 作用域
+  - 在 P2.1 以及 Phase 1 的根因清理完成后，再判断这条文件级压制是否仍有必要
+  - 若确实只需覆盖极少量兼容代码，应把压制范围缩到最小必要代码块；若已不需要，则直接删除
+  - 本项不能以“保留全局压制但补注释”代替真正收口
+- [ ] **P2.2** 📦 Git 提交：`[StaticJIT] Refactor: narrow deprecation warning suppression scope`
 
-> 目标：补齐 Memory 和 Restore 模块的测试用例，建立内部模块行为基线。
+- [ ] **P2.3** 为 Restore 路径补负向边界测试
+  - 现有 `Internals/AngelscriptRestoreTests.cpp` 已有 round-trip 与 strip-debug-info 正向测试，因此本项不再重复“补 round-trip”，而是补空/损坏流、读取失败、边界条件恢复等负向场景
+  - 如果需要覆盖 `AS_NO_COMPILER` 分支，则应显式标注这是条件编译/专用构建路径，不得把当前正常构建里的 `asSUCCESS` 事实写回成过时前提
+  - 目标是让 Restore 测试同时锁住“当前支持能力”和“失败时不崩溃”的边界
+- [ ] **P2.3** 📦 Git 提交：`[Test/Internals] Feat: add negative and corruption coverage for restore paths`
 
-#### Memory 测试补全
+- [ ] **P2.4** 澄清 `TestCatalog.md` 的基线口径，并按需扩展 Memory/Restore 条目
+  - `Documents/Guides/TestCatalog.md` 已经登记了 `Restore` 与 `Memory` 章节，因此本项不是“首次补登记”，而是把“已编目基线 vs 实时扫描规模”的差异解释清楚
+  - 如果本 Phase 新增了 Restore 负向测试或调整了测试名，再把这些新增边界补进现有章节；若测试名未变化，则只更新口径说明，不重复改写已存在的条目
+  - 目标是让执行者知道哪些 internal test 是当前正式基线、哪些是后续 live inventory 扩展，而不是继续把两者混为一个数字
+- [ ] **P2.4** 📦 Git 提交：`[Docs] Refactor: clarify documented baseline versus live inventory for internal tests`
 
-> 文件：`Internals/AngelscriptMemoryTests.cpp`（已存在，需补充用例）
+- [ ] **P2.5** 执行“零显式弃用调用”检查并完成回归
+  - 对 `Plugins/Angelscript/Source/AngelscriptRuntime/` 做 `_DEPRECATED` 与 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 定向扫描，确认收口后的实际状态
+  - 若仍需保留少量例外，必须把例外路径、原因与后续消化方式写回文档，不能把搜索结果留在口头说明里
+  - 完成本 Phase 的目标测试与全量回归，并确认 `TestCatalog.md` 与源码状态一致
+- [ ] **P2.5** 📦 Git 提交：`[Test] Test: verify deprecated API cleanup and internal regression baseline`
 
-- [ ] **P4.1** 补充测试：内存池分配/释放/重用
-  - 验证 `asCMemoryMgr` 的池分配器在多次 alloc/free 后能正确重用内存块
-- [ ] **P4.2** 补充测试：内存泄漏检测
-  - 创建引擎 → 编译脚本 → 销毁引擎 → 验证 `FreeUnusedMemory()` 后分配计数归零
-- [ ] **P4.3** 编译运行验证
-- [ ] **P4.3** 📦 Git 提交：`[Test/Internals] Feat: add Memory pool allocation and leak detection tests`
+### Phase 3：测试 Helper 命名重构
 
-#### Restore（序列化）测试补全
+> 目标：把当前“共享引擎 / 初始化引擎 / 重置引擎 / 生产引擎 / global scope”语义混杂的 helper，迁移为一组名字即含义的测试入口。
 
-> 文件：`Internals/AngelscriptRestoreTests.cpp`（已存在，需补充用例）
-> 注意：当前 AS 2.33.0 的 `SaveByteCode`/`LoadByteCode` 返回 `asNOT_SUPPORTED`，测试应验证此边界行为。
+- [ ] **P3.1** 在 `Shared` 层引入语义显式的新 helper 名称
+  - 以 `Shared/AngelscriptTestUtilities.h` 为主入口，必要时联动 `Shared/AngelscriptTestEngineHelper.h/.cpp`，让 helper 名称显式区分“共享 clone 引擎”“附着生产引擎”“是否自动重置”“是否带 global scope”
+  - 这一阶段允许保留旧名称作为兼容别名，但旧名称必须变成清晰的转发层，而不是继续承载真实语义
+  - 所有新名字要能直接从名字判断副作用，避免继续出现 `Initialized`/`Shared` 实际等价的情况
+- [ ] **P3.1** 📦 Git 提交：`[Test] Refactor: introduce explicit helper names and compatibility aliases`
 
-- [ ] **P4.4** 补充测试：SaveByteCode → LoadByteCode 往返
-  - 编译模块 → 调用 `SaveByteCode` → 验证返回值（当前预期 `asNOT_SUPPORTED`）
-- [ ] **P4.5** 补充测试：损坏数据处理
-  - 向 `LoadByteCode` 传入空/损坏的字节流，验证不崩溃
-- [ ] **P4.6** 编译运行验证
-- [ ] **P4.6** 📦 Git 提交：`[Test/Internals] Feat: add Restore SaveByteCode/LoadByteCode boundary and corruption handling tests`
+- [ ] **P3.2** 先迁移基础设施与低耦合目录
+  - 首批目录固定为：`Shared/`、`Core/`、`Compiler/`、`Preprocessor/`、`Internals/`
+  - 这些目录对 helper 的语义要求最直接，最适合作为“命名规则模板”验证场；任何在这里暴露出的命名问题，都要先收敛，再往大规模目录扩散
+  - 每完成一批目录，都要做 focused regression，而不是攒到最后一起赌全量回归
+- [ ] **P3.2** 📦 Git 提交：`[Test] Refactor: migrate infrastructure and low-coupling tests to explicit helper names`
 
-### Phase 5：Bind API 差距补齐
+- [ ] **P3.3** 分批迁移主题化集成测试目录
+  - 第二批目录固定为：`Actor/`、`Blueprint/`、`Component/`、`Delegate/`、`GC/`、`HotReload/`、`Inheritance/`、`Interface/`、`Subsystem/`、`ClassGenerator/`、`Template/`
+  - 迁移时要特别留意 `FScopedTestEngineGlobalScope`、`FScopedTestWorldContextScope`、生产引擎附着等副作用型 helper，防止只改名字不改语义误用
+  - 该批次文件量大，必须按主题分批回归，不能一次性扫全目录后再集中修错误
+- [ ] **P3.3** 📦 Git 提交：`[Test] Refactor: migrate themed integration tests to explicit helper names`
 
-> 目标：缩小与 UEAS2 参考源的绑定功能差距。
-> 技术参考：UEAS2 对应 Bind 文件（通过 `AgentConfig.ini` 中 `References.HazelightAngelscriptEngineRoot` 获取）
+- [ ] **P3.4** 迁移高频行为测试与剩余主题目录
+  - 第三批目录固定为：`Angelscript/`、`Bindings/`、`Examples/`、`FileSystem/`、`Editor/`、`Native/`
+  - `Native/` 目录必须遵守 `Plugins/Angelscript/AGENTS.md` 的边界要求，只使用公共 `AngelscriptInclude.h` / `angelscript.h` 暴露的 API，不把私有运行时类型借 helper 迁移之机带进去
+  - 对 `Bindings/` 和 `Angelscript/` 目录，迁移完成后要额外检查是否还有“名字变了但仍依赖旧全局行为”的假收口
+- [ ] **P3.4** 📦 Git 提交：`[Test] Refactor: migrate behavior, bindings, editor, native, and example tests to explicit helper names`
 
-#### Sprint A：容器与结构体补齐
+- [ ] **P3.5** 移除旧兼容别名并同步测试目录文档
+  - 只有在 grep 确认 `Source/AngelscriptTest/` 下已无旧 helper 名称残留后，才能删除兼容别名
+  - 删除别名同时更新 `Documents/Guides/TestCatalog.md` 与相关计划文档，避免文档仍指导使用旧名字
+  - 任何遗留的 helper 语义争议必须在本项前收敛，不允许靠“保留别名以防万一”拖延结束条件
+- [ ] **P3.5** 📦 Git 提交：`[Test] Chore: remove deprecated helper aliases after migration completion`
 
-- [ ] **P5.A.1** `Bind_TOptional.cpp`：补齐 Intrusive Optional 全套
-  - `HasIntrusiveUnsetOptionalState` / `InitializeIntrusiveUnsetOptionalValue`
-  - 热重载比较：`CanCompareForHotReload` / `IsValueEqualForHotReload`
-  - 调试器：`GetDebuggerValue` / `GetDebuggerScope` / `GetDebuggerMember`
-- [ ] **P5.A.2** `Bind_UStruct.cpp`：补齐 `TStructType<T>` 模板 + 静态结构体全局变量 + GC schema `PropertyLink` 发射
-- [ ] **P5.A.3** 编译验证 + 全量回归
-- [ ] **P5.A.3** 📦 Git 提交：`[Binds] Feat: TOptional intrusive + UStruct TStructType + hot-reload completion`
+- [ ] **P3.6** 执行 helper 命名迁移总回归
+  - 除完整自动化回归外，还要对旧 helper 名称做定向 grep，确认源码与文档都已经完成切换
+  - 若因为批量改名引入 include、命名空间或宏路径破坏，先就地收敛基础错误，不得带病进入下一 Phase
+  - 本项完成后，`Plan_TechnicalDebt.md` 中不再把 helper 命名问题视为“待设计”，而应视为已关闭债务
+- [ ] **P3.6** 📦 Git 提交：`[Test] Test: verify helper naming migration regression`
 
-#### Sprint B：类型系统补齐
+### Phase 4：Bind 差距审计与低风险收敛
 
-- [ ] **P5.B.1** `Bind_BlueprintType.cpp`：补齐 `HasGetter` / `HasSetter` / getter-setter 方法 / `CPF_TObjectPtr` 处理
-- [ ] **P5.B.2** 编译验证
-- [ ] **P5.B.2** 📦 Git 提交：`[Binds] Feat: BlueprintType HasGetter/HasSetter + CPF_TObjectPtr`
+> 目标：把 Bind 差距从“旧 backlog 猜测”改成“有参考源、有测试落点、有拆分策略”的可维护清单，只在本计划里吃下低风险高价值部分。
 
-#### Sprint C：Minor Drift 收尾（6 个文件）
+- [ ] **P4.1** 固化本地 vs Hazelight/UEAS2 的 Bind 差距矩阵
+  - 以 Phase 0 的审计矩阵为起点，把每个候选文件的差距具体到“缺哪个符号 / 缺哪段行为 / 受哪些模块依赖约束 / 建议落在哪个测试文件”
+  - 不能只写“与参考源有差距”，而要写清楚差距类型是 API 缺失、行为偏差、热重载/调试器支持缺口，还是仅为风格差异
+  - 对 `Bind_BlueprintType.cpp`，至少把 `CPF_TObjectPtr` 注释路径是否仍需恢复写成明确结论
+- [ ] **P4.1** 📦 Git 提交：`[Docs] Feat: freeze audited bind-gap matrix with test landing points`
 
-- [ ] **P5.C.1** `Bind_AActor.cpp`：补齐 `DeprecateOldActorGenericMethods` / `GetVerifySpawnActor()`
-- [ ] **P5.C.2** `Bind_USceneComponent.cpp`：补齐 `FScopedMovementUpdate` 值类型注册
-  - 构造/析构 + `RevertMove()` / `IsTransformDirty()` 等方法
-- [ ] **P5.C.3** `Bind_FMath.cpp`：与 UEAS2 diff 补齐缺失数学函数
-- [ ] **P5.C.4** `Bind_FVector2f.cpp`：与 UEAS2 diff 补齐不完整方法
-- [ ] **P5.C.5** `Bind_Delegates.cpp`：补齐 `DelegateTypeInfo` / `MulticastTypeInfo` 暴露
-- [ ] **P5.C.6** `Bind_FHitResult.cpp`：与 UEAS2 diff 补齐缺失方法和属性
-- [ ] **P5.C.7** 全部编译验证 + 全量回归
-- [ ] **P5.C.7** 📦 Git 提交：`[Binds] Feat: minor drift closure — AActor, SceneComponent, Math, Vector2f, Delegates, HitResult`
+- [ ] **P4.2** 实现低风险且不引入额外模块依赖的 Bind 补齐项
+  - 只接收两类事项：一类是通过审计确认的局部逻辑缺口，另一类是可以直接由现有 `Bindings` / `UpgradeCompatibility` 测试锁住的缺口
+  - 如果某项需要额外插件模块、较大 API 设计变更、或会把问题扩展到 `InterfaceBinding` / `AS238` 等其他主题，必须在本项中止并转 sibling plan
+  - 本项优先考虑 `Bind_BlueprintType.cpp`、`Bind_TOptional.cpp`、`Bind_UStruct.cpp` 这类可能存在局部收敛空间的文件
+- [ ] **P4.2** 📦 Git 提交：`[Binds] Feat: close low-risk audited bind parity gaps`
 
-### Phase 6：测试 Helper 命名重构
+- [ ] **P4.3** 将高风险或跨主题差距拆分到 sibling plan
+  - `Interface` 相关绑定差距优先并入 `Documents/Plans/Plan_InterfaceBinding.md`
+  - 与 `AS238` 语言/ThirdParty 能力迁移直接相关的差距优先并入 `Documents/Plans/Plan_AS238NonLambdaPort.md`
+  - 若发现某些差距本质上属于 Hazelight 模块迁移问题，则并入 `Documents/Plans/Plan_HazelightBindModuleMigration.md` 或新 sibling plan，而不是继续堆在本计划内
+- [ ] **P4.3** 📦 Git 提交：`[Docs] Refactor: split high-risk bind gaps into focused sibling plans`
 
-> 目标：将测试 helper 从当前混杂命名逐步迁移到语义显式的命名，减少误用风险。
-> 约束：不做一次性全替换，必须分层逐批迁移，每批迁移后立即全量构建验证。
+- [ ] **P4.4** 为本计划保留的 Bind 补齐项补测试并做完整回归
+  - 所有保留在本计划内的 Bind 改动，都必须在 `Plugins/Angelscript/Source/AngelscriptTest/Bindings/`、`Angelscript/` 或 `UpgradeCompatibility` 体系内找到明确测试落点
+  - 测试新增后同步更新 `TestCatalog.md`，确保 Bind 层能力变化不再只存在于代码 diff 中
+  - 本项完成后，旧的“6 个 Minor Drift 文件清单”只保留为审计参考，不再作为未经验证的待办来源
+- [ ] **P4.4** 📦 Git 提交：`[Test/Binds] Test: verify audited bind parity closures`
 
-#### 影响面分析
+### Phase 5：全局状态收口与宿主工程边界压缩
 
-```text
-L0 公共入口层：AngelscriptTestUtilities.h、AngelscriptTestEngineHelper.h/.cpp
-L1 直接依赖层：Shared/*Tests.cpp、Core/*Tests.cpp
-L2 场景层：Actor/*.cpp、Blueprint/*.cpp、ClassGenerator/AngelscriptScriptClassCreationTests.cpp、Component/*.cpp、Delegate/*.cpp、GC/*.cpp、HotReload/*.cpp、Inheritance/*.cpp、Interface/*.cpp、Subsystem/*.cpp
-L3 模板层：Template/*.cpp
-L4 绑定/内部层：Bindings/*.cpp、Internals/*.cpp、Preprocessor/*.cpp、Compiler/*.cpp
-```
+> 目标：优先收口最容易隔离的全局状态依赖，并确认宿主工程仍保持最小职责；完整去全局化另起节奏，不在这里偷跑。
 
-#### 高风险文件类型
+- [ ] **P5.1** 盘点 `FAngelscriptEngine::Get()` / `CurrentWorldContext` 的使用模式
+  - 至少按三类整理：编译/类生成路径、世界上下文绑定路径、测试/调试辅助路径
+  - 盘点结果要写清楚哪些调用点已经有 `FScopedTestEngineGlobalScope` / `FScopedTestWorldContextScope` / `FAngelscriptGameThreadScopeWorldContext` 之类的现成替代物，哪些仍缺显式上下文入口
+  - 本项的产出不是“列路径而已”，而是要为后续 containment 步骤固定优先级
+- [ ] **P5.1** 📦 Git 提交：`[Docs] Feat: classify global engine and world-context dependency callsites`
 
-- 混用 `GetSharedInitializedTestEngine()` / `GetSharedTestEngine()` / `GetResetSharedTestEngine()` 的测试
-- 同时调用 `CompileModuleFromMemory()`、`CompileModuleWithResult()`、`AnalyzeReloadFromMemory()` 的测试
-- 依赖 `FScopedTestEngineGlobalScope` / `FScopedTestWorldContextScope` 的运行期测试
+- [ ] **P5.2** 先收口最容易显式化的 world-context / engine 入口
+  - 只处理已经具备 scoped wrapper 或参数透传路径的调用点，优先解决测试与绑定层里最容易误用的场景
+  - 不能把这一项膨胀成 `Core/AngelscriptEngine.cpp` 全面架构翻修；目标是减少隐式全局入口，而不是一次性消灭全部静态状态
+  - 改动后必须补回归，证明 isolate test engine 不会被生产引擎或共享世界上下文静默劫持
+- [ ] **P5.2** 📦 Git 提交：`[Runtime] Refactor: contain low-risk global engine and world-context access paths`
 
-#### 迁移步骤
+- [ ] **P5.3** 复核宿主工程模块依赖是否仍然最小化
+  - `Source/AngelscriptProject/AngelscriptProject.Build.cs:11` 当前仍公开依赖 `EnhancedInput`，本项需要确认这是宿主工程真实需要，还是可以下沉到插件或示例层
+  - 若不能移除，也必须在计划里补清楚“为什么宿主仍需要这个依赖”，以符合宿主仅作为插件验证载体的定位
+  - 若还能进一步最小化宿主模块，相关改动要同步检查是否影响现有启动、测试或模板内容
+- [ ] **P5.3** 📦 Git 提交：`[Project] Refactor: review and minimize host project module dependencies`
 
-- [ ] **P6.1** L0 层：在 `AngelscriptTestEngineHelper.h` 中添加语义显式的新 helper 声明
-  - "会切换全局引擎"的 helper 名称带 `WithGlobalScope`
-  - "会附着生产主引擎"的 helper 名称带 `Production`
-  - 旧名字保留为兼容别名（`inline` 转发），不删除
-- [ ] **P6.1** 📦 Git 提交：`[Test] Refactor: add explicit-named helper declarations with compat aliases`
+- [ ] **P5.4** 为完整去全局化写出后续边界说明
+  - 本项不是直接展开跨模块重构，而是把“哪些路径已经 containment 完成、哪些仍需独立计划”明确写下来，防止下一轮工作再从零判边界
+  - 若盘点表明后续工作量已超出本计划可控范围，应补 sibling plan 或本计划附录说明，而不是继续往本计划里堆 Phase
+  - 写清楚启动后续计划的前置条件，例如 helper 命名迁移完成、Bind 审计矩阵冻结、测试基线稳定等
+- [ ] **P5.4** 📦 Git 提交：`[Docs] Feat: define follow-up boundary for full de-globalization work`
 
-- [ ] **P6.2** L1 层：迁移 `Shared/*Tests.cpp` 与 `Core/*Tests.cpp` 到新 helper 名称
-- [ ] **P6.2** 📦 Git 提交：`[Test] Refactor: migrate Shared and Core tests to explicit helper names`
+- [ ] **P5.5** 执行全局状态 containment 回归
+  - 覆盖共享测试引擎、生产引擎附着、world context scope 恢复、类生成与运行时路径不串线等关键场景
+  - 若 containment 改动需要补充新的 helper 或测试工具，也必须先把这些工具纳入 `Shared` 层并记录到文档目录
+  - 本项结束条件是“隐式全局依赖收缩且行为有测试证明”，不是“静态入口彻底消失”
+- [ ] **P5.5** 📦 Git 提交：`[Test] Test: verify global-state containment regression`
 
-- [ ] **P6.3** L2 层：迁移 `HotReload/*.cpp` 与主题化集成测试目录（`Actor/*.cpp`、`Blueprint/*.cpp`、`ClassGenerator/AngelscriptScriptClassCreationTests.cpp`、`Component/*.cpp`、`Delegate/*.cpp`、`GC/*.cpp`、`Inheritance/*.cpp`、`Interface/*.cpp`、`Subsystem/*.cpp`）
-- [ ] **P6.3** 📦 Git 提交：`[Test] Refactor: migrate HotReload and themed integration tests to explicit helper names`
+### Phase 6：性能验证与最终文档同步
 
-- [ ] **P6.4** L3 层：迁移 `Template/*.cpp`
-- [ ] **P6.4** 📦 Git 提交：`[Test] Refactor: migrate Template tests to explicit helper names`
+> 目标：只对仍然存在且已落地的优化点做性能复核，并把整个技术债计划的最终状态同步回文档体系。
 
-- [ ] **P6.5** L4 层：迁移 `Bindings/*.cpp`、`Internals/*.cpp`、`Preprocessor/*.cpp`、`Compiler/*.cpp`
-- [ ] **P6.5** 📦 Git 提交：`[Test] Refactor: migrate Bindings and Internals tests to explicit helper names`
+- [ ] **P6.1** 验证 `Bind_UEnum.cpp` 的性能优化债务是否仍然成立
+  - 若 `Bind_UEnum.cpp` 里的哈希查找优化仍是当前主线中的显式改动，就用 focused benchmark 或自动化计时验证其收益
+  - 若代码或文档已经不再把这项视为待验证优化，就从技术债列表中移除旧说法，而不是为了“保持 Phase 数量”强行做无意义测量
+  - 任何性能结论都需要附带测量口径与场景，不写“体感更快”这种不可回归描述
+- [ ] **P6.1** 📦 Git 提交：`[Binds] Test: verify or retire stale enum lookup performance debt`
 
-- [ ] **P6.6** 清理：移除旧兼容别名，确认无残留引用
-- [ ] **P6.6** 📦 Git 提交：`[Test] Chore: remove deprecated helper aliases after full migration`
+- [ ] **P6.2** 完成文档体系同步
+  - 至少复核并按需更新：`Documents/Plans/Plan_TechnicalDebt.md`、`Documents/Guides/Build.md`、`Documents/Guides/Test.md`、`Documents/Guides/TestCatalog.md`、相关 sibling plan 的边界交叉引用
+  - 确认文档中不再出现本地绝对路径，且所有引用的计划/指南都与当前插件优先边界一致
+  - 如果某项债务已通过 sibling plan 承接，必须在本计划中写明去向，不允许“从这里删掉但没有着落”
+- [ ] **P6.2** 📦 Git 提交：`[Docs] Chore: sync technical debt closeout across guides and plans`
 
-- [ ] **P6.7** 全量回归
-- [ ] **P6.7** 📦 Git 提交：`[Test] Test: verify helper naming refactor regression — all tests pass`
-
-### Phase 7：去全局化路线（规划项）
-
-> 目标：为 `FAngelscriptEngine::Get()` / `CurrentWorldContext` 去全局化提供逐步迁移路线。
-> 当前阶段仅为规划，不进入代码改造。后续按需启动。
-
-#### 迁移路线
-
-- [ ] **P7.1** Phase A — 测试 helper 全部封装（已由 Phase 6 覆盖）
-  - 测试代码不再散落直接切全局状态
-  - 统一收进 `FScopedTestEngineGlobalScope` / `FScopedTestWorldContextScope`
-- [ ] **P7.2** Phase B — 编译路径优先改为显式 `Engine&`
-  - `CompileModules()` / `AngelscriptClassGenerator` 改为接受 `FAngelscriptEngine&` 参数
-  - 减少对 `FAngelscriptEngine::Get()` 的依赖
-- [ ] **P7.3** Phase C — 高频运行时路径减少 `FAngelscriptEngine::Get()` 依赖
-  - `ASClass` / `Binds` / `DebugServer` 中的全局引擎引用改为上下文传参
-- [ ] **P7.4** Phase D — 评估"当前执行引擎"绑定方案
-  - 选项 A：绑定到脚本 context（`asIScriptContext` UserData）
-  - 选项 B：绑定到 TLS（Thread-Local Storage）
-  - 选项 C：保留全局但加 assert 保护
-
-> **注意**：Phase B-D 每一步都是跨模块重构，不适合与其他主线并行。启动前必须先完成 Phase 6 的 helper 迁移。
-
-### Phase 8：性能验证
-
-> 目标：验证已完成的性能优化改动确实有效。
-
-- [ ] **P8.1** 验证 `Bind_UEnum.cpp` 枚举值哈希查找改动
-  - 运行包含大量枚举值查找的测试
-  - 对比改动前后耗时（使用 `FPlatformTime::Seconds()` 计时）
-  - 记录结果到文档
-- [ ] **P8.1** 📦 Git 提交：`[Binds] Test: verify hash-based enum value lookup performance`
+- [ ] **P6.3** 执行最终构建与全量回归，并沉淀结果摘要
+  - 先确认所有阶段性目标测试已通过，再跑完整构建与最终 `Angelscript.TestModule` 回归
+  - 把最终结果沉淀为可追溯摘要：哪些债务关闭、哪些转 sibling plan、哪些被验证为“已无问题但需守住”
+  - 只有在最终结果摘要、测试目录文档、以及本计划三者一致时，才算完成本计划
+- [ ] **P6.3** 📦 Git 提交：`[Test] Test: finalize technical debt cleanup verification and summary`
 
 ## 验收标准
 
-1. **构建稳定性**：`TBaseStructure` 特化有条件保护，全量编译无 `redefinition` 警告/错误。
-2. **代码安全**：`Bind_BlueprintEvent` 参数校验生效（构造不匹配参数时 log error 而非崩溃）、`DebugServer` 线程操作有锁保护、`StaticJITHeader` 异常路径无内存泄漏。
-3. **零弃用调用**：插件源码中不再出现 `_DEPRECATED` 后缀的 UE API 调用（ThirdParty 修改使用 `//[UE++]` 标记）。
-4. **内部测试基线**：Memory 池测试 ≥2 个用例通过、Restore 边界测试 ≥2 个用例通过。
-5. **Bind 差距**：TOptional / UStruct / BlueprintType / 6 个 Minor Drift 文件与 UEAS2 对齐（功能层面，不要求行级一致）。
-6. **Helper 命名**：所有测试文件使用语义显式的 helper 名称，旧别名已移除，全量回归通过。
-7. **全量回归**：每个 Phase 完成后 275/275（+ 新增用例）测试通过。
+1. **计划与仓库现状一致**：本计划不再把已落地的 Memory/Restore 测试能力当作“待补空白”，也不再保留本地绝对路径与过时事实。
+2. **构建稳定性提升**：`TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 不再无条件重定义；`AngelscriptRuntime.Build.cs` 的优化策略不再把开发期调试配置硬编码给所有构建。
+3. **运行时安全债务关闭**：`Bind_BlueprintEvent`、`AngelscriptDebugServer`、`StaticJITHeader` 的显式待办注释被代码和测试收口，不再作为开放性待办注释留在主线。
+4. **弃用 API 基线可验证**：`as_string.h` 的显式弃用调用完成替换；`StaticJITHeader.h` 的警告压制缩到最小；针对 `_DEPRECATED` 与警告压制定向扫描后，剩余例外均有文档记录。
+5. **内部测试基线成文且可回归**：`Memory` / `Restore` 现有正向测试能力被写入 `TestCatalog.md`，并补齐必要的负向边界测试。
+6. **测试 helper 命名完成迁移**：`Source/AngelscriptTest/` 下旧 helper 名称残留为零，兼容别名已移除，文档同步完成。
+7. **Bind 差距不再是黑盒 backlog**：本计划保留的 Bind 差距项都有参考源、测试落点和风险结论；不适合本计划的项已拆到 sibling plan。
+8. **全局状态与宿主边界收口可证明**：低风险的全局依赖调用点已经 containment，宿主工程依赖最小化状态有明确结论，完整去全局化的后续边界已写明。
+9. **验证证据完整**：最终构建、目标测试、完整回归、以及文档同步都按既定口径执行并留下结果摘要。
 
 ## 风险与注意事项
 
-### 风险 1：TBaseStructure 条件保护可能导致运行时行为差异
+### 风险 1：引擎版本差异导致 `TBaseStructure` 保护条件不止一种
 
-若 UE 引擎已内建 `TBaseStructure<FBox>` 特化且返回不同 `UScriptStruct*`，条件保护后插件使用的 `Get()` 语义可能变化。
+不同 UE 版本是否内建 `TBaseStructure<FBox>` / `TBaseStructure<FBoxSphereBounds>` 并不一定完全一致；若只用单一宏条件，可能仍会在某些版本出现重定义或语义偏差。
 
-**缓解**：P1.1 中先对比引擎侧实现与插件侧实现的返回值是否等价；若等价，直接跳过插件侧定义；若不等价，需要在绑定层做适配。
+**缓解**：在真正下手改动前先对照引擎侧定义与返回值语义；必要时用“版本判断 + 符号存在判断”双保险，而不是拍脑袋写一个 `#if`。
 
-### 风险 2：FCrc 替换影响缓存兼容
+### 风险 2：DebugServer 异常路径不能随意引入重锁或堆分配
 
-`PrecompiledData.cpp` 中的哈希用于 StaticJIT 预编译数据。替换哈希算法后旧缓存失效。
+异常处理路径本身对锁顺序、堆分配和线程上下文极度敏感；错误的“线程安全修复”反而可能把调试器变得更脆弱。
 
-**缓解**：P3.1 中增加缓存版本号，新版本自动重新生成而非读取旧缓存。
+**缓解**：先区分可加锁路径和必须零分配/零阻塞的路径；必要时采用共享状态快照而非在异常处理器中直接做复杂逻辑。
 
-### 风险 3：Helper 命名重构的级联破坏
+### 风险 3：helper 命名迁移横跨几十个文件，容易出现连锁语法破坏
 
-Phase 6 涉及 93 个测试 `.cpp` 文件，批量改名可能引发 include 缺失、语法损坏、`RunTest()` 缺实现等连锁问题。
+当前 helper 旧命名在大量测试文件中存在，单次大规模替换很容易引入 include、命名空间或 scope 恢复错误。
 
-**缓解**：严格按 L0→L4 分层迁移，每层迁移后立即全量构建。出现批量错误时先回到"补 include / 修括号"层面逐个收敛，不继续扩散。
+**缓解**：严格按 Phase 3 的分层顺序推进，每一批迁移后先收敛 compile error 和 focused regression，再进入下一批，不允许攒大爆炸。
 
-### 风险 4：Bind API 差距补齐引入新的编译依赖
+### 风险 4：Bind 差距中混有可选模块依赖与其他计划边界
 
-部分 UEAS2 Bind 实现依赖可选引擎插件（如 `EnhancedInput`、`GAS`）。补齐时需确认依赖在 `Build.cs` 中正确声明。
+有些 Bind 差距可能依赖 `GameplayAbilities`、`EnhancedInput`、接口绑定设计或 `AS238` 路线；如果直接吞进本计划，会快速扩大成多主题耦合改造。
 
-**缓解**：每个 Sprint 提交前验证 `Build.cs` 依赖完整性，对可选插件使用 `ConditionalAddModuleToCompileEnvironment`。
+**缓解**：先审计、后分流。只有低风险、可独立回归的项留在本计划；其余一律并入对应 sibling plan。
 
-### 风险 5：去全局化路线（Phase 7）影响面极大
+### 风险 5：`TestCatalog.md` 的文档化基线与实时扫描规模不等价
 
-一旦从规划转入代码改造，会同时触及编译管线、类生成器、绑定层、测试上下文，容易迅速放大为跨模块重构。
+如果后续仍把 `275/275 PASS` 当成“当前全部测试总数”，会继续误导范围判断和验收口径。
 
-**缓解**：Phase 7 当前仅为规划项。启动前必须先完成 Phase 6，且作为独立阶段推进，不与其他主线并行。
+**缓解**：明确把它标记为“已编目基线”，同时补 live inventory 说明，并在相关计划里统一这个口径。
+
+### 风险 6：宿主工程边界优化可能影响现有验证入口
+
+即使宿主工程依赖看起来可移除，也可能被当前示例、模板或启动流程隐式使用；贸然删掉会让“宿主最小化”变成新 breakage 来源。
+
+**缓解**：先审计依赖用途，再决定移除或保留；若保留，也要把理由写清楚，避免它再次成为“未来某天再看”的模糊债务。
 
 ## 优先级与依赖关系
 
 ```text
-Phase 1（构建稳定性）── 无前置依赖，最高优先级
+Phase 0（基线与审计冻结）── 所有后续阶段的前置依赖
   ↓
-Phase 2（代码安全）── 依赖 Phase 1（确保编译通过）
+Phase 1（构建 / 运行时高优先级稳定性）── 最先执行
   ↓
-Phase 3（过时 API）── 与 Phase 2 可部分并行
+Phase 2（弃用 API / internal regression）── 依赖 Phase 1 的稳定主线
   ↓
-Phase 4（内部测试）── 依赖 Phase 1-3（确保基线稳定）
+Phase 3（helper 命名迁移）── 依赖 Phase 0-2 固定基础设施口径
   ↓
-Phase 5（Bind 差距）── 独立于 Phase 4，可部分并行
+Phase 4（Bind 差距审计与低风险收敛）── 可在 Phase 0 后启动审计，但真正落地最好在 Phase 1-2 后进行
   ↓
-Phase 6（Helper 命名）── 依赖 Phase 1-3（确保基线稳定）
+Phase 5（全局状态 containment / 宿主边界）── 依赖 helper 语义与 Bind 审计都已收敛
   ↓
-Phase 7（去全局化）── 依赖 Phase 6 完成
-  ↓
-Phase 8（性能验证）── 独立，任何阶段后均可执行
+Phase 6（性能验证与最终同步）── 作为最终收尾执行
 ```
 
-**推荐执行顺序**：P1 → P2 → P3 → P4 + P5（并行）→ P6 → P8 → P7（按需）
+**推荐执行顺序**：`P0 → P1 → P2 → P3 → P4 → P5 → P6`。
+
+其中：
+
+- `P4.1` 的审计动作可以在 `P1` 并行准备，但 `P4.2-P4.4` 最好在 `P1-P2` 稳定后进入
+- `P5` 不得早于 `P3`，否则 helper 语义与全局状态 containment 会互相放大不确定性
 
 ## 参考文档索引
 
 | 文档 | 位置 | 用途 |
-|------|------|------|
-| 上游 todo.md | `J:\UnrealEngine\todo.md` §7 | 技术债原始条目来源 |
-| 接口绑定计划 | `Documents/Plans/Plan_InterfaceBinding.md` | 接口重构独立计划（不在本 Plan 范围内） |
-| 原生测试重构计划 | `Documents/Plans/Plan_NativeAngelScriptCoreTestRefactor.md` | Native 测试层独立计划（与 Phase 4 互补） |
-| 构建指南 | `Documents/Guides/Build.md` | 编译命令与环境配置 |
-| 测试指南 | `Documents/Guides/Test.md` | 测试运行与分类说明 |
-| Git 提交规范 | `Documents/Rules/GitCommitRule.md` | 提交格式 |
-| UEAS2 参考源 | 通过 `AgentConfig.ini` → `References.HazelightAngelscriptEngineRoot` | Bind 差距对比基准 |
+| --- | --- | --- |
+| Plan 编写规则 | `Documents/Plans/Plan.md` | 约束本计划的结构、checkbox 与提交条目格式 |
+| 构建指南 | `Documents/Guides/Build.md` | 构建命令、PowerShell 包装与 AgentConfig 取值方式 |
+| 测试指南 | `Documents/Guides/Test.md` | 自动化测试入口、NullRHI 参数与 AI Agent 执行方式 |
+| 测试目录基线 | `Documents/Guides/TestCatalog.md` | 已编目测试基线与目录说明 |
+| 单元测试扩张计划 | `Documents/Plans/Plan_AngelscriptUnitTestExpansion.md` | live inventory 与文档化基线漂移的配套计划 |
+| Interface 绑定计划 | `Documents/Plans/Plan_InterfaceBinding.md` | 高风险接口绑定差距的承接计划 |
+| Hazelight Bind 模块迁移计划 | `Documents/Plans/Plan_HazelightBindModuleMigration.md` | 需要跨模块迁移的 Bind 主题承接计划 |
+| AS238 非 Lambda 迁移计划 | `Documents/Plans/Plan_AS238NonLambdaPort.md` | 与语言/ThirdParty 升级直接相关的主题边界 |
+| Native 核心测试重构计划 | `Documents/Plans/Plan_NativeAngelScriptCoreTestRefactor.md` | Native 测试层与公共 API 边界配套说明 |
+| Git 提交规范 | `Documents/Rules/GitCommitRule.md` | 所有阶段提交格式参考 |
+| Hazelight 参考源配置 | `AgentConfig.ini` → `References.HazelightAngelscriptEngineRoot` | Bind 差距审计的本地引用入口 |

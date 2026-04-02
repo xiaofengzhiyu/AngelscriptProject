@@ -14,6 +14,7 @@ namespace UnrealBuildTool.Rules
 			PrivateIncludePaths.Add(ModuleDirectory);
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Core"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Internals"));
+			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Native"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Preprocessor"));
 			PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "ClassGenerator"));
 

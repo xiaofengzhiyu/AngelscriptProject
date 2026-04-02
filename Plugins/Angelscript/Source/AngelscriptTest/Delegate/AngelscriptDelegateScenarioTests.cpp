@@ -8,6 +8,7 @@
 #include "UObject/ScriptDelegates.h"
 #include "UObject/UnrealType.h"
 
+// Test Layer: UE Scenario
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;
