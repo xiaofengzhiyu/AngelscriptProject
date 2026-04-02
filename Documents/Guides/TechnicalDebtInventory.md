@@ -1,0 +1,101 @@
+# Angelscript 技术债实时盘点
+
+> 快照提交：`ac16f3a`
+>
+> 目的：将 `Documents/Plans/Plan_TechnicalDebt.md` 中提到的 live inventory 固化为仓库内可追溯文档，避免后续执行阶段重复从零扫描。
+
+## 1. 已编目基线 vs 实时扫描
+
+- `Documents/Guides/TestCatalog.md` 仍以 `275/275 PASS` 作为**已编目基线**。
+- 当前源码对 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`、`IMPLEMENT_COMPLEX_AUTOMATION_TEST`、`IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST`、`BEGIN_DEFINE_SPEC`、`DEFINE_SPEC` 的实时扫描命中 **319** 处定义，覆盖 **89** 个文件。
+- 这两组数字不能直接等价：前者是文档化、已整理的基线；后者是当前源码中的实时定义规模。当前差值为 **+44**，应作为后续 `TestCatalog` 同步与回归验收的起点，而不是继续把 `275` 视为源码现状总数。
+
+### 当前 live inventory 热点
+
+- `Plugins/Angelscript/Source/AngelscriptTest/Core/AngelscriptEngineParityTests.cpp`：14 处
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestEngineHelperTests.cpp`：11 处
+- `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptTypeTests.cpp`：11 处
+- `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptExecutionTests.cpp`：9 处
+- `Plugins/Angelscript/Source/AngelscriptTest/Compiler/AngelscriptCompilerPipelineTests.cpp`：8 处
+
+## 2. 测试 helper 旧命名盘点
+
+### 旧入口定义位置
+
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:86`：`GetSharedTestEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:98`：`GetSharedInitializedTestEngine()`（当前直接转发到 `GetSharedTestEngine()`）
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:119`：`GetResetSharedTestEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:134`：`GetProductionEngine()`
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h:145`：`GetProductionEngineForParity()`（当前直接转发到 `GetProductionEngine()`）
+
+### 当前引用规模
+
+- 旧 helper 名称在 `Plugins/Angelscript/Source/AngelscriptTest/` 下共命中 **185** 处引用，覆盖 **37** 个文件。
+- 当前高频热点文件：
+  - `Plugins/Angelscript/Source/AngelscriptTest/Compiler/AngelscriptCompilerPipelineTests.cpp`：16 处
+  - `Plugins/Angelscript/Source/AngelscriptTest/Core/AngelscriptEngineParityTests.cpp`：14 处
+  - `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptTypeTests.cpp`：11 处
+  - `Plugins/Angelscript/Source/AngelscriptTest/Angelscript/AngelscriptExecutionTests.cpp`：9 处
+  - `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h`：8 处
+
+## 3. 构建与运行时开放债务锚点
+
+- `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:26`：仍保留 `// TODO: 不要删除, 开发期间，关闭优化方便debug`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:27`：仍无条件 `OptimizeCode = CodeOptimization.Never`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:731`：仍保留 `//WILL-EDIT`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:732`：仍无条件声明 `TBaseStructure<FBox>`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:737`：仍无条件声明 `TBaseStructure<FBoxSphereBounds>`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:144`：`ExecutePreamble()` 仍缺事件签名校验
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:169`：`ExecuteEvent()` 仍缺事件签名校验
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:343`：delegate 调用路径仍保留 `// TODO: Signature checking?`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:353`：multicast delegate 调用路径仍保留 `// TODO: Signature checking?`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp:161`：仍保留线程挂起策略待审计注释
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp:185`：异常路径多线程保护仍为 TODO
+- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.cpp:255`：异常路径返回对象销毁仍未收口
+
+## 4. 弃用 API 与警告压制盘点
+
+- `Plugins/Angelscript/Source/AngelscriptRuntime/ThirdParty/angelscript/source/as_string.h:108`：仍使用 `FCrc::Strihash_DEPRECATED`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.h:65`：仍在文件级使用 `PRAGMA_DISABLE_DEPRECATION_WARNINGS`
+
+## 5. 全局状态依赖盘点
+
+- 对 `FAngelscriptEngine::Get()` 与 `CurrentWorldContext` 的实时扫描在 `Plugins/Angelscript/Source/` 下共命中 **325** 处，覆盖 **57** 个文件。
+- 当前热点文件：
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/ClassGenerator/AngelscriptClassGenerator.cpp`：81 处
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptBinds.cpp`：32 处
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp`：23 处
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptEngine.cpp`：19 处
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Preprocessor/AngelscriptPreprocessor.cpp`：12 处
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_AActor.cpp`：12 处
+- 结合代码位置可先分三类：
+  - **编译 / 类生成路径**：`ClassGenerator/AngelscriptClassGenerator.cpp`、`ClassGenerator/ASClass.cpp`、`Core/AngelscriptBinds.cpp`
+  - **世界上下文绑定路径**：`Binds/Bind_SystemTimers.cpp`、`Binds/Bind_UUserWidget.cpp`、`Core/AngelscriptGameInstanceSubsystem.cpp`
+  - **测试 / 调试辅助路径**：`Debugging/AngelscriptDebugServer.cpp`、`Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestUtilities.h`、`Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestEngineHelperTests.cpp`
+
+## 6. Bind 审计候选清单
+
+- 本轮计划中的首批候选文件仍然是：
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_TOptional.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_UStruct.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintType.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_AActor.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_USceneComponent.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_Delegates.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_FHitResult.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_FMath.cpp`
+  - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_FVector2f.cpp`
+- 其中已明确存在的本地逻辑缺口锚点：`Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintType.cpp:156`，`CPF_TObjectPtr` 判断仍处于注释状态。
+- 当前执行环境已配置 `AgentConfig.ini` 的 `References.HazelightAngelscriptEngineRoot`，因此 `P0.4` 可直接进入参考源对照，而不需要先补本地引用路径。
+- 需要额外注意：当前 clean `HEAD` 上存在 `Documents/Plans/Plan_InterfaceBinding.md` 与 `Documents/Plans/Plan_AS238LambdaPort.md`，但 `Plan_TechnicalDebt.md` 中提到的 `Plan_AS238NonLambdaPort.md` 与 `Plan_HazelightBindModuleMigration.md` 尚未出现在该基线分支上；后续 `P4.3` 需要决定是补齐 sibling plan 还是回写计划引用。
+
+## 7. 宿主工程边界快照
+
+- `Source/AngelscriptProject/AngelscriptProject.Build.cs:11` 仍公开依赖 `EnhancedInput`。
+- 这说明 `P5.3` 不是空白任务：当前宿主工程最小化边界尚未形成文档结论。
+
+## 8. 后续执行建议
+
+- `P0.3` 直接基于当前 worktree 的 `AgentConfig.ini` 做参数展开级 smoke check，优先验证 `ProjectFile` 空值回退是否正确解析到仓库根 `.uproject`。
+- `P0.4` 以本文件第 6 节作为候选文件清单，补齐“本地符号 / 参考行为 / 风险 / 测试落点 / sibling plan 去向”的矩阵列。
+- `P2.4` 与 `P6.2` 更新 `TestCatalog` 时，不再复用单一的 `275/275 PASS` 叙述，而应明确区分“已编目基线”与“实时扫描规模”。
