@@ -264,16 +264,37 @@ namespace AngelscriptSDKTestSupport
 			return asINVALID_ARG;
 		}
 
-		asIScriptFunction* Function = nullptr;
-		const int CompileResult = Module->CompileFunction("ASSDKExecuteString", Code, 0, 0, &Function);
-		if (CompileResult < 0)
+		const bool bLooksLikeStatementSnippet = std::strchr(Code, '{') == nullptr;
+		const FString SourceText = bLooksLikeStatementSnippet
+			? FString::Printf(TEXT("void __ASSDKExecuteString() { %s }"), ANSI_TO_TCHAR(Code))
+			: FString(ANSI_TO_TCHAR(Code));
+		const FTCHARToUTF8 SourceTextUtf8(*SourceText);
+
+		const int AddSectionResult = Module->AddScriptSection("ASSDKExecuteString", SourceTextUtf8.Get(), SourceTextUtf8.Length());
+		if (AddSectionResult < 0)
 		{
-			return CompileResult;
+			return AddSectionResult;
+		}
+
+		const int BuildResult = Module->Build();
+		if (BuildResult < 0)
+		{
+			return BuildResult;
+		}
+
+		asIScriptFunction* Function = nullptr;
+		if (bLooksLikeStatementSnippet)
+		{
+			Function = Module->GetFunctionByDecl("void __ASSDKExecuteString()");
+		}
+		else if (Module->GetFunctionCount() == 1)
+		{
+			Function = Module->GetFunctionByIndex(0);
 		}
 
 		if (Function == nullptr)
 		{
-			return asERROR;
+			return asNO_FUNCTION;
 		}
 
 		asIScriptContext* Context = Engine->CreateContext();
