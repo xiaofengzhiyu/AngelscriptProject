@@ -3,6 +3,7 @@
 ## Angelscript 插件专项文档
 
 - 启动 bind / watcher 验证矩阵：`Documents/Guides/AngelscriptValidationMatrix.md`
+- 性能采样与产物规范：`Documents/Guides/TestPerformance.md`
 - 测试目录总览：`Documents/Guides/TestCatalog.md`
 
 # 图形测试
