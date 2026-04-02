@@ -3,6 +3,8 @@
 > 自动化测试基线：**275/275 PASS**（0 失败，0 禁用）
 >
 > 测试模块路径：`Plugins/Angelscript/Source/AngelscriptTest/`
+>
+> 说明：这里的 `275/275 PASS` 表示**已编目基线**，不是当前源码实时扫描到的全部测试数量。实时扫描规模与新增覆盖请以 `Documents/Guides/TechnicalDebtInventory.md` 的 live inventory / verification snapshot 为准。
 
 ---
 
@@ -257,6 +259,7 @@
 | Upgrade.EngineProperties | 引擎属性相关兼容 |
 | Upgrade.MessageCallback | 消息回调兼容 |
 | Upgrade.RegisterObjectTypeFlags | `RegisterObjectType` 标志兼容 |
+| Upgrade.CStringHash | `asCString` 的 `GetTypeHash` 在替换弃用 CRC API 后仍保持大小写无关 |
 
 ---
 
@@ -442,6 +445,8 @@
 |--------|----------|
 | Internals.Restore.RoundTrip | 脚本节点/字节码等序列化往返一致 |
 | Internals.Restore.StripDebugInfoRoundTrip | 去掉调试信息后仍可往返 |
+| Internals.Restore.EmptyStreamFails | 空字节流加载失败并报告 `Unexpected end of file`，且不崩溃 |
+| Internals.Restore.TruncatedStreamFails | 截断字节流加载失败并报告 `Unexpected end of file`，且不崩溃 |
 
 ### Compiler 编译器
 
