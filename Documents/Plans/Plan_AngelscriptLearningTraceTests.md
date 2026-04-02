@@ -218,11 +218,30 @@
 - `Observation`：观测到了什么，例如类型名、函数声明、bytecode 长度、callstack、property 列表。
 - `Evidence`：必要时附关键路径、行号、返回码、声明串、源码片段、导出值。
 
+为了让 `P1.1` 可以直接照着编码，建议把内部数据模型固定成下面这组最小字段：
+
+- `Phase`：推荐先收敛到 `EngineBootstrap`、`Binding`、`Compile`、`Bytecode`、`Execution`、`ClassGeneration`、`UEBridge`、`Debug`、`GC`、`Editor` 十个主类。
+- `StepId`：固定使用 `Phase.XX` 两位编号格式，例如 `Compile.02`、`Execution.05`，便于 Automation 输出和导出文件排序一致。
+- `Action`：一句动词短语，描述“做了什么”，例如 `RegisterGlobalFunction`、`BuildModule`、`PrepareContext`、`SpawnScriptActor`。
+- `Observation`：一句或多句结构化摘要，描述“看到了什么结果”，例如返回码、函数列表、reload requirement、生成类名。
+- `Evidence`：键值对或代码块，承载较长信息；优先用于 declaration、diagnostic 列表、bytecode 摘要、property 快照，而不是把所有内容塞进 `Observation`。
+- `DetailLevel`：至少支持 `Summary` 与 `Verbose` 两档；默认 Automation 走 `Summary`，只有明确启用 verbose 时才打印扩展数据。
+- `Timestamp/Sequence`：首版不用追求真实时间戳，但至少保留 session 内递增顺序号，保证多 sink 输出时顺序可重建。
+
+首版实现不要过度设计成通用 tracing 平台；只要这几个字段足以稳定表达“阶段 → 步骤 → 观测 → 证据”，就先固定下来。
+
 ### 三路输出约定
 
 - **Automation `AddInfo()`**：给 Session Frontend 和 JSON 报告用，适合读“课程步骤”。
 - **`UE_LOG(Angelscript, Display/Log, ...)`**：给引擎日志文件和命令行跑批用，适合保留完整痕迹。
 - **可选导出文件**：导出到 `Saved/Automation/AngelscriptLearning/` 下的 `*.json` / `*.md`，便于后续整理文档或 diff 两次运行结果。
+
+三路输出的职责也要固定，避免 helper 做着做着变成三套风格：
+
+- `AddInfo()` 只输出课程摘要级内容，每条最好 1~3 行，适合在 Automation 报告中直接阅读。
+- `UE_LOG` 保留完整展开版，可接受更长的 declaration 列表、diagnostic 细节和代码块片段。
+- 文件导出优先走结构化 `json`，`md` 作为后续教学材料友好视图；首版若时间紧，可先只落 `json`，但字段命名要与内存事件结构一致。
+- 同一条 trace event 进入不同 sink 时，不允许改写语义；差异只体现在展示粒度和排版层，而不是字段含义。
 
 ### 教学型测试的断言策略
 
@@ -231,6 +250,24 @@
 1. 关键 phase 是否按预期顺序出现。
 2. 关键观测值是否非空或满足最小稳定边界（如存在至少一个函数、至少一个 property、bytecode length > 0、callstack 非空）。
 3. 教学输出是否真的包含本测试宣称要讲的事实，而不是仅靠人工翻日志。
+
+首版断言模式建议固定为两层：
+
+- **结构断言**：检查 phase 顺序、step 数量、关键关键词是否出现。这一层用于保证“课程流程存在”。
+- **语义断言**：检查最小必要事实，例如 `CompileResult == Success`、`GetFunctionCount() > 0`、`GeneratedClass != nullptr`、`CallstackSize > 0`。这一层用于保证“课程内容不是噪声”。
+
+不要在首版把所有细节做成硬断言，例如完整 bytecode 序列、每条 property 的地址值、完整日志全文；这些更适合作为 `Evidence` 输出，而不是失败条件。
+
+### Detail Level 与输出开关约定
+
+在 `P1.1` helper 中建议预留轻量配置，而不是等后续文件越写越多再回头改：
+
+- `Summary`：默认模式，仅输出课程步骤、关键声明、关键结果值。
+- `Verbose`：展开更长的 declaration/property/function 列表、bytecode dword 摘要、diagnostic 完整列表。
+- `bEmitToAutomation` / `bEmitToLog` / `bEmitToFile`：三路 sink 独立开关，测试可按场景选择。
+- `OutputRoot`：默认落到 `Saved/Automation/AngelscriptLearning/`，避免和普通 Automation 报告混在一起。
+
+首版不要做任意层级过滤或复杂模板系统；保持“少量枚举 + 明确默认值”即可。
 
 ### 编号约定说明
 
