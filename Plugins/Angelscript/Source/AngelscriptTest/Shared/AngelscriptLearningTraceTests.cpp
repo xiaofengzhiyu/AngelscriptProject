@@ -23,6 +23,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	"Angelscript.TestModule.Shared.LearningTrace.PrettyPrinters",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptLearningTraceAssertionHelpersTest,
+	"Angelscript.TestModule.Shared.LearningTrace.Assertions",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
 bool FAngelscriptLearningTraceSequenceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptLearningTraceSinkConfig SinkConfig;
@@ -128,6 +133,40 @@ bool FAngelscriptLearningTracePrettyPrinterTest::RunTest(const FString& Paramete
 	const FString CallstackSummary = FormatLearningTraceStringList(CallstackLines, TEXT("Callstack"));
 	TestTrue(TEXT("Callstack formatter should render the list title"), CallstackSummary.Contains(TEXT("Callstack")));
 	TestTrue(TEXT("Callstack formatter should include each line item"), CallstackSummary.Contains(TEXT("Execution.01 | Execute | Returned 42")));
+	return true;
+}
+
+bool FAngelscriptLearningTraceAssertionHelpersTest::RunTest(const FString& Parameters)
+{
+	FAngelscriptLearningTraceSinkConfig SinkConfig;
+	SinkConfig.bEmitToAutomation = false;
+	SinkConfig.bEmitToLog = false;
+	SinkConfig.bEmitToFile = false;
+
+	FAngelscriptLearningTraceSession Trace(TEXT("LearningTraceAssertions"), SinkConfig);
+	Trace.BeginPhase(EAngelscriptLearningTracePhase::EngineBootstrap);
+	Trace.AddStep(TEXT("CreateEngine"), TEXT("Created the engine"));
+	Trace.BeginPhase(EAngelscriptLearningTracePhase::Compile);
+	Trace.AddStep(TEXT("BuildModule"), TEXT("Compiled a module"));
+
+	const TArray<FAngelscriptLearningTraceEvent>& Events = Trace.GetEvents();
+	const TArray<EAngelscriptLearningTracePhase> ExpectedPhases = {
+		EAngelscriptLearningTracePhase::EngineBootstrap,
+		EAngelscriptLearningTracePhase::Compile,
+	};
+
+	if (!TestTrue(TEXT("Phase order assertion helper should accept the expected phase sequence"),
+		AssertLearningTracePhaseSequence(*this, Events, ExpectedPhases)))
+	{
+		return false;
+	}
+
+	TestTrue(TEXT("Keyword assertion helper should find a known action token"),
+		AssertLearningTraceContainsKeyword(*this, Events, TEXT("BuildModule")));
+	TestTrue(TEXT("Minimum observation assertion helper should pass when enough events exist"),
+		AssertLearningTraceMinimumEventCount(*this, Events, 2));
+	TestFalse(TEXT("Phase order assertion helper should reject a wrong sequence"),
+		AssertLearningTracePhaseSequence(*this, Events, {EAngelscriptLearningTracePhase::Compile, EAngelscriptLearningTracePhase::EngineBootstrap}, false));
 	return true;
 }
 

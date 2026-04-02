@@ -78,12 +78,12 @@ namespace AngelscriptTestSupport
 		void FlushToAutomation(FAutomationTestBase& Test) const;
 		void FlushToLog() const;
 		bool FlushToFile() const;
+		static FString GetPhaseLabel(EAngelscriptLearningTracePhase Phase);
 
 	private:
 		const FAngelscriptLearningTraceEvent* GetLastEvent() const;
 		FAngelscriptLearningTraceEvent* GetLastEvent();
 		FString BuildEventLine(const FAngelscriptLearningTraceEvent& Event) const;
-		static FString GetPhaseLabel(EAngelscriptLearningTracePhase Phase);
 		FString GetOutputRoot() const;
 
 		FString SessionName;
@@ -104,4 +104,20 @@ namespace AngelscriptTestSupport
 		bool bIsActorDerived,
 		const TArray<FString>& FunctionSummaries,
 		const TArray<FString>& PropertySummaries);
+
+	bool AssertLearningTracePhaseSequence(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		const TArray<EAngelscriptLearningTracePhase>& ExpectedPhases,
+		bool bEmitErrors = true);
+	bool AssertLearningTraceContainsKeyword(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		const FString& Keyword,
+		bool bEmitErrors = true);
+	bool AssertLearningTraceMinimumEventCount(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		int32 MinimumEventCount,
+		bool bEmitErrors = true);
 }

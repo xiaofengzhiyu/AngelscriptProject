@@ -284,4 +284,94 @@ namespace AngelscriptTestSupport
 
 		return Result;
 	}
+
+	bool AssertLearningTracePhaseSequence(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		const TArray<EAngelscriptLearningTracePhase>& ExpectedPhases,
+		bool bEmitErrors)
+	{
+		TArray<EAngelscriptLearningTracePhase> ActualPhases;
+		for (const FAngelscriptLearningTraceEvent& Event : Events)
+		{
+			if (ActualPhases.Num() == 0 || ActualPhases.Last() != Event.Phase)
+			{
+				ActualPhases.Add(Event.Phase);
+			}
+		}
+
+		if (ActualPhases.Num() != ExpectedPhases.Num())
+		{
+			if (bEmitErrors)
+			{
+				Test.AddError(FString::Printf(TEXT("Expected %d phases but captured %d"), ExpectedPhases.Num(), ActualPhases.Num()));
+			}
+			return false;
+		}
+
+		for (int32 Index = 0; Index < ExpectedPhases.Num(); ++Index)
+		{
+			if (ActualPhases[Index] != ExpectedPhases[Index])
+			{
+				if (bEmitErrors)
+				{
+					Test.AddError(FString::Printf(
+						TEXT("Phase mismatch at index %d: expected %s but captured %s"),
+						Index,
+						*FAngelscriptLearningTraceSession::GetPhaseLabel(ExpectedPhases[Index]),
+						*FAngelscriptLearningTraceSession::GetPhaseLabel(ActualPhases[Index])));
+				}
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool AssertLearningTraceContainsKeyword(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		const FString& Keyword,
+		bool bEmitErrors)
+	{
+		for (const FAngelscriptLearningTraceEvent& Event : Events)
+		{
+			if (Event.StepId.Contains(Keyword) || Event.Action.Contains(Keyword) || Event.Observation.Contains(Keyword))
+			{
+				return true;
+			}
+
+			for (const FAngelscriptLearningTraceKeyValue& Entry : Event.Evidence)
+			{
+				if (Entry.Key.Contains(Keyword) || Entry.Value.Contains(Keyword))
+				{
+					return true;
+				}
+			}
+		}
+
+		if (bEmitErrors)
+		{
+			Test.AddError(FString::Printf(TEXT("Trace output did not contain required keyword '%s'"), *Keyword));
+		}
+		return false;
+	}
+
+	bool AssertLearningTraceMinimumEventCount(
+		FAutomationTestBase& Test,
+		const TArray<FAngelscriptLearningTraceEvent>& Events,
+		int32 MinimumEventCount,
+		bool bEmitErrors)
+	{
+		if (Events.Num() < MinimumEventCount)
+		{
+			if (bEmitErrors)
+			{
+				Test.AddError(FString::Printf(TEXT("Expected at least %d trace events but only captured %d"), MinimumEventCount, Events.Num()));
+			}
+			return false;
+		}
+
+		return true;
+	}
 }
