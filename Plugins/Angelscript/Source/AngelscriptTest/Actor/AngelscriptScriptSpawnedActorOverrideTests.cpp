@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -81,37 +81,37 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorBeginPlayRunsInWorldTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.BeginPlayRunsInWorld",
+	"Angelscript.TestModule.ScriptActor.BeginPlayRunsInWorld",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorNativeUFunctionCanBeInvokedTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.NativeUFunctionCanBeInvoked",
+	"Angelscript.TestModule.ScriptActor.NativeUFunctionCanBeInvoked",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorBeginPlayCallsAnotherScriptUFunctionTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.BeginPlayCallsAnotherScriptUFunction",
+	"Angelscript.TestModule.ScriptActor.BeginPlayCallsAnotherScriptUFunction",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorTickRunsNTimesTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.TickRunsNTimes",
+	"Angelscript.TestModule.ScriptActor.TickRunsNTimes",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorCrossInstanceCallDoesNotLeakStateTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.CrossInstanceCallDoesNotLeakState",
+	"Angelscript.TestModule.ScriptActor.CrossInstanceCallDoesNotLeakState",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorDestroyedActorInvocationFailsSafelyTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.DestroyedActorInvocationFailsSafely",
+	"Angelscript.TestModule.ScriptActor.DestroyedActorInvocationFailsSafely",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptActorMissingFunctionReportsExplicitFailureTest,
-	"Angelscript.TestModule.Scenario.ScriptActor.MissingFunctionReportsExplicitFailure",
+	"Angelscript.TestModule.ScriptActor.MissingFunctionReportsExplicitFailure",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioScriptActorBeginPlayRunsInWorldTest::RunTest(const FString& Parameters)

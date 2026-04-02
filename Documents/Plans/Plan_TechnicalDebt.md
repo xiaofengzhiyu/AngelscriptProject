@@ -199,7 +199,7 @@ C++ 测试：275/275 PASS
 ```text
 L0 公共入口层：AngelscriptTestUtilities.h、AngelscriptTestEngineHelper.h/.cpp
 L1 直接依赖层：Shared/*Tests.cpp、Core/*Tests.cpp
-L2 场景层：Scenarios/*.cpp、HotReload/*.cpp
+L2 场景层：Actor/*.cpp、Blueprint/*.cpp、ClassGenerator/AngelscriptScriptClassCreationTests.cpp、Component/*.cpp、Delegate/*.cpp、GC/*.cpp、HotReload/*.cpp、Inheritance/*.cpp、Interface/*.cpp、Subsystem/*.cpp
 L3 模板层：Template/*.cpp
 L4 绑定/内部层：Bindings/*.cpp、Internals/*.cpp、Preprocessor/*.cpp、Compiler/*.cpp
 ```
@@ -221,8 +221,8 @@ L4 绑定/内部层：Bindings/*.cpp、Internals/*.cpp、Preprocessor/*.cpp、Co
 - [ ] **P6.2** L1 层：迁移 `Shared/*Tests.cpp` 与 `Core/*Tests.cpp` 到新 helper 名称
 - [ ] **P6.2** 📦 Git 提交：`[Test] Refactor: migrate Shared and Core tests to explicit helper names`
 
-- [ ] **P6.3** L2 层：迁移 `HotReload/*.cpp` 与 `Scenarios/*.cpp`
-- [ ] **P6.3** 📦 Git 提交：`[Test] Refactor: migrate HotReload and Scenarios tests to explicit helper names`
+- [ ] **P6.3** L2 层：迁移 `HotReload/*.cpp` 与主题化集成测试目录（`Actor/*.cpp`、`Blueprint/*.cpp`、`ClassGenerator/AngelscriptScriptClassCreationTests.cpp`、`Component/*.cpp`、`Delegate/*.cpp`、`GC/*.cpp`、`Inheritance/*.cpp`、`Interface/*.cpp`、`Subsystem/*.cpp`）
+- [ ] **P6.3** 📦 Git 提交：`[Test] Refactor: migrate HotReload and themed integration tests to explicit helper names`
 
 - [ ] **P6.4** L3 层：迁移 `Template/*.cpp`
 - [ ] **P6.4** 📦 Git 提交：`[Test] Refactor: migrate Template tests to explicit helper names`

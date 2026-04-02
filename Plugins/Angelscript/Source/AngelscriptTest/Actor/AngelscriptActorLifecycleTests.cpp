@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -17,27 +17,27 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorBeginPlayTest,
-	"Angelscript.TestModule.Scenario.Actor.BeginPlay",
+	"Angelscript.TestModule.Actor.BeginPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorTickTest,
-	"Angelscript.TestModule.Scenario.Actor.Tick",
+	"Angelscript.TestModule.Actor.Tick",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorReceiveEndPlayTest,
-	"Angelscript.TestModule.Scenario.Actor.ReceiveEndPlay",
+	"Angelscript.TestModule.Actor.ReceiveEndPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorReceiveDestroyedTest,
-	"Angelscript.TestModule.Scenario.Actor.ReceiveDestroyed",
+	"Angelscript.TestModule.Actor.ReceiveDestroyed",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorResetTest,
-	"Angelscript.TestModule.Scenario.Actor.Reset",
+	"Angelscript.TestModule.Actor.Reset",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioActorBeginPlayTest::RunTest(const FString& Parameters)

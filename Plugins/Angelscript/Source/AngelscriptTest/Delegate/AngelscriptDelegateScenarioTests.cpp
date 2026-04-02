@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Shared/AngelscriptNativeScriptTestObject.h"
 
@@ -30,12 +30,12 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioDelegateUnicastTest,
-	"Angelscript.TestModule.Scenario.Delegate.Unicast",
+	"Angelscript.TestModule.Delegate.Unicast",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioDelegateMulticastTest,
-	"Angelscript.TestModule.Scenario.Delegate.Multicast",
+	"Angelscript.TestModule.Delegate.Multicast",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioDelegateUnicastTest::RunTest(const FString& Parameters)

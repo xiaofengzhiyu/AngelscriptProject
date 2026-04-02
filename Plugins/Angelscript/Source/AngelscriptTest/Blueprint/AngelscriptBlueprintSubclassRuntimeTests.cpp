@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -177,32 +177,32 @@ namespace BlueprintSubclassRuntimeTest
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildInheritsScriptBeginPlayTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.InheritsScriptBeginPlay",
+	"Angelscript.TestModule.BlueprintChild.InheritsScriptBeginPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildInheritsScriptTickTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.InheritsScriptTick",
+	"Angelscript.TestModule.BlueprintChild.InheritsScriptTick",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildScriptUFunctionStillCallableTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.ScriptUFunctionStillCallable",
+	"Angelscript.TestModule.BlueprintChild.ScriptUFunctionStillCallable",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildRecreateDoesNotLeakPreviousStateTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.RecreateDoesNotLeakPreviousState",
+	"Angelscript.TestModule.BlueprintChild.RecreateDoesNotLeakPreviousState",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildNoOverrideUsesScriptParentDefaultTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.NoOverrideUsesScriptParentDefault",
+	"Angelscript.TestModule.BlueprintChild.NoOverrideUsesScriptParentDefault",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintChildOverrideChainHasDeterministicCountsTest,
-	"Angelscript.TestModule.Scenario.BlueprintChild.OverrideChainHasDeterministicCounts",
+	"Angelscript.TestModule.BlueprintChild.OverrideChainHasDeterministicCounts",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioBlueprintChildInheritsScriptBeginPlayTest::RunTest(const FString& Parameters)

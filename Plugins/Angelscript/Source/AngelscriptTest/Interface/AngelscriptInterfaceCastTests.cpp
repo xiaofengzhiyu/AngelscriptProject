@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -12,17 +12,17 @@ using namespace AngelscriptScenarioTestUtils;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceCastSuccessTest,
-	"Angelscript.TestModule.Scenario.Interface.CastSuccess",
+	"Angelscript.TestModule.Interface.CastSuccess",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceCastFailTest,
-	"Angelscript.TestModule.Scenario.Interface.CastFail",
+	"Angelscript.TestModule.Interface.CastFail",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceMethodCallTest,
-	"Angelscript.TestModule.Scenario.Interface.MethodCall",
+	"Angelscript.TestModule.Interface.MethodCall",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioInterfaceCastSuccessTest::RunTest(const FString& Parameters)

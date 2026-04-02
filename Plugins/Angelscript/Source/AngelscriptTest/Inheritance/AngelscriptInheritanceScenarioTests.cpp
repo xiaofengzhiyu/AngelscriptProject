@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "ClassGenerator/AngelscriptClassGenerator.h"
@@ -22,17 +22,17 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInheritanceScriptToScriptTest,
-	"Angelscript.TestModule.Scenario.Inheritance.ScriptToScript",
+	"Angelscript.TestModule.Inheritance.ScriptToScript",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInheritanceSuperTest,
-	"Angelscript.TestModule.Scenario.Inheritance.Super",
+	"Angelscript.TestModule.Inheritance.Super",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInheritanceIsATest,
-	"Angelscript.TestModule.Scenario.Inheritance.IsA",
+	"Angelscript.TestModule.Inheritance.IsA",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioInheritanceScriptToScriptTest::RunTest(const FString& Parameters)

@@ -1,4 +1,4 @@
-#include "../Scenarios/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 #include "../Shared/AngelscriptTestUtilities.h"
 
 #include "Components/ActorTestSpawner.h"

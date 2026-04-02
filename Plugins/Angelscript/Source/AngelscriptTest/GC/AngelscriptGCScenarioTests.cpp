@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Core/AngelscriptComponent.h"
@@ -56,17 +56,17 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioGCActorDestroyTest,
-	"Angelscript.TestModule.Scenario.GC.ActorDestroy",
+	"Angelscript.TestModule.GC.ActorDestroy",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioGCComponentDestroyTest,
-	"Angelscript.TestModule.Scenario.GC.ComponentDestroy",
+	"Angelscript.TestModule.GC.ComponentDestroy",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioGCWorldTeardownTest,
-	"Angelscript.TestModule.Scenario.GC.WorldTeardown",
+	"Angelscript.TestModule.GC.WorldTeardown",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioGCActorDestroyTest::RunTest(const FString& Parameters)

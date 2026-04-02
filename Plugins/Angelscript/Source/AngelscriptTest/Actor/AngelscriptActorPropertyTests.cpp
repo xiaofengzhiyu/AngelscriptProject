@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -11,17 +11,17 @@ using namespace AngelscriptScenarioTestUtils;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorUPropertyTest,
-	"Angelscript.TestModule.Scenario.Actor.UProperty",
+	"Angelscript.TestModule.Actor.UProperty",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorUFunctionTest,
-	"Angelscript.TestModule.Scenario.Actor.UFunction",
+	"Angelscript.TestModule.Actor.UFunction",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorDefaultValuesTest,
-	"Angelscript.TestModule.Scenario.Actor.DefaultValues",
+	"Angelscript.TestModule.Actor.DefaultValues",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioActorUPropertyTest::RunTest(const FString& Parameters)

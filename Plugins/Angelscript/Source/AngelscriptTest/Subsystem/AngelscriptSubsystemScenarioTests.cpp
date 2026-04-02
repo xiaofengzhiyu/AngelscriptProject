@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Shared/AngelscriptNativeScriptTestObject.h"
 
@@ -43,22 +43,22 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioWorldSubsystemLifecycleTest,
-	"Angelscript.TestModule.Scenario.WorldSubsystem.Lifecycle",
+	"Angelscript.TestModule.WorldSubsystem.Lifecycle",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioWorldSubsystemTickTest,
-	"Angelscript.TestModule.Scenario.WorldSubsystem.Tick",
+	"Angelscript.TestModule.WorldSubsystem.Tick",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioWorldSubsystemActorAccessTest,
-	"Angelscript.TestModule.Scenario.WorldSubsystem.ActorAccess",
+	"Angelscript.TestModule.WorldSubsystem.ActorAccess",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioGameInstanceSubsystemLifecycleTest,
-	"Angelscript.TestModule.Scenario.GameInstanceSubsystem.Lifecycle",
+	"Angelscript.TestModule.GameInstanceSubsystem.Lifecycle",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioWorldSubsystemLifecycleTest::RunTest(const FString& Parameters)

@@ -271,6 +271,9 @@ CQTest (Code Quality Test) 是 `FAutomationTestBase` 的扩展，提供测试夹
 
 - 自动化测试放置在模块的 `Private\Tests` 目录中
 - 文件命名为 `[ClassFilename]Test.cpp`，如 `FText` 的测试放在 `TextTest.cpp`
+- 本仓库的 `Plugins/Angelscript/Source/AngelscriptTest/` 采用按主题拆分的目录布局，例如 `Shared/`、`Actor/`、`Blueprint/`、`Interface/`、`HotReload/`、`ClassGenerator/` 等。
+- 新增测试应优先放入具体主题目录，不再把不相关的集成测试统一堆到笼统的 `Scenarios/` 目录下。
+- 自动化测试路径已去掉历史上的 `Scenario` 中间层，例如 `Angelscript.TestModule.Actor.*`、`Angelscript.TestModule.BlueprintChild.*`、`Angelscript.TestModule.Interface.*`。
 
 ---
 

@@ -62,7 +62,7 @@ AngelscriptTest/
   Compiler/                          ← 编译管线测试
   Preprocessor/                      ← 预处理器测试
   HotReload/                         ← 热重载测试
-  Scenarios/                         ← UE 场景测试（已独立目录）
+  Actor/ Blueprint/ Interface/ ...  ← UE 主题化集成测试
   Editor/                            ← 编辑器测试
   FileSystem/                        ← 文件系统测试
   Examples/                          ← 示例测试支持
@@ -179,8 +179,8 @@ AngelscriptTest/
   - `Shared/AngelscriptTestEngineHelperTests.cpp`
 - [ ] **P4.2** 📦 Git 提交：`[Test] Chore: annotate Core/ and inheritance tests as Runtime Integration`
 
-- [ ] **P4.3** 确认 `Scenarios/` 目录中所有文件已带 `// Test Layer: UE Scenario` 或无需标注（已在独立目录）
-- [ ] **P4.3** 📦 Git 提交：`[Test] Chore: annotate Scenarios/ tests as UE Scenario layer`
+- [ ] **P4.3** 确认主题化集成测试目录（如 `Actor/`、`Blueprint/`、`Interface/`、`Component/`、`GC/`、`Subsystem/`、`HotReload/`）中的文件已带 `// Test Layer: UE Scenario` 或无需标注
+- [ ] **P4.3** 📦 Git 提交：`[Test] Chore: annotate themed integration tests as UE Scenario layer`
 
 ### Phase 5：文档与测试指南同步
 

@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -18,22 +18,22 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorPointDamageTest,
-	"Angelscript.TestModule.Scenario.Actor.PointDamage",
+	"Angelscript.TestModule.Actor.PointDamage",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorRadialDamageTest,
-	"Angelscript.TestModule.Scenario.Actor.RadialDamage",
+	"Angelscript.TestModule.Actor.RadialDamage",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorMultiSpawnTest,
-	"Angelscript.TestModule.Scenario.Actor.MultiSpawn",
+	"Angelscript.TestModule.Actor.MultiSpawn",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioActorCrossCallTest,
-	"Angelscript.TestModule.Scenario.Actor.CrossCall",
+	"Angelscript.TestModule.Actor.CrossCall",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioActorPointDamageTest::RunTest(const FString& Parameters)

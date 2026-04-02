@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -21,22 +21,22 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioHotReloadPropertyPreservedTest,
-	"Angelscript.TestModule.Scenario.HotReload.PropertyPreserved",
+	"Angelscript.TestModule.HotReload.PropertyPreserved",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioHotReloadAddPropertyTest,
-	"Angelscript.TestModule.Scenario.HotReload.AddProperty",
+	"Angelscript.TestModule.HotReload.AddProperty",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioHotReloadFunctionChangeTest,
-	"Angelscript.TestModule.Scenario.HotReload.FunctionChange",
+	"Angelscript.TestModule.HotReload.FunctionChange",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioHotReloadPIEStructuralChangeNeedsFullReloadTest,
-	"Angelscript.TestModule.Scenario.HotReload.PIEStructuralChangeNeedsFullReload",
+	"Angelscript.TestModule.HotReload.PIEStructuralChangeNeedsFullReload",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioHotReloadPropertyPreservedTest::RunTest(const FString& Parameters)

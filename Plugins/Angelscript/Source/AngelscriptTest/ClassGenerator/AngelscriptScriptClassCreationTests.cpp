@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -107,37 +107,37 @@ namespace ScriptClassCreationTest
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassCompilesToUClassTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.CompilesToUClass",
+	"Angelscript.TestModule.ScriptClass.CompilesToUClass",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassCanSpawnInTestWorldTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.CanSpawnInTestWorld",
+	"Angelscript.TestModule.ScriptClass.CanSpawnInTestWorld",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassMultiSpawnKeepsStateIsolationTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.MultiSpawnKeepsStateIsolation",
+	"Angelscript.TestModule.ScriptClass.MultiSpawnKeepsStateIsolation",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassBlueprintChildCompilesTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.BlueprintChildCompiles",
+	"Angelscript.TestModule.ScriptClass.BlueprintChildCompiles",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassCDOHasExpectedDefaultsTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.CDOHasExpectedDefaults",
+	"Angelscript.TestModule.ScriptClass.CDOHasExpectedDefaults",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassRecompileDoesNotCrashClassSwitchTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.RecompileDoesNotCrashClassSwitch",
+	"Angelscript.TestModule.ScriptClass.RecompileDoesNotCrashClassSwitch",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioScriptClassNonUClassTypeCannotSpawnTest,
-	"Angelscript.TestModule.Scenario.ScriptClass.NonUClassTypeCannotSpawn",
+	"Angelscript.TestModule.ScriptClass.NonUClassTypeCannotSpawn",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioScriptClassCompilesToUClassTest::RunTest(const FString& Parameters)

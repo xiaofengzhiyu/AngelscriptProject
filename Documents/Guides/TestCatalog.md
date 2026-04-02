@@ -31,7 +31,7 @@
 - [9. ClassGenerator — 类生成器](#9-classgenerator--类生成器)
 - [10. FileSystem — 文件系统](#10-filesystem--文件系统)
 - [11. Editor — 编辑器](#11-editor--编辑器)
-- [12. Scenarios — 场景回归](#12-scenarios--场景回归)
+- [12. Themed Integration Tests — 主题化集成回归](#12-themed-integration-tests--主题化集成回归)
   - [12.1 Actor 生命周期](#121-actor-生命周期)
   - [12.2 Actor 交互](#122-actor-交互)
   - [12.3 Actor 属性](#123-actor-属性)
@@ -606,182 +606,187 @@
 
 ---
 
-## 12. Scenarios — 场景回归
+## 12. Themed Integration Tests — 主题化集成回归
+
+> 说明：
+>
+> - 这组测试原先集中放在 Scenarios/ 目录下，现已按主题拆分到 Actor/、Blueprint/、ClassGenerator/、Component/、Delegate/、GC/、HotReload/、Inheritance/、Interface/、Subsystem/ 等目录。
+> - 自动化测试路径已去掉历史上的 Scenario 中间层，目录分类与测试发现路径现在保持一致。
 
 ### 12.1 Actor 生命周期
 
-> 源文件：`Scenarios/AngelscriptActorLifecycleTests.cpp`
+> 源文件：`Actor/AngelscriptActorLifecycleTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Actor.BeginPlay | 脚本重写 `BeginPlay`，`BeginPlayCalled` 为 1 |
-| Scenario.Actor.Tick | 启用 Actor Tick 后多次世界 tick，`TickCount` ≥ 5 |
-| Scenario.Actor.ReceiveEndPlay | 销毁后 `EndPlay` 调用，`EndPlayCalled` 为 1 |
-| Scenario.Actor.ReceiveDestroyed | 销毁流程中 `Destroyed` 调用，`DestroyedCalled` 为 1 |
-| Scenario.Actor.Reset | 修改 `ResetValue` 后 `Actor->Reset()` 触发脚本 `OnReset`，值为 7 |
+| Actor.BeginPlay | 脚本重写 `BeginPlay`，`BeginPlayCalled` 为 1 |
+| Actor.Tick | 启用 Actor Tick 后多次世界 tick，`TickCount` ≥ 5 |
+| Actor.ReceiveEndPlay | 销毁后 `EndPlay` 调用，`EndPlayCalled` 为 1 |
+| Actor.ReceiveDestroyed | 销毁流程中 `Destroyed` 调用，`DestroyedCalled` 为 1 |
+| Actor.Reset | 修改 `ResetValue` 后 `Actor->Reset()` 触发脚本 `OnReset`，值为 7 |
 
 ### 12.2 Actor 交互
 
-> 源文件：`Scenarios/AngelscriptActorInteractionTests.cpp`
+> 源文件：`Actor/AngelscriptActorInteractionTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Actor.PointDamage | `ApplyPointDamage` 后脚本的 `PointDamage` 用伤害值设置 `ActorTickInterval`（42） |
-| Scenario.Actor.RadialDamage | 球体重叠路径施加径向伤害，脚本 `RadialDamage` 将缩放设为伤害值（24） |
-| Scenario.Actor.MultiSpawn | 连续生成 3 个实例，BeginPlay 计数总和 ≥3 且三者指针互异 |
-| Scenario.Actor.CrossCall | A 的 Tick 调用 B 的 `UFUNCTION`，B 的 `CallCount` ≥ 1 |
+| Actor.PointDamage | `ApplyPointDamage` 后脚本的 `PointDamage` 用伤害值设置 `ActorTickInterval`（42） |
+| Actor.RadialDamage | 球体重叠路径施加径向伤害，脚本 `RadialDamage` 将缩放设为伤害值（24） |
+| Actor.MultiSpawn | 连续生成 3 个实例，BeginPlay 计数总和 ≥3 且三者指针互异 |
+| Actor.CrossCall | A 的 Tick 调用 B 的 `UFUNCTION`，B 的 `CallCount` ≥ 1 |
 
 ### 12.3 Actor 属性
 
-> 源文件：`Scenarios/AngelscriptActorPropertyTests.cpp`
+> 源文件：`Actor/AngelscriptActorPropertyTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Actor.UProperty | 反射 int/FString `UPROPERTY` 在实例上保持脚本默认值 |
-| Scenario.Actor.UFunction | `GetHealth` 经 `ExecuteGeneratedIntEventOnGameThread` 返回与 `Health` 一致（100） |
-| Scenario.Actor.DefaultValues | `default PrimaryActorTick.TickInterval = 0.5f` 生效 |
+| Actor.UProperty | 反射 int/FString `UPROPERTY` 在实例上保持脚本默认值 |
+| Actor.UFunction | `GetHealth` 经 `ExecuteGeneratedIntEventOnGameThread` 返回与 `Health` 一致（100） |
+| Actor.DefaultValues | `default PrimaryActorTick.TickInterval = 0.5f` 生效 |
 
 ### 12.4 ScriptClass 创建
 
-> 源文件：`Scenarios/AngelscriptScriptClassCreationTests.cpp`
+> 源文件：`ClassGenerator/AngelscriptScriptClassCreationTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.ScriptClass.CompilesToUClass | 脚本类生成 `UClass` 且派生自 `AAngelscriptActor`，`SpawnMarker` 默认为 7 |
-| Scenario.ScriptClass.CanSpawnInTestWorld | 在测试世界中生成脚本 Actor，`BeginPlay` 后 `BeginPlayObserved` 为 1 |
-| Scenario.ScriptClass.MultiSpawnKeepsStateIsolation | 同一类多实例：改其一 `LocalState` 不影响另一实例 |
-| Scenario.ScriptClass.BlueprintChildCompiles | 以脚本类为父的蓝图可编译、继承关系正确 |
-| Scenario.ScriptClass.CDOHasExpectedDefaults | CDO 与实例上 int/bool/FString 默认值与脚本一致 |
-| Scenario.ScriptClass.RecompileDoesNotCrashClassSwitch | 同模块重编译后新属性与更新默认值可见 |
-| Scenario.ScriptClass.NonUClassTypeCannotSpawn | 非 Actor 的 `UObject` 脚本类可 `NewObject`，但 `SpawnActor` 返回 null |
+| ScriptClass.CompilesToUClass | 脚本类生成 `UClass` 且派生自 `AAngelscriptActor`，`SpawnMarker` 默认为 7 |
+| ScriptClass.CanSpawnInTestWorld | 在测试世界中生成脚本 Actor，`BeginPlay` 后 `BeginPlayObserved` 为 1 |
+| ScriptClass.MultiSpawnKeepsStateIsolation | 同一类多实例：改其一 `LocalState` 不影响另一实例 |
+| ScriptClass.BlueprintChildCompiles | 以脚本类为父的蓝图可编译、继承关系正确 |
+| ScriptClass.CDOHasExpectedDefaults | CDO 与实例上 int/bool/FString 默认值与脚本一致 |
+| ScriptClass.RecompileDoesNotCrashClassSwitch | 同模块重编译后新属性与更新默认值可见 |
+| ScriptClass.NonUClassTypeCannotSpawn | 非 Actor 的 `UObject` 脚本类可 `NewObject`，但 `SpawnActor` 返回 null |
 
 ### 12.5 ScriptActor 重载执行
 
-> 源文件：`Scenarios/AngelscriptScriptSpawnedActorOverrideTests.cpp`
+> 源文件：`Actor/AngelscriptScriptSpawnedActorOverrideTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.ScriptActor.BeginPlayRunsInWorld | 脚本 Actor 进入世界后 `BeginPlayObserved` 为 1 |
-| Scenario.ScriptActor.NativeUFunctionCanBeInvoked | `ProcessEvent` 调用带 int 参数的脚本 `UFUNCTION`，属性反映调用与参数 |
-| Scenario.ScriptActor.BeginPlayCallsAnotherScriptUFunction | `BeginPlay` 内调用另一脚本 `UFUNCTION`，`ScriptDispatchObserved` 为 1 |
-| Scenario.ScriptActor.TickRunsNTimes | 启用 Tick 后手动 tick N 次，`LogicalTickCount` 增量为 N |
-| Scenario.ScriptActor.CrossInstanceCallDoesNotLeakState | 实例 A 在 `BeginPlay` 通过引用调用 B，双方 `LocalState` 互不串扰 |
-| Scenario.ScriptActor.DestroyedActorInvocationFailsSafely | 目标 Actor 销毁后，源侧调用不执行目标体 |
-| Scenario.ScriptActor.MissingFunctionReportsExplicitFailure | 对不存在函数名调用返回失败 |
+| ScriptActor.BeginPlayRunsInWorld | 脚本 Actor 进入世界后 `BeginPlayObserved` 为 1 |
+| ScriptActor.NativeUFunctionCanBeInvoked | `ProcessEvent` 调用带 int 参数的脚本 `UFUNCTION`，属性反映调用与参数 |
+| ScriptActor.BeginPlayCallsAnotherScriptUFunction | `BeginPlay` 内调用另一脚本 `UFUNCTION`，`ScriptDispatchObserved` 为 1 |
+| ScriptActor.TickRunsNTimes | 启用 Tick 后手动 tick N 次，`LogicalTickCount` 增量为 N |
+| ScriptActor.CrossInstanceCallDoesNotLeakState | 实例 A 在 `BeginPlay` 通过引用调用 B，双方 `LocalState` 互不串扰 |
+| ScriptActor.DestroyedActorInvocationFailsSafely | 目标 Actor 销毁后，源侧调用不执行目标体 |
+| ScriptActor.MissingFunctionReportsExplicitFailure | 对不存在函数名调用返回失败 |
 
 ### 12.6 BlueprintSubclass 蓝图子类化
 
-> 源文件：`Scenarios/AngelscriptBlueprintSubclassActorTests.cpp`
+> 源文件：`Blueprint/AngelscriptBlueprintSubclassActorTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Actor.BlueprintSubclassBeginPlay | 以脚本 Actor 为父创建蓝图子类，生成实例后继承的 `BeginPlay` 执行一次 |
+| Actor.BlueprintSubclassBeginPlay | 以脚本 Actor 为父创建蓝图子类，生成实例后继承的 `BeginPlay` 执行一次 |
 
 ### 12.7 BlueprintChild 运行时
 
-> 源文件：`Scenarios/AngelscriptBlueprintSubclassRuntimeTests.cpp`
+> 源文件：`Blueprint/AngelscriptBlueprintSubclassRuntimeTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.BlueprintChild.InheritsScriptBeginPlay | BP 子类继承并执行脚本层的 `BeginPlay` 重载 |
-| Scenario.BlueprintChild.InheritsScriptTick | BP 子类继承并执行脚本层的 `Tick` 重载 |
-| Scenario.BlueprintChild.ScriptUFunctionStillCallable | BP 子类可以通过 `ProcessEvent` 调用脚本定义的 `UFUNCTION` |
-| Scenario.BlueprintChild.RecreateDoesNotLeakPreviousState | BP 子类重新创建不会泄漏之前实例的状态 |
-| Scenario.BlueprintChild.NoOverrideUsesScriptParentDefault | BP 子类不覆盖属性时正确继承脚本父类的默认值 |
-| Scenario.BlueprintChild.OverrideChainHasDeterministicCounts | 脚本父→子重写链再被蓝图子类化后，各层计数确定性正确 |
+| BlueprintChild.InheritsScriptBeginPlay | BP 子类继承并执行脚本层的 `BeginPlay` 重载 |
+| BlueprintChild.InheritsScriptTick | BP 子类继承并执行脚本层的 `Tick` 重载 |
+| BlueprintChild.ScriptUFunctionStillCallable | BP 子类可以通过 `ProcessEvent` 调用脚本定义的 `UFUNCTION` |
+| BlueprintChild.RecreateDoesNotLeakPreviousState | BP 子类重新创建不会泄漏之前实例的状态 |
+| BlueprintChild.NoOverrideUsesScriptParentDefault | BP 子类不覆盖属性时正确继承脚本父类的默认值 |
+| BlueprintChild.OverrideChainHasDeterministicCounts | 脚本父→子重写链再被蓝图子类化后，各层计数确定性正确 |
 
 ### 12.8 Component 组件
 
-> 源文件：`Scenarios/AngelscriptComponentScenarioTests.cpp`
+> 源文件：`Component/AngelscriptComponentScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Component.BeginPlay | 脚本组件 `BeginPlay` 将 `bReady` 置 true |
-| Scenario.Component.Tick | 启用组件 Tick 后多次世界 tick，`TickCount` ≥ 5 |
-| Scenario.Component.ReceiveEndPlay | 宿主 Actor 销毁后组件 `EndPlay` 将 `bCleanedUp` 置 true |
-| Scenario.Component.ActorOwner | 组件 `BeginPlay` 中 `Cast` 宿主脚本 Actor 并读取 `OwnerValue` 为 42 |
+| Component.BeginPlay | 脚本组件 `BeginPlay` 将 `bReady` 置 true |
+| Component.Tick | 启用组件 Tick 后多次世界 tick，`TickCount` ≥ 5 |
+| Component.ReceiveEndPlay | 宿主 Actor 销毁后组件 `EndPlay` 将 `bCleanedUp` 置 true |
+| Component.ActorOwner | 组件 `BeginPlay` 中 `Cast` 宿主脚本 Actor 并读取 `OwnerValue` 为 42 |
 
 ### 12.9 DefaultComponent 默认组件
 
-> 源文件：`Scenarios/AngelscriptComponentScenarioTests.cpp`
+> 源文件：`Component/AngelscriptComponentScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.DefaultComponent.Basic | `DefaultComponent`+`RootComponent` 生成正确类型的根组件 |
-| Scenario.DefaultComponent.Multiple | 根 Scene + 子 Billboard 默认组件存在且父子附着关系正确 |
+| DefaultComponent.Basic | `DefaultComponent`+`RootComponent` 生成正确类型的根组件 |
+| DefaultComponent.Multiple | 根 Scene + 子 Billboard 默认组件存在且父子附着关系正确 |
 
 ### 12.10 Inheritance 继承场景
 
-> 源文件：`Scenarios/AngelscriptInheritanceScenarioTests.cpp`
+> 源文件：`Inheritance/AngelscriptInheritanceScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Inheritance.ScriptToScript | 脚本 Actor 间继承+重写 `UFUNCTION` 的 reload 分析（当前分支为 Error） |
-| Scenario.Inheritance.Super | 含 `Super::` 的脚本继承场景分析（当前分支为 Error） |
-| Scenario.Inheritance.IsA | `Cast`/IsA 类脚本变更可分析，且要求 Full reload |
+| Inheritance.ScriptToScript | 脚本 Actor 间继承+重写 `UFUNCTION` 的 reload 分析（当前分支为 Error） |
+| Inheritance.Super | 含 `Super::` 的脚本继承场景分析（当前分支为 Error） |
+| Inheritance.IsA | `Cast`/IsA 类脚本变更可分析，且要求 Full reload |
 
 ### 12.11 Interface 接口
 
-> 源文件：`Scenarios/AngelscriptInterfaceDeclareTests.cpp`、`AngelscriptInterfaceImplementTests.cpp`、`AngelscriptInterfaceCastTests.cpp`、`AngelscriptInterfaceAdvancedTests.cpp`
+> 源文件：`Interface/AngelscriptInterfaceDeclareTests.cpp`、`Interface/AngelscriptInterfaceImplementTests.cpp`、`Interface/AngelscriptInterfaceCastTests.cpp`、`Interface/AngelscriptInterfaceAdvancedTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Interface.DeclareBasic | 脚本声明 `UINTERFACE` 生成带 `CLASS_Interface` 的 `UClass` |
-| Scenario.Interface.DeclareInheritance | 子接口继承父接口并生成，子接口类带 `CLASS_Interface` |
-| Scenario.Interface.ImplementBasic | Actor 实现接口后 `ImplementsInterface` 为 true |
-| Scenario.Interface.ImplementMultiple | 单 Actor 同时实现两个接口，二者 `ImplementsInterface` 均为 true |
-| Scenario.Interface.ImplementsInterfaceMethod | `BeginPlay` 中 `this.ImplementsInterface(...)` 为真 |
-| Scenario.Interface.CastSuccess | 实现接口的 Actor `Cast` 到接口成功，`CastSucceeded` 为 1 |
-| Scenario.Interface.CastFail | 未实现接口的 Actor `Cast` 得到 null |
-| Scenario.Interface.MethodCall | `Cast` 成功后通过接口引用调用 `TakeDamage`，`MethodCalled` 为 1 |
-| Scenario.Interface.InheritedInterface | 子接口继承父接口时，实现子接口的 Actor 对父子接口均 `ImplementsInterface` |
-| Scenario.Interface.MissingMethod | 声明接口方法未全实现时编译报错 |
-| Scenario.Interface.NoProperty | 纯接口类上无 `UPROPERTY` 成员 |
-| Scenario.Interface.GCSafe | 实现接口的 Actor 销毁并 GC 后弱引用失效 |
-| Scenario.Interface.HotReload | Full reload 后类仍实现同一接口；行为可按新版更新 |
-| Scenario.Interface.CppInterface | 脚本声明并实现接口的 Actor 可被检测为 `ImplementsInterface` |
-| Scenario.Interface.MultipleInheritanceChain | 多层接口继承链上，实现叶接口的 Actor 对基/中/叶接口均满足 |
+| Interface.DeclareBasic | 脚本声明 `UINTERFACE` 生成带 `CLASS_Interface` 的 `UClass` |
+| Interface.DeclareInheritance | 子接口继承父接口并生成，子接口类带 `CLASS_Interface` |
+| Interface.ImplementBasic | Actor 实现接口后 `ImplementsInterface` 为 true |
+| Interface.ImplementMultiple | 单 Actor 同时实现两个接口，二者 `ImplementsInterface` 均为 true |
+| Interface.ImplementsInterfaceMethod | `BeginPlay` 中 `this.ImplementsInterface(...)` 为真 |
+| Interface.CastSuccess | 实现接口的 Actor `Cast` 到接口成功，`CastSucceeded` 为 1 |
+| Interface.CastFail | 未实现接口的 Actor `Cast` 得到 null |
+| Interface.MethodCall | `Cast` 成功后通过接口引用调用 `TakeDamage`，`MethodCalled` 为 1 |
+| Interface.InheritedInterface | 子接口继承父接口时，实现子接口的 Actor 对父子接口均 `ImplementsInterface` |
+| Interface.MissingMethod | 声明接口方法未全实现时编译报错 |
+| Interface.NoProperty | 纯接口类上无 `UPROPERTY` 成员 |
+| Interface.GCSafe | 实现接口的 Actor 销毁并 GC 后弱引用失效 |
+| Interface.HotReload | Full reload 后类仍实现同一接口；行为可按新版更新 |
+| Interface.CppInterface | 脚本声明并实现接口的 Actor 可被检测为 `ImplementsInterface` |
+| Interface.MultipleInheritanceChain | 多层接口继承链上，实现叶接口的 Actor 对基/中/叶接口均满足 |
 
 ### 12.12 Delegate 委托
 
-> 源文件：`Scenarios/AngelscriptDelegateScenarioTests.cpp`
+> 源文件：`Delegate/AngelscriptDelegateScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.Delegate.Unicast | 脚本声明 delegate，绑定原生函数，触发后 `NameCounts["Unicast"]` 为 77 |
-| Scenario.Delegate.Multicast | `event` 多播在 `BeginPlay` 绑定脚本处理，C++ 广播后 `EventTriggerCount` 增加 |
+| Delegate.Unicast | 脚本声明 delegate，绑定原生函数，触发后 `NameCounts["Unicast"]` 为 77 |
+| Delegate.Multicast | `event` 多播在 `BeginPlay` 绑定脚本处理，C++ 广播后 `EventTriggerCount` 增加 |
 
 ### 12.13 GC 垃圾回收
 
-> 源文件：`Scenarios/AngelscriptGCScenarioTests.cpp`
+> 源文件：`GC/AngelscriptGCScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.GC.ActorDestroy | 脚本 Actor 销毁并 GC 后弱引用无效 |
-| Scenario.GC.ComponentDestroy | 脚本组件 `DestroyComponent` 并 GC 后弱引用无效 |
-| Scenario.GC.WorldTeardown | `FActorTestSpawner` 作用域结束后世界/Actor/组件弱引用均被释放 |
+| GC.ActorDestroy | 脚本 Actor 销毁并 GC 后弱引用无效 |
+| GC.ComponentDestroy | 脚本组件 `DestroyComponent` 并 GC 后弱引用无效 |
+| GC.WorldTeardown | `FActorTestSpawner` 作用域结束后世界/Actor/组件弱引用均被释放 |
 
 ### 12.14 Subsystem 子系统
 
-> 源文件：`Scenarios/AngelscriptSubsystemScenarioTests.cpp`
+> 源文件：`Subsystem/AngelscriptSubsystemScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.WorldSubsystem.Lifecycle | `UScriptWorldSubsystem` 生命周期（当前分支编译失败） |
-| Scenario.WorldSubsystem.Tick | World 子系统 `BP_Tick`（当前分支编译失败） |
-| Scenario.WorldSubsystem.ActorAccess | World 子系统在 Tick 中访问 Actor（当前分支编译失败） |
-| Scenario.GameInstanceSubsystem.Lifecycle | `UScriptGameInstanceSubsystem` 生命周期（当前分支编译失败） |
+| WorldSubsystem.Lifecycle | `UScriptWorldSubsystem` 生命周期（当前分支编译失败） |
+| WorldSubsystem.Tick | World 子系统 `BP_Tick`（当前分支编译失败） |
+| WorldSubsystem.ActorAccess | World 子系统在 Tick 中访问 Actor（当前分支编译失败） |
+| GameInstanceSubsystem.Lifecycle | `UScriptGameInstanceSubsystem` 生命周期（当前分支编译失败） |
 
 ### 12.15 HotReload 热重载场景
 
-> 源文件：`Scenarios/AngelscriptHotReloadScenarioTests.cpp`
+> 源文件：`HotReload/AngelscriptHotReloadScenarioTests.cpp`
 
 | 测试名 | 验证内容 |
 |--------|----------|
-| Scenario.HotReload.PropertyPreserved | Soft reload 后类指针不变、实例 `Counter` 保留 |
-| Scenario.HotReload.AddProperty | Full reload 后新属性 `NewValue` 默认 99，原属性仍存在 |
-| Scenario.HotReload.FunctionChange | Soft reload 前后 `GetValue` 分别从 1 变为 2 |
-| Scenario.HotReload.PIEStructuralChangeNeedsFullReload | 分析脚本增属性变更，要求走 Full reload 路径 |
+| HotReload.PropertyPreserved | Soft reload 后类指针不变、实例 `Counter` 保留 |
+| HotReload.AddProperty | Full reload 后新属性 `NewValue` 默认 99，原属性仍存在 |
+| HotReload.FunctionChange | Soft reload 前后 `GetValue` 分别从 1 变为 2 |
+| HotReload.PIEStructuralChangeNeedsFullReload | 分析脚本增属性变更，要求走 Full reload 路径 |
 
 ---
 

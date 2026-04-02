@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Components/ActorTestSpawner.h"
@@ -13,39 +13,39 @@ using namespace AngelscriptScenarioTestUtils;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceInheritedInterfaceTest,
-	"Angelscript.TestModule.Scenario.Interface.InheritedInterface",
+	"Angelscript.TestModule.Interface.InheritedInterface",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceMissingMethodTest,
-	"Angelscript.TestModule.Scenario.Interface.MissingMethod",
+	"Angelscript.TestModule.Interface.MissingMethod",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceNoPropertyTest,
-	"Angelscript.TestModule.Scenario.Interface.NoProperty",
+	"Angelscript.TestModule.Interface.NoProperty",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceGCSafeTest,
-	"Angelscript.TestModule.Scenario.Interface.GCSafe",
+	"Angelscript.TestModule.Interface.GCSafe",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 #if 1
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceHotReloadTest,
-	"Angelscript.TestModule.Scenario.Interface.HotReload",
+	"Angelscript.TestModule.Interface.HotReload",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 #endif
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceCppInterfaceTest,
-	"Angelscript.TestModule.Scenario.Interface.CppInterface",
+	"Angelscript.TestModule.Interface.CppInterface",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceMultipleInheritanceChainTest,
-	"Angelscript.TestModule.Scenario.Interface.MultipleInheritanceChain",
+	"Angelscript.TestModule.Interface.MultipleInheritanceChain",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioInterfaceInheritedInterfaceTest::RunTest(const FString& Parameters)

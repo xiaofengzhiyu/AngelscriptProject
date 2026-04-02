@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Core/AngelscriptActor.h"
 #include "Core/AngelscriptComponent.h"
@@ -60,32 +60,32 @@ namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioComponentBeginPlayTest,
-	"Angelscript.TestModule.Scenario.Component.BeginPlay",
+	"Angelscript.TestModule.Component.BeginPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioComponentTickTest,
-	"Angelscript.TestModule.Scenario.Component.Tick",
+	"Angelscript.TestModule.Component.Tick",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioComponentReceiveEndPlayTest,
-	"Angelscript.TestModule.Scenario.Component.ReceiveEndPlay",
+	"Angelscript.TestModule.Component.ReceiveEndPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioComponentActorOwnerTest,
-	"Angelscript.TestModule.Scenario.Component.ActorOwner",
+	"Angelscript.TestModule.Component.ActorOwner",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioDefaultComponentBasicTest,
-	"Angelscript.TestModule.Scenario.DefaultComponent.Basic",
+	"Angelscript.TestModule.DefaultComponent.Basic",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioDefaultComponentMultipleTest,
-	"Angelscript.TestModule.Scenario.DefaultComponent.Multiple",
+	"Angelscript.TestModule.DefaultComponent.Multiple",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioComponentBeginPlayTest::RunTest(const FString& Parameters)

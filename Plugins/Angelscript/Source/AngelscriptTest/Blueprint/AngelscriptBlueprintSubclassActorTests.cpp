@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Blueprint.h"
@@ -82,7 +82,7 @@ namespace BlueprintSubclassActorTest
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioBlueprintSubclassBeginPlayTest,
-	"Angelscript.TestModule.Scenario.Actor.BlueprintSubclassBeginPlay",
+	"Angelscript.TestModule.Actor.BlueprintSubclassBeginPlay",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioBlueprintSubclassBeginPlayTest::RunTest(const FString& Parameters)

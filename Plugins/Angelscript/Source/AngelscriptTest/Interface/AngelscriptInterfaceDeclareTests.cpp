@@ -1,4 +1,4 @@
-#include "AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptScenarioTestUtils.h"
 
 #include "Misc/AutomationTest.h"
 #include "Misc/ScopeExit.h"
@@ -10,12 +10,12 @@ using namespace AngelscriptScenarioTestUtils;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceDeclareBasicTest,
-	"Angelscript.TestModule.Scenario.Interface.DeclareBasic",
+	"Angelscript.TestModule.Interface.DeclareBasic",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceDeclareInheritanceTest,
-	"Angelscript.TestModule.Scenario.Interface.DeclareInheritance",
+	"Angelscript.TestModule.Interface.DeclareInheritance",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptScenarioInterfaceDeclareBasicTest::RunTest(const FString& Parameters)
