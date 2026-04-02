@@ -7,6 +7,7 @@
 - `Paths.EngineRoot` 缺失或为空时，测试命令必须直接阻塞，不能继续猜本地引擎路径。
 - `Paths.ProjectFile` 允许留空；留空时统一回退到仓库根目录下的 `AngelscriptProject.uproject`。
 - `Test.DefaultTimeoutMs` 缺失时统一回退到 `600000ms`。
+- 在真正运行测试命令前，可先执行 `Tools\ResolveAgentCommandTemplates.ps1` 做参数展开级 smoke check。
 
 # 图形测试
 

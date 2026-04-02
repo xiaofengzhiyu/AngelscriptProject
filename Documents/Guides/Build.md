@@ -7,6 +7,7 @@
 - `Paths.EngineRoot` 是唯一的硬阻塞项；缺失或为空时必须先补配置，不能继续猜路径。
 - `Paths.ProjectFile` 允许留空；留空时统一回退到仓库根目录下的 `AngelscriptProject.uproject`。
 - `Build.EditorTarget`、`Build.Platform`、`Build.Configuration`、`Build.Architecture` 缺失时，分别回退到 `AngelscriptProjectEditor`、`Win64`、`Development`、`x64`。
+- 在真正运行构建命令前，可先执行 `Tools\ResolveAgentCommandTemplates.ps1` 做参数展开级 smoke check。
 
 ## Agent 环境命令
 
