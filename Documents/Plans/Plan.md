@@ -27,15 +27,16 @@
 - **每个可执行任务后必须紧跟一条 `📦 Git 提交` checkbox**，防止忘记提交。
 - 紧密关联的小步骤可合并提交，但最后一步仍必须跟提交 checkbox。
 
-```markdown
-- [ ] **P1.1** 修改 `as_objecttype.cpp`：启用 IsInterface()
-  - 条件：`(flags & asOBJ_SCRIPT_OBJECT) && size == 0`
-- [ ] **P1.1** 📦 Git 提交：`[ThirdParty] Feat: enable AS native interface semantics`
+### 条目详情要求
 
-- [ ] **P2.1** 注册双重类型
-- [ ] **P2.2** 注册接口方法
-- [ ] **P2.3** 编译验证 + 测试通过
-- [ ] **P2.3** 📦 Git 提交：`[Interface] Feat: C++ UInterface binding`
+每个可执行任务不应只有一句标题，**必须在缩进列表中补充这个任务的来龙去脉、要达到什么效果、以及打算怎么实现**，使执行者无需反复查阅外部文档即可动手。不要使用显式标签（如"背景信息："、"实现目标："），直接用自然语言描述即可。
+
+```markdown
+- [ ] **P2.2** 对齐 template function 的编译与调用链路
+  - 当前本地 `Functions.Template` 仍是负例，但上游 `2.38` 已支持"脚本实例化并调用已注册模板函数"；这正是需要翻转的主能力边界
+  - 让 parser/builder 识别模板函数调用语法，compiler 完成 subtype 推导，最终脚本中可调用至少一个注册模板函数
+  - 先拆旧负例为"非目标语法仍失败 + 注册模板正例待通过"的双边界结构，再在 `as_parser.cpp` / `as_builder.cpp` / `as_compiler.cpp` 中接通最小识别路径，先覆盖 `T -> T` 模式再扩展
+- [ ] **P2.2** 📦 Git 提交：`[ThirdParty/AS238] Feat: compile and invoke registered template functions`
 ```
 
 ## 阶段组织
@@ -51,3 +52,4 @@
 - 不可执行的模糊表述（"准备重构""后续优化"）。
 - 把多个不相关系统揉成一个 Phase。
 - 遗漏受影响文档与测试的同步更新。
+- 只有一句标题没有任何补充说明的条目（纯配置改动除外）。
