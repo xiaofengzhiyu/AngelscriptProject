@@ -91,7 +91,7 @@ namespace
 		Generic->SetReturnObject(&Result);
 	}
 
-	bool ExecuteBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
+	bool ExecuteOperatorBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Operator test should resolve the bool entry function"), Function))
@@ -111,7 +111,7 @@ namespace
 		return Test.TestEqual(TEXT("Operator test should finish bool execution successfully"), ExecuteResult, static_cast<int32>(asEXECUTION_FINISHED));
 	}
 
-	bool ExecuteIntEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, int32& OutValue)
+	bool ExecuteOperatorIntEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, int32& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Operator test should resolve the int entry function"), Function))
@@ -205,7 +205,7 @@ bool FAngelscriptASSDKOperatorPowTest::RunTest(const FString& Parameters)
 	}
 
 	bool bPowResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bPowResult))
+	if (!ExecuteOperatorBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bPowResult))
 	{
 		return false;
 	}
@@ -270,7 +270,7 @@ bool FAngelscriptASSDKOperatorNegateTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteOperatorBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -309,7 +309,7 @@ bool FAngelscriptASSDKOperatorMultiAssignTest::RunTest(const FString& Parameters
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteOperatorBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -346,7 +346,7 @@ bool FAngelscriptASSDKOperatorConditionTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteOperatorBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -387,7 +387,7 @@ bool FAngelscriptASSDKOperatorForLoopTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteOperatorBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}

@@ -61,7 +61,7 @@ namespace
 		}
 	}
 
-	bool ExecuteBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
+	bool ExecuteTypeBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Type test should resolve the bool entry function"), Function))
@@ -81,7 +81,7 @@ namespace
 		return Test.TestEqual(TEXT("Type test should finish bool execution successfully"), ExecuteResult, static_cast<int32>(asEXECUTION_FINISHED));
 	}
 
-	bool ExecuteIntEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, int32& OutValue)
+	bool ExecuteTypeIntEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, int32& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Type test should resolve the int entry function"), Function))
@@ -101,7 +101,7 @@ namespace
 		return Test.TestEqual(TEXT("Type test should finish int execution successfully"), ExecuteResult, static_cast<int32>(asEXECUTION_FINISHED));
 	}
 
-	bool ExecuteDoubleEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, double& OutValue)
+	bool ExecuteTypeDoubleEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, double& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Type test should resolve the numeric entry function"), Function))
@@ -147,7 +147,7 @@ bool FAngelscriptASSDKTypeBoolTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteTypeBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -191,7 +191,7 @@ bool FAngelscriptASSDKTypeBitsTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteTypeBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -234,7 +234,7 @@ bool FAngelscriptASSDKTypeInt8Test::RunTest(const FString& Parameters)
 	}
 
 	int32 Result = 0;
-	if (!ExecuteIntEntry(*this, ScriptEngine, Module, "int Entry()", Result))
+	if (!ExecuteTypeIntEntry(*this, ScriptEngine, Module, "int Entry()", Result))
 	{
 		return false;
 	}
@@ -269,7 +269,7 @@ bool FAngelscriptASSDKTypeFloatTest::RunTest(const FString& Parameters)
 	}
 
 	double Result = 0.0;
-	if (!ExecuteDoubleEntry(*this, ScriptEngine, Module, "double Entry()", Result))
+	if (!ExecuteTypeDoubleEntry(*this, ScriptEngine, Module, "double Entry()", Result))
 	{
 		return false;
 	}
@@ -432,7 +432,7 @@ bool FAngelscriptASSDKTypeEnumTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteTypeBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}

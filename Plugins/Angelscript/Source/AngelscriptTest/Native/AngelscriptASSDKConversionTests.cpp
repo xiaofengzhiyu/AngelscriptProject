@@ -25,7 +25,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 namespace
 {
-	bool ExecuteBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
+	bool ExecuteConversionBoolEntry(FAutomationTestBase& Test, asIScriptEngine* ScriptEngine, asIScriptModule* Module, const char* Declaration, bool& OutValue)
 	{
 		asIScriptFunction* Function = GetNativeFunctionByDecl(Module, Declaration);
 		if (!Test.TestNotNull(TEXT("Conversion test should resolve the bool entry function"), Function))
@@ -97,7 +97,7 @@ bool FAngelscriptASSDKConversionNumericTest::RunTest(const FString& Parameters)
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteConversionBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
@@ -137,7 +137,7 @@ bool FAngelscriptASSDKConversionExplicitCastTest::RunTest(const FString& Paramet
 	}
 
 	bool bResult = false;
-	if (!ExecuteBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
+	if (!ExecuteConversionBoolEntry(*this, ScriptEngine, Module, "bool Entry()", bResult))
 	{
 		return false;
 	}
