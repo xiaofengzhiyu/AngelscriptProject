@@ -47,6 +47,16 @@ struct FAngelscriptMultiEngineTestAccess
 		Engine.ActiveModules.Add(Engine.MakeModuleName(ModuleName), ModuleDesc);
 		Engine.ModulesByScriptModule.Add(ScriptModule, ModuleDesc);
 	}
+
+	static int32 GetActiveParticipants(const FAngelscriptEngine& Engine)
+	{
+		return Engine.GetActiveParticipantsForTesting();
+	}
+
+	static int32 GetActiveCloneCount(const FAngelscriptEngine& Engine)
+	{
+		return Engine.GetActiveCloneCountForTesting();
+	}
 };
 
 static void ResetToIsolatedEngineState()
@@ -125,6 +135,21 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptStartupBindObservationCloneCreateTest,
 	"Angelscript.CppTests.MultiEngine.StartupBindObservation.CloneCreateDoesNotReplayBinds",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptStartupBindObservationCreateForTestingCloneTest,
+	"Angelscript.CppTests.MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptStartupBindObservationCreateForTestingFullFallbackTest,
+	"Angelscript.CppTests.MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptSharedStateParticipantCountsTest,
+	"Angelscript.CppTests.MultiEngine.SharedState.ParticipantCountsTrackFullAndClones",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptEngineCreateFullModeTest::RunTest(const FString& Parameters)
@@ -503,6 +528,113 @@ bool FAngelscriptStartupBindObservationCloneCreateTest::RunTest(const FString& P
 
 	const FAngelscriptBindExecutionSnapshot Snapshot = FAngelscriptBindExecutionObservation::GetLastSnapshot();
 	return TestEqual(TEXT("MultiEngine.StartupBindObservation.CloneCreateDoesNotReplayBinds should not append any executed bind names during clone creation"), Snapshot.ExecutedBindNames.Num(), 0);
+}
+
+bool FAngelscriptStartupBindObservationCreateForTestingCloneTest::RunTest(const FString& Parameters)
+{
+	ResetToIsolatedEngineState();
+
+	const FName BindName = MakeUniqueStartupBindName(TEXT("Automation.StartupBind.CreateForTesting.Clone.Named"));
+	FAngelscriptBinds::FBind NamedBind(BindName, []() {});
+
+	FAngelscriptEngineConfig Config;
+	Config.bIsEditor = true;
+	const FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
+	TUniquePtr<FAngelscriptEngine> SourceEngine = FAngelscriptEngine::CreateForTesting(Config, Dependencies, EAngelscriptEngineCreationMode::Full);
+	if (!TestNotNull(TEXT("MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds should create a source full engine"), SourceEngine.Get()))
+	{
+		return false;
+	}
+
+	FScopedTestEngineGlobalScope GlobalScope(SourceEngine.Get());
+	FAngelscriptBindExecutionObservation::Reset();
+
+	TUniquePtr<FAngelscriptEngine> TestEngine = FAngelscriptEngine::CreateForTesting(Config, Dependencies, EAngelscriptEngineCreationMode::Clone);
+	if (!TestNotNull(TEXT("MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds should create a clone testing engine"), TestEngine.Get()))
+	{
+		return false;
+	}
+
+	TestEqual(TEXT("MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds should choose clone mode when a global source engine exists"), TestEngine->GetCreationMode(), EAngelscriptEngineCreationMode::Clone);
+	if (!TestEqual(TEXT("MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds should not observe a fresh bind pass"), FAngelscriptBindExecutionObservation::GetInvocationCount(), 0))
+	{
+		return false;
+	}
+
+	const FAngelscriptBindExecutionSnapshot Snapshot = FAngelscriptBindExecutionObservation::GetLastSnapshot();
+	return TestEqual(TEXT("MultiEngine.StartupBindObservation.CreateForTestingCloneDoesNotReplayBinds should keep the observed bind list empty"), Snapshot.ExecutedBindNames.Num(), 0);
+}
+
+bool FAngelscriptStartupBindObservationCreateForTestingFullFallbackTest::RunTest(const FString& Parameters)
+{
+	ResetToIsolatedEngineState();
+
+	const FName FirstBindName = MakeUniqueStartupBindName(TEXT("Automation.StartupBind.CreateForTesting.FullFallback.First"));
+	const FName SecondBindName = MakeUniqueStartupBindName(TEXT("Automation.StartupBind.CreateForTesting.FullFallback.Second"));
+	FAngelscriptBinds::FBind FirstBind(FirstBindName, -50, []() {});
+	FAngelscriptBinds::FBind SecondBind(SecondBindName, 50, []() {});
+
+	FAngelscriptBindExecutionObservation::Reset();
+
+	FAngelscriptEngineConfig Config;
+	Config.bIsEditor = true;
+	const FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
+	TUniquePtr<FAngelscriptEngine> TestEngine = FAngelscriptEngine::CreateForTesting(Config, Dependencies, EAngelscriptEngineCreationMode::Clone);
+	if (!TestNotNull(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should create a fallback full engine"), TestEngine.Get()))
+	{
+		return false;
+	}
+
+	TestEqual(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should fall back to full mode when no global engine exists"), TestEngine->GetCreationMode(), EAngelscriptEngineCreationMode::Full);
+	if (!TestEqual(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should observe one startup bind pass"), FAngelscriptBindExecutionObservation::GetInvocationCount(), 1))
+	{
+		return false;
+	}
+
+	const FAngelscriptBindExecutionSnapshot Snapshot = FAngelscriptBindExecutionObservation::GetLastSnapshot();
+	const int32 FirstIndex = Snapshot.ExecutedBindNames.IndexOfByKey(FirstBindName);
+	const int32 SecondIndex = Snapshot.ExecutedBindNames.IndexOfByKey(SecondBindName);
+	if (!TestTrue(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should observe the first bind"), FirstIndex != INDEX_NONE)
+		|| !TestTrue(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should observe the second bind"), SecondIndex != INDEX_NONE))
+	{
+		return false;
+	}
+
+	return TestTrue(TEXT("MultiEngine.StartupBindObservation.CreateForTestingFullFallbackReplaysBinds should preserve order for the fallback full startup pass"), FirstIndex < SecondIndex);
+}
+
+bool FAngelscriptSharedStateParticipantCountsTest::RunTest(const FString& Parameters)
+{
+	ResetToIsolatedEngineState();
+
+	const FAngelscriptEngineConfig Config;
+	const FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
+	TUniquePtr<FAngelscriptEngine> SourceEngine = FAngelscriptEngine::CreateTestingFullEngine(Config, Dependencies);
+	if (!TestNotNull(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should create the full owner"), SourceEngine.Get()))
+	{
+		return false;
+	}
+
+	if (!TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should start with one active participant"), FAngelscriptMultiEngineTestAccess::GetActiveParticipants(*SourceEngine), 1)
+		|| !TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should start with zero active clones"), FAngelscriptMultiEngineTestAccess::GetActiveCloneCount(*SourceEngine), 0))
+	{
+		return false;
+	}
+
+	TUniquePtr<FAngelscriptEngine> CloneA = FAngelscriptEngine::CreateCloneFrom(*SourceEngine, Config);
+	TUniquePtr<FAngelscriptEngine> CloneB = FAngelscriptEngine::CreateCloneFrom(*SourceEngine, Config);
+	if (!TestNotNull(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should create clone A"), CloneA.Get())
+		|| !TestNotNull(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should create clone B"), CloneB.Get()))
+	{
+		return false;
+	}
+
+	TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should count the full owner and two clones"), FAngelscriptMultiEngineTestAccess::GetActiveParticipants(*SourceEngine), 3);
+	TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should count two active clones"), FAngelscriptMultiEngineTestAccess::GetActiveCloneCount(*SourceEngine), 2);
+
+	CloneB.Reset();
+	TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should decrement participants when one clone is destroyed"), FAngelscriptMultiEngineTestAccess::GetActiveParticipants(*SourceEngine), 2);
+	return TestEqual(TEXT("MultiEngine.SharedState.ParticipantCountsTrackFullAndClones should decrement clone count when one clone is destroyed"), FAngelscriptMultiEngineTestAccess::GetActiveCloneCount(*SourceEngine), 1);
 }
 
 #endif

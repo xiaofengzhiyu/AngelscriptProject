@@ -333,6 +333,10 @@ private:
 	TSet<FName> CollectDisabledBindNames() const;
 	void InitializeOwnedSharedState();
 	void AdoptSharedStateFrom(const FAngelscriptEngine& Source);
+	#if WITH_DEV_AUTOMATION_TESTS
+	int32 GetActiveParticipantsForTesting() const;
+	int32 GetActiveCloneCountForTesting() const;
+	#endif
 	void PreInitialize_GameThread();
 	void Initialize_AnyThread();
 	void PostInitialize_GameThread();

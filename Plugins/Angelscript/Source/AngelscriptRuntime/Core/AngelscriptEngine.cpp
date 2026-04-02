@@ -564,6 +564,18 @@ void FAngelscriptEngine::InitializeOwnedSharedState()
 	SharedState->ActiveParticipants = FMath::Max(SharedState->ActiveParticipants, 1);
 }
 
+#if WITH_DEV_AUTOMATION_TESTS
+int32 FAngelscriptEngine::GetActiveParticipantsForTesting() const
+{
+	return SharedState.IsValid() ? SharedState->ActiveParticipants : 0;
+}
+
+int32 FAngelscriptEngine::GetActiveCloneCountForTesting() const
+{
+	return SharedState.IsValid() ? SharedState->ActiveCloneCount : 0;
+}
+#endif
+
 bool FAngelscriptEngine::DiscardModule(const TCHAR* ModuleName)
 {
 	if (Engine == nullptr)
