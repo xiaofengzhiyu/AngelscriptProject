@@ -3,6 +3,8 @@
 > 自动化测试基线：**275/275 PASS**（0 失败，0 禁用）
 >
 > 测试模块路径：`Plugins/Angelscript/Source/AngelscriptTest/`
+>
+> 启动 bind / watcher / 性能分层矩阵：`Documents/Guides/AngelscriptValidationMatrix.md`
 
 ---
 

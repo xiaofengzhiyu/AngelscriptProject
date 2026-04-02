@@ -1,5 +1,10 @@
 # 运行自动化测试
 
+## Angelscript 插件专项文档
+
+- 启动 bind / watcher 验证矩阵：`Documents/Guides/AngelscriptValidationMatrix.md`
+- 测试目录总览：`Documents/Guides/TestCatalog.md`
+
 # 图形测试
 
 (目前项目中无图形测试,不考虑这种启动方式)

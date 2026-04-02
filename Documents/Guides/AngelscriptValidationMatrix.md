@@ -1,0 +1,61 @@
+# Angelscript 启动 Bind 与目录监视验证矩阵
+
+## 目标
+
+本文档冻结 `Plan_AngelscriptEngineBindAndFileWatchValidation.md` 的首轮验证口径，先统一“要测什么、当前已有什么、缺什么”，再继续补测试 seam、行为回归和性能采样。本文档服务对象是 `Plugins/Angelscript/` 插件本身，而不是宿主工程逻辑。
+
+## 建模前提
+
+- 引擎创建轴固定为 `Full`、`Clone`、`CreateForTesting()` 三种模式。
+- 启动入口轴固定为 `StartupModule()`、Subsystem 主引擎附着、Runtime fallback tick 三条路径。
+- 目录监视轴固定为 `.as` 文件 `add`、`modify`、`remove`、folder `add`、folder `remove`、rename-window 六类输入。
+- rename 现状统一按 `removed + added + 0.2s deletion delay` 建模，不把显式 rename 事件当作当前能力基线。
+- reload 结果轴固定为 `soft reload`、`full reload`、`generated class/struct/delegate`、`diagnostics`、`artifact output` 五类输出。
+- 本轮先建立可回归的正确性矩阵与性能记录口径，不在第一阶段扩展 packaged/cooked、跨平台 watcher 后端差异或重量级 Functional Test 依赖。
+
+## 核心验证矩阵
+
+| 验证轴 | 当前基线 | 现有锚点 | 当前空白 |
+| --- | --- | --- | --- |
+| 创建模式与启动 bind | 已有部分覆盖 | `AngelscriptRuntime/Tests/AngelscriptMultiEngineTests.cpp`、`AngelscriptTest/Core/AngelscriptBindConfigTests.cpp` | 缺实际 startup bind 执行次数、顺序、Clone 去重观测 |
+| 启动入口与主引擎附着 | 已有部分覆盖 | `AngelscriptRuntime/Tests/AngelscriptSubsystemTests.cpp`、`AngelscriptRuntime/Tests/AngelscriptDependencyInjectionTests.cpp` | 缺 `StartupModule` / Subsystem / fallback tick 的统一 smoke matrix |
+| 启动 bind 生产引擎烟雾层 | 已有基础覆盖 | `AngelscriptTest/Core/AngelscriptEngineParityTests.cpp` | 缺 bind family 级别的代表性可见性断言 |
+| 共享状态与测试隔离 | 已有基础覆盖 | `AngelscriptTest/Shared/AngelscriptTestEngineHelperTests.cpp`、`AngelscriptTest/Core/AngelscriptEngineCoreTests.cpp` | 缺“bind/type 状态 reset + recreate 幂等”正式纳管 |
+| watcher 输入到 reload 队列 | 已有零散覆盖 | `AngelscriptTest/HotReload/AngelscriptHotReloadFunctionTests.cpp` 的 `HotReload.ModuleWatcherQueuesFileChanges` | 缺 callback 层 deterministic seam、folder add/remove、rename-window、storm 去重 |
+| reload 分析与 generated symbol 行为 | 已有基础覆盖 | `AngelscriptTest/HotReload/AngelscriptHotReloadAnalysisTests.cpp`、`Compiler/AngelscriptCompilerPipelineTests.cpp` | 缺 generated class / struct / delegate rename 与切换正确性 |
+| 失败反馈与旧代码保留 | 已有局部覆盖 | HotReload 既有测试与引擎失败路径 | 缺 diagnostics、`PreviouslyFailedReloadFiles`、stale-code fallback 明确回归 |
+
+## 分层执行视图
+
+### 启动 Bind 正确性层
+
+- `MultiEngine`：负责 `Full / Clone / CreateForTesting` 模式、共享状态和生命周期。
+- `BindConfig`：负责禁用项、排序、命名/未命名 bind 的配置可见性。
+- `Subsystem / DependencyInjection`：负责主引擎归属、入口与 attach 事实。
+- `Parity`：负责生产引擎表面是否暴露出关键 bind family。
+
+### Watcher 与 Reload 正确性层
+
+- Editor callback 层负责 `FFileChangeData -> queue` 的 deterministic 语义，不承担 generated class 断言。
+- `HotReload` 层负责队列消费、compile/reload 结果、diagnostics 与旧代码保留语义。
+- `FileSystem` 层负责真实磁盘状态、module lookup、skip rule 和路径归一化。
+- `ClassGenerator` 层负责 generated class / struct / delegate、旧类隐藏与替换后的可见性。
+
+## rename-window 基线说明
+
+- 当前实现默认把 rename 解释为“旧文件 removed，新文件 added，并在 0.2 秒删除延迟窗口内完成归并判断”。
+- callback 层测试只锁定这套已存在语义，不提前把平台显式 rename 事件写成断言前提。
+- 如果未来某个平台 watcher 后端开始稳定提供 rename 事件，应新增 sibling plan，而不是直接修改本矩阵基线。
+
+## 当前优先补齐项
+
+1. 启动 bind 生命周期观测 helper，使测试能看见实际执行的 bind 集合、顺序和 Clone 复用行为。
+2. Editor callback 的最小 deterministic seam，使 synthetic `FFileChangeData` 能进入真实 `OnScriptFileChanges()` 处理路径。
+3. generated class / struct / delegate 的 rename 和类切换闭环断言。
+4. watcher 失败路径的 feedback 与 stale-code fallback 回归。
+
+## 快速结论
+
+- 现有仓库已经具备 `MultiEngine`、`BindConfig`、`HotReload`、`Shared` 与 `Parity` 等关键基础。
+- 当前真正缺的是把这些测试层组织成统一矩阵，并补上 startup bind 观测 seam、callback seam 和 generated symbol rename 闭环。
+- 后续新增测试必须继续遵循目录分层：`Runtime/Tests` 管启动与状态机，`AngelscriptTest/Core` 管插件级核心回归，`HotReload` 管消费与场景，`FileSystem` 管磁盘映射，`Editor/Private/Tests` 管 callback 输入输出。
