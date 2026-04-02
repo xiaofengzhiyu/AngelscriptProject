@@ -243,7 +243,7 @@ bool FAngelscriptRestoreStripDebugInfoRoundTripTest::RunTest(const FString& Para
 
 bool FAngelscriptRestoreEmptyStreamFailsTest::RunTest(const FString& Parameters)
 {
-	TUniquePtr<FAngelscriptEngine> EngineOwner = AngelscriptTestSupport::CreateCloneTestEngine();
+	TUniquePtr<FAngelscriptEngine> EngineOwner = AngelscriptTestSupport::CreateIsolatedCloneEngine();
 	if (!TestNotNull(TEXT("Restore empty stream test should create an isolated clone test engine"), EngineOwner.Get()))
 	{
 		return false;
@@ -265,7 +265,7 @@ bool FAngelscriptRestoreEmptyStreamFailsTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptRestoreTruncatedStreamFailsTest::RunTest(const FString& Parameters)
 {
-	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateCloneTestEngine();
+	TUniquePtr<FAngelscriptEngine> SourceEngineOwner = AngelscriptTestSupport::CreateIsolatedCloneEngine();
 	if (!TestNotNull(TEXT("Restore truncated stream test should create an isolated clone test engine"), SourceEngineOwner.Get()))
 	{
 		return false;
