@@ -1,5 +1,9 @@
 #include "Angelscript/AngelscriptTestSupport.h"
 
+#include "StartAngelscriptHeaders.h"
+#include "source/as_string.h"
+#include "EndAngelscriptHeaders.h"
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;
@@ -110,6 +114,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptUpgradeRegisterObjectTypeFlagCompatibilityTest,
 	"Angelscript.TestModule.Angelscript.Upgrade.RegisterObjectTypeFlags",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptUpgradeCStringHashCompatibilityTest,
+	"Angelscript.TestModule.Angelscript.Upgrade.CStringHash",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 bool FAngelscriptUpgradeEnginePropertyCompatibilityTest::RunTest(const FString& Parameters)
@@ -252,6 +261,20 @@ bool FAngelscriptUpgradeRegisterObjectTypeFlagCompatibilityTest::RunTest(const F
 	const asQWORD Flags = TypeInfo->GetFlags();
 	return TestTrue(TEXT("The registered type should preserve the migrated editor-only high-bit flag"), (Flags & asOBJ_EDITOR_ONLY) != 0)
 		&& TestFalse(TEXT("The registered type should not alias the stock more-constructors bit when using the migrated editor-only flag"), (Flags & asOBJ_APP_CLASS_MORE_CONSTRUCTORS) != 0);
+}
+
+bool FAngelscriptUpgradeCStringHashCompatibilityTest::RunTest(const FString& Parameters)
+{
+	const asCString MixedCase("AlphaBeta");
+	const asCString LowerCase("alphabeta");
+	const asCString DifferentValue("gamma");
+
+	const uint32 MixedHash = GetTypeHash(MixedCase);
+	const uint32 LowerHash = GetTypeHash(LowerCase);
+	const uint32 DifferentHash = GetTypeHash(DifferentValue);
+
+	return TestEqual(TEXT("asCString hashing should remain case-insensitive for equal content"), MixedHash, LowerHash)
+		&& TestNotEqual(TEXT("asCString hashing should still distinguish different content"), MixedHash, DifferentHash);
 }
 
 #endif
