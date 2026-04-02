@@ -84,7 +84,7 @@ namespace AngelscriptTestSupport
 	{
 		for (const double Sample : Samples)
 		{
-			UE_LOG(Angelscript, Log, TEXT("[PERF] %s=%.6f"), *MetricName, Sample);
+			UE_LOG(LogTemp, Log, TEXT("[PERF] %s=%.6f"), *MetricName, Sample);
 		}
 	}
 }
