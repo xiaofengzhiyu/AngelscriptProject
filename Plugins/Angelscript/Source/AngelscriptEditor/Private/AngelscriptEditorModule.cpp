@@ -1,4 +1,5 @@
 #include "AngelscriptEditorModule.h"
+#include "AngelscriptDirectoryWatcherInternal.h"
 #include "ClassReloadHelper.h"
 #include "AngelscriptSettings.h"
 
@@ -74,71 +75,16 @@ void OnScriptFileChanges(const TArray<FFileChangeData>& Changes)
 	if (!FAngelscriptEngine::IsInitialized())
 		return;
 
-	IFileManager& FileManager = IFileManager::Get();
-	for (const FFileChangeData& Change : Changes)
-	{
-		FString AbsolutePath = FPaths::ConvertRelativePathToFull(Change.Filename);
-		FString RelativePath;
-
-		// Scan through all root paths in order, this will mimic module lookup.
-		for (const auto& RootPath : FAngelscriptEngine::Get().AllRootPaths)
+	FAngelscriptEngine& AngelscriptManager = FAngelscriptEngine::Get();
+	AngelscriptEditor::Private::QueueScriptFileChanges(
+		Changes,
+		AngelscriptManager.AllRootPaths,
+		AngelscriptManager,
+		IFileManager::Get(),
+		[&AngelscriptManager](const FString& AbsoluteFolderPath)
 		{
-			if (AbsolutePath.StartsWith(RootPath))
-			{
-				RelativePath = AbsolutePath;
-				FPaths::MakePathRelativeTo(RelativePath, *(RootPath + TEXT("/")));
-				break;
-			}
-		}
-
-		if (RelativePath.IsEmpty()) // Could not find a matching root
-			continue;
-
-		FAngelscriptEngine& AngelscriptManager = FAngelscriptEngine::Get();
-		AngelscriptManager.LastFileChangeDetectedTime = FPlatformTime::Seconds();
-
-		if (Change.Filename.EndsWith(TEXT(".as")))
-		{
-			if (Change.Action == FFileChangeData::EFileChangeAction::FCA_Removed)
-				AngelscriptManager.FileDeletionsDetectedForReload.AddUnique(FAngelscriptEngine::FFilenamePair{ AbsolutePath, RelativePath });
-			else
-				AngelscriptManager.FileChangesDetectedForReload.AddUnique(FAngelscriptEngine::FFilenamePair{ AbsolutePath, RelativePath });
-
-			UE_LOG(Angelscript, Log, TEXT("Queued script file change for primary engine reload: %s"), *RelativePath);
-		}
-		else
-		{
-			// Windows unfortunately does not emit notifications for all the files when a folder is deleted or moved,
-			// so we have to handle that case ourselves.
-
-			if (Change.Action == FFileChangeData::EFileChangeAction::FCA_Removed)
-			{
-				// A folder got deleted, find all the script files we've previously loaded in this folder
-				FString AbsoluteFolderPath = AbsolutePath / TEXT("");
-				for (auto Module : AngelscriptManager.GetActiveModules())
-				{
-					for (const auto& CodeSection : Module->Code)
-					{
-						if (CodeSection.AbsoluteFilename.StartsWith(AbsoluteFolderPath))
-						{
-							AngelscriptManager.FileDeletionsDetectedForReload.AddUnique(FAngelscriptEngine::FFilenamePair{
-								CodeSection.AbsoluteFilename, CodeSection.RelativeFilename });
-						}
-					}
-				}
-			}
-			else if (Change.Action == FFileChangeData::EFileChangeAction::FCA_Added && FileManager.DirectoryExists(*AbsolutePath))
-			{
-				// We added a new folder, find all the scripts in it and mark them to be loaded
-				TArray<FAngelscriptEngine::FFilenamePair> ContainedScriptFiles;
-				FAngelscriptEngine::FindScriptFiles(FileManager, RelativePath, AbsolutePath,
-					TEXT("*.as"), ContainedScriptFiles, false, false);
-
-				for (auto ScriptFile : ContainedScriptFiles)
-					AngelscriptManager.FileChangesDetectedForReload.AddUnique(ScriptFile);
-			}
-		}
-	}
+			return AngelscriptEditor::Private::GatherLoadedScriptsForFolder(AngelscriptManager, AbsoluteFolderPath);
+		});
 }
 
 void ForceEditorWindowToFront()
