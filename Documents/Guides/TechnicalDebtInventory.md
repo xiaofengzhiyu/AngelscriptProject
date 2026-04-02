@@ -123,3 +123,27 @@
 - `Angelscript.TestModule.ScriptExamples.Actor`
   - 失败摘要：`Cannot declare class AExampleActorType in module ScriptExamples.Example_Actor. A class with this name already exists in module Example_Actor.`
   - 归因判断：属于 script example 模块命名 / 清理冲突，未触及本轮 `P1` 改动面。
+
+## 10. Phase 2 验证快照
+
+- 显式弃用扫描结果：对 `Plugins/Angelscript/Source/AngelscriptRuntime/` 的 `_DEPRECATED` 与 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 定向扫描结果均为 **0 命中**。
+- `P2` 目标测试验证：
+  - `Angelscript.TestModule.Angelscript.Upgrade.CStringHash`：PASS
+  - `Angelscript.TestModule.Internals.Restore.EmptyStreamFails`：PASS
+  - `Angelscript.TestModule.Internals.Restore.TruncatedStreamFails`：PASS
+- `Automation RunTests Angelscript.TestModule` 全量回归结果：**仍未全绿**，但当前保留失败项与 `P2.1`~`P2.4` 的弃用 API / Restore 测试改动不直接相关。
+
+### Phase 2 完成后的 full-suite 保留失败项（2026-04-03）
+
+- `Angelscript.TestModule.Angelscript.NativeScriptHotReload.Phase2A`
+  - 失败摘要：`Expected 'Phase2A should load source from Script/Tests/Test_Enums.as' to be true.`
+  - 归因判断：hot-reload 测试输入文件路径/存在性问题，未触及本轮 `P2` 改动面。
+- `Angelscript.TestModule.Angelscript.NativeScriptHotReload.Phase2B`
+  - 失败摘要：`Expected 'Phase2B should load source from Script/Tests/Test_GameplayTags.as' to be true.`
+  - 归因判断：同样属于 hot-reload 测试输入文件路径问题，未触及本轮 `P2` 改动面。
+- `Angelscript.TestModule.Editor.SourceNavigation.Functions`
+  - 失败摘要：`Unable to open script file .../Saved/Automation/Automation/RuntimeFunctionNavigationTest.as`，随后 `Generated function navigation class should exist` 断言失败。
+  - 归因判断：editor/source-navigation 测试文件生成或清理路径问题，未触及 `P2` 的 ThirdParty hash / StaticJIT 警告压制 / Restore 负向覆盖改动面。
+- `Angelscript.TestModule.ScriptExamples.Actor`
+  - 失败摘要：`Cannot declare class AExampleActorType in module ScriptExamples.Example_Actor. A class with this name already exists in module Example_Actor.`
+  - 归因判断：script example 模块命名或清理冲突，未触及本轮 `P2` 改动面。
