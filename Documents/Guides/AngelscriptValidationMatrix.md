@@ -22,8 +22,11 @@
 | 启动 bind 生产引擎烟雾层 | 已有基础覆盖 | `AngelscriptTest/Core/AngelscriptEngineParityTests.cpp` | 缺 bind family 级别的代表性可见性断言 |
 | 共享状态与测试隔离 | 已有基础覆盖 | `AngelscriptTest/Shared/AngelscriptTestEngineHelperTests.cpp`、`AngelscriptTest/Core/AngelscriptEngineCoreTests.cpp` | 缺“bind/type 状态 reset + recreate 幂等”正式纳管 |
 | watcher 输入到 reload 队列 | 已有零散覆盖 | `AngelscriptTest/HotReload/AngelscriptHotReloadFunctionTests.cpp` 的 `HotReload.ModuleWatcherQueuesFileChanges` | 缺 callback 层 deterministic seam、folder add/remove、rename-window、storm 去重 |
+| 文件系统发现与模块映射 | 已有基础覆盖 | `AngelscriptTest/FileSystem/AngelscriptFileSystemTests.cpp` | 缺 rename 后 module lookup、skip rule + watcher root 组合回归 |
 | reload 分析与 generated symbol 行为 | 已有基础覆盖 | `AngelscriptTest/HotReload/AngelscriptHotReloadAnalysisTests.cpp`、`Compiler/AngelscriptCompilerPipelineTests.cpp` | 缺 generated class / struct / delegate rename 与切换正确性 |
 | 失败反馈与旧代码保留 | 已有局部覆盖 | HotReload 既有测试与引擎失败路径 | 缺 diagnostics、`PreviouslyFailedReloadFiles`、stale-code fallback 明确回归 |
+| 真实脚本语料热重载 | 已有初始覆盖 | `AngelscriptTest/Angelscript/AngelscriptNativeScriptHotReloadTests.cpp` | 缺执行后可见性、lookup 与重复 reload 稳定性断言 |
+| 结果产物写出 | 已有邻近模式 | `AngelscriptRuntime/Tests/AngelscriptCodeCoverageTests.cpp`、`AngelscriptRuntime/Tests/AngelscriptPrecompiledDataTests.cpp` | 缺性能摘要/报告目录结构与落盘回归 |
 
 ## 分层执行视图
 
@@ -41,6 +44,13 @@
 - `FileSystem` 层负责真实磁盘状态、module lookup、skip rule 和路径归一化。
 - `ClassGenerator` 层负责 generated class / struct / delegate、旧类隐藏与替换后的可见性。
 
+### 邻近支撑层
+
+- `Shared.EngineHelper.*` 负责共享引擎隔离、global scope/world context 恢复与脏状态防泄漏。
+- `Parity.*` 负责生产引擎 compile smoke，防止测试专用引擎与真实运行态出现偏差。
+- `NativeScriptHotReload.*` 负责真实脚本语料回归，避免 watcher/hot reload 只在 synthetic fixture 上成立。
+- 结果产物落盘测试负责验证报告与性能摘要不是“一次性人工日志”。
+
 ## rename-window 基线说明
 
 - 当前实现默认把 rename 解释为“旧文件 removed，新文件 added，并在 0.2 秒删除延迟窗口内完成归并判断”。
@@ -51,11 +61,12 @@
 
 1. 启动 bind 生命周期观测 helper，使测试能看见实际执行的 bind 集合、顺序和 Clone 复用行为。
 2. Editor callback 的最小 deterministic seam，使 synthetic `FFileChangeData` 能进入真实 `OnScriptFileChanges()` 处理路径。
-3. generated class / struct / delegate 的 rename 和类切换闭环断言。
-4. watcher 失败路径的 feedback 与 stale-code fallback 回归。
+3. 统一的性能产物与指标口径，使 startup bind / reload baseline 能稳定记录并比较。
+4. generated class / struct / delegate 的 rename 和类切换闭环断言。
+5. watcher 失败路径的 feedback 与 stale-code fallback 回归。
 
 ## 快速结论
 
-- 现有仓库已经具备 `MultiEngine`、`BindConfig`、`HotReload`、`Shared` 与 `Parity` 等关键基础。
-- 当前真正缺的是把这些测试层组织成统一矩阵，并补上 startup bind 观测 seam、callback seam 和 generated symbol rename 闭环。
+- 现有仓库已经具备 `MultiEngine`、`BindConfig`、`HotReload`、`FileSystem`、`Shared`、`Parity`、`NativeScriptHotReload` 七块高价值基础。
+- 当前真正缺的是把这些测试层组织成统一矩阵，并补上 startup bind 观测 seam、callback seam、性能基线和 generated symbol rename 闭环。
 - 后续新增测试必须继续遵循目录分层：`Runtime/Tests` 管启动与状态机，`AngelscriptTest/Core` 管插件级核心回归，`HotReload` 管消费与场景，`FileSystem` 管磁盘映射，`Editor/Private/Tests` 管 callback 输入输出。
