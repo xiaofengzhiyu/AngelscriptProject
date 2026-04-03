@@ -4,7 +4,7 @@
 
 **Goal:** 建立一套以“教学、解释、可观察”为目标的 Angelscript 自动化测试体系，让测试在运行时按阶段输出 AS ↔ UE 交互、编译、类生成、字节码、执行与调试信息，而不仅仅给出通过/失败结论。
 
-**Architecture:** 方案以 `Plugins/Angelscript/Source/AngelscriptTest/` 为主落点，新增一个面向学习用途的 `Learning/` 主题目录，并在 `Shared/` 中补一套测试专用 trace/pretty-print helper。测试按三层展开：Native Core 讲解 AS 原生引擎 API；Runtime Integration 讲解预处理/编译/类生成/热重载分析；UE Scenario 讲解脚本类生成后如何进入 UE 反射、对象实例化与事件调用。所有教学输出统一走“结构化 trace 事件 -> Automation `AddInfo` + `UE_LOG(Angelscript, Display/Log)` + 可选文件导出”三路同步，保证既适合在 Session Frontend 阅读，也适合保存为日志或材料。
+**Architecture:** 方案以 `Plugins/Angelscript/Source/AngelscriptTest/` 为主落点，新增一个面向学习用途的 `Learning/` 主题根目录，并在其中继续按测试层级拆分为 `Learning/Native/`、`Learning/Runtime/`、`Learning/Scenario/`、`Learning/Editor/`。这样既保留“教学型测试”这一独立主题，又不破坏 `Documents/Guides/Test.md` 规定的层级边界。所有教学输出统一走“结构化 trace 事件 -> Automation `AddInfo` + `UE_LOG(Angelscript, Display/Log)` + 可选文件导出”三路同步，保证既适合在 Session Frontend 阅读，也适合保存为日志或材料。
 
 **Tech Stack:** UE Automation (`IMPLEMENT_SIMPLE_AUTOMATION_TEST`)、`FAutomationTestBase::AddInfo/AddWarning/AddError`、`FAngelscriptEngine`、`FAngelscriptBinds`、`FAngelscriptClassGenerator`、`asIScriptEngine/asIScriptModule/asIScriptContext`、`AngelscriptDebugServer`、`FAngelscriptCodeCoverage`。
 
@@ -15,7 +15,8 @@
 当前仓库的自动化测试已经覆盖 Native、Internals、Compiler、ClassGenerator、Actor/Blueprint/Interface 等多个层级，但整体目标仍以“验证功能边界是否正确”为主：
 
 - `Native/` 层更强调 AngelScript 公共 API 能否创建引擎、编译脚本、执行函数、注册类型。
-- `Internals/` 层更强调 parser / builder / compiler / bytecode / GC 等内部机制的正确性。
+  - `Internals/` 层更强调 parser / builder / compiler / bytecode / GC 等内部机制的正确性。
+
 - `Compiler/`、`ClassGenerator/`、`Actor/Blueprint/Interface/Subsystem` 等目录更强调 AS 与 UE 的集成行为是否成立。
 
 这些测试对回归保护已经很有价值，但它们大多不承担“把过程讲出来”的职责。用户现在需要的是另一类测试：
@@ -33,7 +34,7 @@
 ## 范围与边界
 
 - **纳入范围**
-  - 在 `Plugins/Angelscript/Source/AngelscriptTest/` 下新增一个面向教学/解释的主题目录（建议 `Learning/`）。
+  - 在 `Plugins/Angelscript/Source/AngelscriptTest/` 下新增一个面向教学/解释的主题根目录，并按层级继续拆分为 `Learning/Native/`、`Learning/Runtime/`、`Learning/Scenario/`、`Learning/Editor/`。
   - 在 `Shared/` 下新增测试专用 trace helper，用于记录阶段、步骤、键值信息、代码片段、字节码摘要、生成类摘要、执行轨迹等。
   - 最小范围内扩展现有 runtime seam，使测试能够读到本来已经存在但未结构化暴露的信息，例如编译阶段结果、reload requirement、绑定清单、类生成摘要、line callback 命中信息。
   - 更新中文文档，明确这种教学型测试的命名、运行方式、输出读取方式、日志参数建议。
@@ -96,7 +97,7 @@
 
 - 普通回归测试追求信息最少、定位最稳；教学型测试追求“阶段、上下文、观测值都显式可见”。
 - 如果直接把大量 `AddInfo()` / `UE_LOG()` 散落进现有回归测试，会增加噪声，降低老用例的维护体验。
-- 单独建 `Learning/` 目录，可以让这类测试在命名、运行参数、日志风格、导出物格式上自成体系，又不破坏现有层级边界。
+- 单独建 `Learning/` 主题根目录，并在其下继续按 `Native / Runtime / Scenario / Editor` 分桶，可以让这类测试在命名、运行参数、日志风格、导出物格式上自成体系，同时继续遵守现有层级边界。
 
 ## 文件结构与职责
 
@@ -106,45 +107,45 @@
   - 定义教学 trace event、阶段枚举、step builder、输出 sink 接口。
 - `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptLearningTrace.cpp`
   - 实现 `AddInfo` / `UE_LOG` / 文件导出三路输出与统一排版。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningNativeBootstrapTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/AngelscriptLearningNativeBootstrapTests.cpp`
   - 讲“原生 AS 引擎创建、属性设置、message callback、模块 build、函数元数据”的最小故事线。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningBindingTraceTests.cpp`
-  - 讲“类型/函数/属性绑定”这一步具体注册了什么，AS 如何看到 UE 类型。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningCompilerTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/AngelscriptLearningNativeBindingTraceTests.cpp`
+  - 讲“原生 `asIScriptEngine` 注册 API”这一步具体注册了什么；**这里只演示 AngelScript 原生注册，不引入 `FAngelscriptBinds` 或 UE 类型绑定**。
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningCompilerTraceTests.cpp`
   - 讲“预处理、CompileModules、diagnostics、reload requirement”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningBytecodeTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/AngelscriptLearningBytecodeTraceTests.cpp`
   - 讲“函数声明、局部变量、bytecode buffer、可执行行”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningClassGenerationTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningClassGenerationTraceTests.cpp`
   - 讲“脚本类如何生成 UClass/UFunction/FProperty，如何映射到 UE 反射”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningExecutionTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningExecutionTraceTests.cpp`
   - 讲“Prepare/Execute、line callback、callstack、异常/ensure/check”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningUEBridgeTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningUEBridgeTraceTests.cpp`
   - 讲“脚本类实例化、ProcessEvent、BlueprintOverride、BeginPlay、属性回读”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningHandleAndScriptObjectTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/AngelscriptLearningHandleAndScriptObjectTraceTests.cpp`
   - 讲“handle/reference 语义、script object 属性枚举、对象复制与对象内省”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningDebuggerContextTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/AngelscriptLearningDebuggerContextTraceTests.cpp`
   - 讲“callstack、locals、`this` 指针、line callback、debugger evaluate 的基础观察面”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningPreprocessorTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningPreprocessorTraceTests.cpp`
   - 讲“宏检测、chunk 拆分、import 解析、module name 规范化、生成代码拼装”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningFileSystemAndModuleTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningFileSystemAndModuleTraceTests.cpp`
   - 讲“按路径发现脚本、按文件名/模块名查找 module、部分失败隔离、skip rules”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningHotReloadDecisionTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningHotReloadDecisionTraceTests.cpp`
   - 讲“软重载/全量重载分析的判定依据与结构变化边界”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningRestoreAndBytecodePersistenceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningRestoreAndBytecodePersistenceTests.cpp`
   - 讲“SaveByteCode/LoadByteCode、restore round-trip、debug info strip 的影响”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningInterfaceDispatchTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningInterfaceDispatchTraceTests.cpp`
   - 讲“UINTERFACE 声明、继承链、实现类 dispatch、C++ Execute_ bridge”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningDelegateBridgeTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningDelegateBridgeTraceTests.cpp`
   - 讲“unicast/multicast delegate、BindUFunction/AddUFunction、事件广播跨桥接过程”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningGCTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningGCTraceTests.cpp`
   - 讲“GC 统计、cycle detect、actor/component/world teardown 与 AS/UE 对象图关系”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningTimerAndLatentTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningTimerAndLatentTraceTests.cpp`
   - 讲“System::SetTimer、world tick、latent/multi-frame 行为如何驱动脚本”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningSubsystemLifecycleTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Scenario/AngelscriptLearningSubsystemLifecycleTraceTests.cpp`
   - 讲“WorldSubsystem/GameInstanceSubsystem 的创建条件、Initialize/PostInitialize/BeginPlay/Tick/Deinitialize”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningSourceNavigationTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Editor/AngelscriptLearningSourceNavigationTraceTests.cpp`
   - 讲“生成 `UASFunction` 如何保留源文件路径与行号，以及 Source Navigation 如何利用这些信息”。
-- `Plugins/Angelscript/Source/AngelscriptTest/Learning/AngelscriptLearningContainerAndDebuggerValueTraceTests.cpp`
+- `Plugins/Angelscript/Source/AngelscriptTest/Learning/Runtime/AngelscriptLearningContainerAndDebuggerValueTraceTests.cpp`
   - 讲“容器绑定、DebuggerValue 摘要、`TMap/TSet/TOptional/TSubclassOf` 等桥接类型如何被观察与调试”。
 - `Documents/Guides/LearningTrace.md`
   - 说明这些教学型测试怎么运行、看什么、日志参数怎么配。
@@ -217,11 +218,30 @@
 - `Observation`：观测到了什么，例如类型名、函数声明、bytecode 长度、callstack、property 列表。
 - `Evidence`：必要时附关键路径、行号、返回码、声明串、源码片段、导出值。
 
+为了让 `P1.1` 可以直接照着编码，建议把内部数据模型固定成下面这组最小字段：
+
+- `Phase`：推荐先收敛到 `EngineBootstrap`、`Binding`、`Compile`、`Bytecode`、`Execution`、`ClassGeneration`、`UEBridge`、`Debug`、`GC`、`Editor` 十个主类。
+- `StepId`：固定使用 `Phase.XX` 两位编号格式，例如 `Compile.02`、`Execution.05`，便于 Automation 输出和导出文件排序一致。
+- `Action`：一句动词短语，描述“做了什么”，例如 `RegisterGlobalFunction`、`BuildModule`、`PrepareContext`、`SpawnScriptActor`。
+- `Observation`：一句或多句结构化摘要，描述“看到了什么结果”，例如返回码、函数列表、reload requirement、生成类名。
+- `Evidence`：键值对或代码块，承载较长信息；优先用于 declaration、diagnostic 列表、bytecode 摘要、property 快照，而不是把所有内容塞进 `Observation`。
+- `DetailLevel`：至少支持 `Summary` 与 `Verbose` 两档；默认 Automation 走 `Summary`，只有明确启用 verbose 时才打印扩展数据。
+- `Timestamp/Sequence`：首版不用追求真实时间戳，但至少保留 session 内递增顺序号，保证多 sink 输出时顺序可重建。
+
+首版实现不要过度设计成通用 tracing 平台；只要这几个字段足以稳定表达“阶段 → 步骤 → 观测 → 证据”，就先固定下来。
+
 ### 三路输出约定
 
 - **Automation `AddInfo()`**：给 Session Frontend 和 JSON 报告用，适合读“课程步骤”。
 - **`UE_LOG(Angelscript, Display/Log, ...)`**：给引擎日志文件和命令行跑批用，适合保留完整痕迹。
 - **可选导出文件**：导出到 `Saved/Automation/AngelscriptLearning/` 下的 `*.json` / `*.md`，便于后续整理文档或 diff 两次运行结果。
+
+三路输出的职责也要固定，避免 helper 做着做着变成三套风格：
+
+- `AddInfo()` 只输出课程摘要级内容，每条最好 1~3 行，适合在 Automation 报告中直接阅读。
+- `UE_LOG` 保留完整展开版，可接受更长的 declaration 列表、diagnostic 细节和代码块片段。
+- 文件导出优先走结构化 `json`，`md` 作为后续教学材料友好视图；首版若时间紧，可先只落 `json`，但字段命名要与内存事件结构一致。
+- 同一条 trace event 进入不同 sink 时，不允许改写语义；差异只体现在展示粒度和排版层，而不是字段含义。
 
 ### 教学型测试的断言策略
 
@@ -231,9 +251,36 @@
 2. 关键观测值是否非空或满足最小稳定边界（如存在至少一个函数、至少一个 property、bytecode length > 0、callstack 非空）。
 3. 教学输出是否真的包含本测试宣称要讲的事实，而不是仅靠人工翻日志。
 
+首版断言模式建议固定为两层：
+
+- **结构断言**：检查 phase 顺序、step 数量、关键关键词是否出现。这一层用于保证“课程流程存在”。
+- **语义断言**：检查最小必要事实，例如 `CompileResult == Success`、`GetFunctionCount() > 0`、`GeneratedClass != nullptr`、`CallstackSize > 0`。这一层用于保证“课程内容不是噪声”。
+
+不要在首版把所有细节做成硬断言，例如完整 bytecode 序列、每条 property 的地址值、完整日志全文；这些更适合作为 `Evidence` 输出，而不是失败条件。
+
+### Detail Level 与输出开关约定
+
+在 `P1.1` helper 中建议预留轻量配置，而不是等后续文件越写越多再回头改：
+
+- `Summary`：默认模式，仅输出课程步骤、关键声明、关键结果值。
+- `Verbose`：展开更长的 declaration/property/function 列表、bytecode dword 摘要、diagnostic 完整列表。
+- `bEmitToAutomation` / `bEmitToLog` / `bEmitToFile`：三路 sink 独立开关，测试可按场景选择。
+- `OutputRoot`：默认落到 `Saved/Automation/AngelscriptLearning/`，避免和普通 Automation 报告混在一起。
+
+首版不要做任意层级过滤或复杂模板系统；保持“少量枚举 + 明确默认值”即可。
+
 ### 编号约定说明
 
 本计划遵循 `Documents/Plans/Plan.md` 的约定：**每个执行任务后紧跟一个 `📦 Git 提交` checkbox，二者共享同一任务编号**。因此像 `P2.1` + `P2.1 📦 Git 提交` 属于一组，不应被理解为重复编号。
+
+### Phase 与测试层级的关系
+
+本计划中的 `Phase` 是按**教学叙事顺序**组织，不等同于 `Documents/Guides/Test.md` 中的测试层级。真正实现时，文件路径与可用 API 必须继续服从层级规则：
+
+- `Learning/Native/`：只使用 AngelScript 公共 API，不引入 `FAngelscriptEngine`、`source/as_*.h` 之外的插件封装层能力。
+- `Learning/Runtime/`：处理 `FAngelscriptEngine`、preprocessor、compiler、module、hot reload analysis、reflection summary 等封装层主题。
+- `Learning/Scenario/`：处理 world、actor、component、Blueprint、delegate、interface、GC、timer、subsystem 等 UE 场景主题。
+- `Learning/Editor/`：处理 source navigation、editor metadata、仅 EditorContext 可用的观察主题。
 
 ## 分阶段执行计划
 
@@ -242,9 +289,9 @@
 > 目标：先把这套“教学型测试”与现有回归测试区分清楚，避免后续实现时把大量教学日志混进普通用例。
 
 - [ ] **P0.1** 确认新增主题目录与命名约定
-  - 建议新增 `Plugins/Angelscript/Source/AngelscriptTest/Learning/`，测试名前缀统一用 `Angelscript.TestModule.Learning.*`。
+  - 建议新增 `Plugins/Angelscript/Source/AngelscriptTest/Learning/Native/`、`Learning/Runtime/`、`Learning/Scenario/`、`Learning/Editor/`，测试名前缀统一用 `Angelscript.TestModule.Learning.*`。
   - 不把这批教学用例塞进 `Examples/`、`Internals/`、`Compiler/` 原有文件，避免原目录语义膨胀。
-  - 若首批阶段数量较多，可在 `Learning/` 内再按主题拆文件，而不是继续做一个超大 `LearningTests.cpp`。
+  - 若某个教学主题跨越多个层级（如 GC、class generation + world spawn），优先拆成成对文件，而不是把 Native/Runtime/Scenario 能力混进一个测试文件。
 - [ ] **P0.1** 📦 Git 提交：`[Test/Learning] Docs: freeze learning trace test taxonomy`
 
 - [ ] **P0.2** 固定 trace 事件模型与输出层级
