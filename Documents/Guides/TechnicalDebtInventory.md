@@ -187,3 +187,18 @@
   - `Angelscript.TestModule.Delegate.Unicast`：PASS
   - `Angelscript.TestModule.Delegate.UnicastSignatureMismatch`：PASS
 - `BindGapAuditMatrix.md` 已把超出主计划 low-risk 范围的项分流到 `Plan_AS238NonLambdaPort.md` 与 `Plan_HazelightBindModuleMigration.md`。
+
+## 13. Phase 5 验证快照
+
+- `P5.1` 分类结果已沉淀到 `Documents/Guides/GlobalStateContainmentMatrix.md`。
+- `P5.2` 已完成的低风险 containment：
+  - `Debugging/AngelscriptDebugServer.cpp` 不再在本文件里散用 `FAngelscriptEngine::Get()`；owner engine 通过构造时注入，异常处理路径使用单点 active debug server 入口。
+  - `ShouldBreakOnActiveSide()` 通过 owner engine 实例方法读取当前 world context，而不是直接触碰静态入口。
+- `P5.3` 宿主工程最小化结果：
+  - `Source/AngelscriptProject/AngelscriptProject.Build.cs` 已移除模板残留的 `InputCore` / `EnhancedInput` 公开依赖。
+  - 当前宿主模块只保留 `Core`、`CoreUObject`、`Engine` 三个公开依赖，且构建通过。
+- `P5.5` focused regression：
+  - `Angelscript.TestModule.ClassGenerator.EmptyModuleSetup`：PASS
+  - `Angelscript.TestModule.Shared.EngineHelper.*`：PASS
+  - `Angelscript.TestModule.WorldSubsystem.*`：PASS
+- 当前 containment 仍是“低风险入口收口”，不代表 `ClassGenerator` / `AngelscriptEngine` / `GameInstanceSubsystem` 已完成全量去全局化；这些后续边界已转入 `Documents/Plans/Plan_FullDeGlobalization.md`。
