@@ -569,6 +569,7 @@ struct FAngelscriptReplaceAssetDefinition : FDebugMessage
 
 class FAngelscriptDebugServer
 {
+	FAngelscriptEngine* OwnerEngine;
 	class FTcpListener* Listener;
 	TQueue<class FSocket*, EQueueMode::Mpsc> PendingClients;
 	TArray<class FSocket*> Clients;
@@ -577,6 +578,7 @@ class FAngelscriptDebugServer
 	double NextPingDebuggerAliveTime = 0.0;
 
 	bool HandleConnectionAccepted(class FSocket* ClientSocket, const FIPv4Endpoint& ClientEndpoint);
+	FAngelscriptEngine* GetOwnerEngine() const { return OwnerEngine; }
 
 public:
 	TAtomic<bool> bBreakNextScriptLine { false };
@@ -622,7 +624,7 @@ public:
 	void GoToDefinition(const FAngelscriptGoToDefinition GoTo);
 
 public:
-	FAngelscriptDebugServer(int Port);
+	FAngelscriptDebugServer(FAngelscriptEngine* InOwnerEngine, int Port);
 	~FAngelscriptDebugServer();
 
 	void Tick();

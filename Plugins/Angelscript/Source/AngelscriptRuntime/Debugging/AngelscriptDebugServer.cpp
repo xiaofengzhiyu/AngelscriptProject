@@ -52,6 +52,7 @@ int AngelscriptDebugServer::DebugAdapterVersion = 0;
 namespace DataBreakpoint_Windows
 {
 #if PLATFORM_WINDOWS && WITH_AS_DEBUGSERVER
+	static TAtomic<FAngelscriptDebugServer*> GActiveDebugServer { nullptr };
 
 	static PVOID DegbugRegisterExceptionHandlerHandle;
 	static TAtomic<bool> GClearDataBreakpoints { false };
@@ -218,7 +219,11 @@ namespace DataBreakpoint_Windows
 
 		if (ExceptionInfo->ExceptionRecord->ExceptionCode == EXCEPTION_SINGLE_STEP && (ExceptionInfo->ContextRecord->Dr6 & 0xF) > 0)
 		{
-			auto DebugServer = FAngelscriptEngine::Get().DebugServer;
+			FAngelscriptDebugServer* DebugServer = GActiveDebugServer.Load();
+			if (DebugServer == nullptr)
+			{
+				return EXCEPTION_CONTINUE_SEARCH;
+			}
 			const int32 ActiveBreakpointCount = FMath::Min(DebugServer->ActiveDataBreakpointCount.Load(), FAngelscriptDebugServer::DATA_BREAKPOINT_HARDWARE_LIMIT);
 
 			bool bCppBreakpointTriggered = false;
@@ -306,7 +311,10 @@ namespace DataBreakpoint_Windows
 				DebugServer->bBreakNextScriptLine.Store(true);
 			}
 
-			FAngelscriptEngine::Get().UpdateLineCallbackState();
+			if (FAngelscriptEngine* OwnerEngine = DebugServer->GetOwnerEngine())
+			{
+				OwnerEngine->UpdateLineCallbackState();
+			}
 
 			// Prevent the exception from propagating further
 			return EXCEPTION_CONTINUE_EXECUTION;
@@ -332,13 +340,15 @@ bool FAngelscriptDebugServer::HandleConnectionAccepted(class FSocket* ClientSock
 	return true;
 }
 
-FAngelscriptDebugServer::FAngelscriptDebugServer(int Port)
+	FAngelscriptDebugServer::FAngelscriptDebugServer(FAngelscriptEngine* InOwnerEngine, int Port)
 {
+	OwnerEngine = InOwnerEngine;
 	Listener = new FTcpListener(FIPv4Endpoint(FIPv4Address::Any, Port));
 	Listener->OnConnectionAccepted().BindRaw(this, &FAngelscriptDebugServer::HandleConnectionAccepted);
 
 	UE_LOG(Angelscript, Log, TEXT("Angelscript debug server listening on %s"), *Listener->GetLocalEndpoint().ToText().ToString());
 #if PLATFORM_WINDOWS && WITH_AS_DEBUGSERVER
+	DataBreakpoint_Windows::GActiveDebugServer.Store(this);
 	if (DataBreakpoint_Windows::DegbugRegisterExceptionHandlerHandle)
 	{
 		::RemoveVectoredExceptionHandler(DataBreakpoint_Windows::DegbugRegisterExceptionHandlerHandle);
@@ -350,6 +360,7 @@ FAngelscriptDebugServer::FAngelscriptDebugServer(int Port)
 FAngelscriptDebugServer::~FAngelscriptDebugServer()
 {
 #if PLATFORM_WINDOWS && WITH_AS_DEBUGSERVER
+	DataBreakpoint_Windows::GActiveDebugServer.Store(nullptr);
 	::RemoveVectoredExceptionHandler(DataBreakpoint_Windows::DegbugRegisterExceptionHandlerHandle);
 	DataBreakpoint_Windows::DegbugRegisterExceptionHandlerHandle = nullptr;
 #endif
@@ -569,14 +580,17 @@ void FAngelscriptDebugServer::ProcessScriptStackPop(class asCContext* Context, v
 
 			RebuildActiveDataBreakpoints();
 			bBreakNextScriptLine.Store(true);
-			FAngelscriptEngine::Get().UpdateLineCallbackState();
+			if (OwnerEngine != nullptr)
+			{
+				OwnerEngine->UpdateLineCallbackState();
+			}
 		}
 	}
 }
 
 bool FAngelscriptDebugServer::ShouldBreakOnActiveSide()
 {
-	UObject* WorldContext = FAngelscriptEngine::CurrentWorldContext;
+	UObject* WorldContext = OwnerEngine != nullptr ? OwnerEngine->GetCurrentWorldContextObject() : nullptr;
 	if (WorldContext == nullptr)
 		return true;
 
