@@ -296,6 +296,58 @@ CQTest (Code Quality Test) 是 `FAutomationTestBase` 的扩展，提供测试夹
 - 需要 `FAngelscriptEngine`、`BuildModule()`、`CompileModuleFromMemory()`、模块记录或热重载封装行为：放 Runtime Integration。
 - 需要 `UWorld`、`Actor`、`Blueprint`、`Component`、`Interface`、GC 生命周期或生成类交互：放 UE Scenario。
 
+## Learning 测试 — 教学型可观测测试
+
+`Learning/` 目录包含教学型可观测测试（Educational Trace Tests），目标是**解释机制如何工作**，而非仅验证功能回归。
+
+### 目标与定位
+
+| 目录 | 目标 |
+|------|------|
+| `Learning/Native/` | 解释原生 AngelScript 引擎的启动、绑定、字节码、handles、调试器上下文 |
+| `Learning/Runtime/` | 解释编译管线、预处理、模块解析、热重载判定、类生成、UE 桥接、接口、委托、组件层次、GC、计时器、子系统生命周期 |
+| `Learning/Scenario/` | 解释复杂场景中多系统协作的学习路径 |
+| `Learning/Editor/` | 解释编辑器相关功能（源码导航、调试器集成等） |
+
+### 运行方式
+
+运行所有 Learning 测试：
+
+```
+Automation RunTests Angelscript.TestModule.Learning
+```
+
+运行特定主题：
+
+```
+Automation RunTests Angelscript.TestModule.Learning.Runtime.Compiler
+Automation RunTests Angelscript.TestModule.Learning.Runtime.ClassGeneration
+```
+
+导出详细报告：
+
+```
+-ReportExportPath="<ProjectRoot>/Saved/AutomationReports/LearningTests"
+-LogCmds="Angelscript Display,LogAutomationTest Verbose"
+```
+
+### 输出特征
+
+每个 Learning 测试输出包含：
+
+1. **Phase 标签**：标识当前操作阶段（Compile、ClassGeneration、Execution、UEBridge 等）
+2. **Step 标识**：每个关键操作有唯一 StepId 和说明
+3. **Key-Value 观测**：关键值（类名、函数声明、属性值、判定结果）
+4. **Observation 总结**：课程要点总结
+
+测试既打印过程，也保留最小必要断言，保证输出结构完整且非空。
+
+### 与其他测试的关系
+
+- `Learning/` 与 `Examples/` 区分：Learning 侧重解释，Examples 侧重功能示例
+- `Learning/` 与 `Internals/` 区分：Learning 使用公共/内部 API 解释行为，Internals 验证内部正确性
+- 同一机制可跨目录存在，但每个目录承担的叙事职责要清晰
+
 ## 源文件位置约定
 
 - 自动化测试放置在模块的 `Private\Tests` 目录中
