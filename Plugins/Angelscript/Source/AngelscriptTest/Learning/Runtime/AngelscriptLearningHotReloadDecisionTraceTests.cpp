@@ -34,7 +34,7 @@ namespace
 		bool bNeedsFullReload = false;
 	};
 
-	FString GetReloadRequirementLabel(FAngelscriptClassGenerator::EReloadRequirement ReloadRequirement)
+	FString GetHotReloadDecisionRequirementLabel(FAngelscriptClassGenerator::EReloadRequirement ReloadRequirement)
 	{
 		switch (ReloadRequirement)
 		{
@@ -78,7 +78,7 @@ namespace
 		Trace.AddKeyValue(TEXT("Filename"), Scenario.Filename);
 		Trace.AddKeyValue(TEXT("TriggerExplanation"), Scenario.TriggerExplanation);
 		Trace.AddKeyValue(TEXT("BaselineCompiled"), Outcome.bBaselineCompiled ? TEXT("true") : TEXT("false"));
-		Trace.AddKeyValue(TEXT("ReloadRequirement"), GetReloadRequirementLabel(Outcome.ReloadRequirement));
+		Trace.AddKeyValue(TEXT("ReloadRequirement"), GetHotReloadDecisionRequirementLabel(Outcome.ReloadRequirement));
 		Trace.AddKeyValue(TEXT("WantsFullReload"), Outcome.bWantsFullReload ? TEXT("true") : TEXT("false"));
 		Trace.AddKeyValue(TEXT("NeedsFullReload"), Outcome.bNeedsFullReload ? TEXT("true") : TEXT("false"));
 	}
@@ -301,7 +301,7 @@ class ULearningHotReloadFunctionTarget : UObject
 		DecisionSummaries.Add(FString::Printf(
 			TEXT("%s => %s (wants=%s needs=%s)"),
 			*Scenario.ScenarioLabel,
-			*GetReloadRequirementLabel(Outcome.ReloadRequirement),
+			*GetHotReloadDecisionRequirementLabel(Outcome.ReloadRequirement),
 			Outcome.bWantsFullReload ? TEXT("true") : TEXT("false"),
 			Outcome.bNeedsFullReload ? TEXT("true") : TEXT("false")));
 
