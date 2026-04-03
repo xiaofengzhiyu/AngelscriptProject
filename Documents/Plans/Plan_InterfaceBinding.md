@@ -4,7 +4,7 @@
 
 ### 背景
 
-当前 `Plugins/Angelscript` 已实现了一条完整的 **脚本定义 UINTERFACE** 管线（详见 `J:\UnrealEngine\Docs\Angelscript\AngelPortV2-UInterface-Support-Analysis.md`）：
+当前 `Plugins/Angelscript` 已实现了一条完整的 **脚本定义 UINTERFACE** 管线（详见仓库内接口分析资料；若需本地外部分析文档路径，统一通过 `Reference/README.md` 或本机配置索引查询，而不是在计划中写死绝对路径）：
 
 - **预处理器**：识别 `interface` chunk → 提取方法声明到 `InterfaceMethodDeclarations` → 擦除接口块（保留行号空格） → `RegisterObjectType`（引用类型）+ `RegisterObjectMethod`（`CallInterfaceMethod` 回调）
 - **类生成器**：创建接口 `UClass`（`CLASS_Interface | CLASS_Abstract`）+ minimal UFunction 存根 → `ResolveInterfaceClass` + `AddInterfaceRecursive` → `FindFunctionByName` 方法完整性校验
@@ -33,9 +33,9 @@ AS 类 **当前只能实现 AS 脚本中声明的接口**，**不能** 实现 C+
 | 2 | **方法未注册** | C++ 接口的 `UFUNCTION` 方法没有对应的 `CallInterfaceMethod` 注册，无法通过接口引用调方法 |
 | 3 | **StaticClass() 不可用** | C++ 接口的 `StaticClass()` 全局变量未在 AS 中生成，脚本无法引用 `UMyInterface::StaticClass()` |
 
-### Patch 方案参考（来自 `AngelPortV2-vs-Patch-Interface-Comparison.md`）
+### Patch 方案参考（来自现有接口对比分析资料）
 
-`dev-as-interface` 分支的 Patch（`参考-dev-as-interface-interface-improvements.patch`）提供了一套完整的替代方案，核心差异：
+现有 `dev-as-interface` Patch 方案提供了一套完整的替代路线，核心差异如下：
 
 | 维度 | AngelPortV2（当前） | Patch 方案 |
 |------|-------------------|-----------|
@@ -53,8 +53,8 @@ Patch 方案的关键可借鉴技术点：
 
 ### 横向参考
 
-- **UnrealCSharp**（`Reference/UnrealCSharp`）：双形态映射（`partial class U…` + `interface I…`），`FDynamicInterfaceGenerator` 动态创建接口 `UClass`，`FInterfacePropertyDescriptor` 完整属性支持，`UClass::Interfaces.Emplace(...)` 维护实现关系
-- **PythonScriptPlugin**（`UERelease/Engine/Plugins/Experimental/`）：`GetExportedInterfacesForClass` 递归收集接口 `UClass`，接口方法"混入"实现类 Python API，`FInterfaceProperty` 通过 `GetInterfaceAddress` 构造 `FScriptInterface`
+- **UnrealCSharp**（见 `Reference/README.md` 中的 UnrealCSharp 条目）：双形态映射（`partial class U…` + `interface I…`），`FDynamicInterfaceGenerator` 动态创建接口 `UClass`，`FInterfacePropertyDescriptor` 完整属性支持，`UClass::Interfaces.Emplace(...)` 维护实现关系
+- **PythonScriptPlugin**（引擎内置 Experimental 插件，可通过 `Paths.EngineRoot` 对应的引擎源码树查询）：`GetExportedInterfacesForClass` 递归收集接口 `UClass`，接口方法"混入"实现类 Python API，`FInterfaceProperty` 通过 `GetInterfaceAddress` 构造 `FScriptInterface`
 
 ### 目标
 
@@ -137,7 +137,7 @@ AngelscriptTest/Angelscript/
   - 对照 Patch 的 3 处 AS 引擎修改（`as_objecttype.cpp` `IsInterface()` 启用、`as_builder.cpp` `CreateDefaultDestructors` null 检查、`as_builder.cpp` `DetermineTypeRelations` 接口继承）
   - 评估对当前 AS 2.33 和计划中 AS 2.38 升级的影响
   - 确认修改是否与 `P5-C-AS238-Migration-Plan.md` / `P9-A-Upgrade-Roadmap.md` 冲突
-  - 参考 `AngelPortV2-vs-Patch-Interface-Comparison.md` §4 优劣势对比
+  - 参考现有接口对比分析资料 §4 优劣势对比
   - 记录决策结果到本 Plan 的"已确定决策"章节（新增）
 - [ ] **P0.1** 📦 Git 提交：`[Interface] Docs: record ThirdParty modification decision`
 

@@ -7,8 +7,8 @@
 ## 1. 已编目基线 vs 实时扫描
 
 - `Documents/Guides/TestCatalog.md` 仍以 `275/275 PASS` 作为**已编目基线**。
-- 当前源码对 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`、`IMPLEMENT_COMPLEX_AUTOMATION_TEST`、`IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST`、`BEGIN_DEFINE_SPEC`、`DEFINE_SPEC` 的实时扫描命中 **319** 处定义，覆盖 **89** 个文件。
-- 这两组数字不能直接等价：前者是文档化、已整理的基线；后者是当前源码中的实时定义规模。当前差值为 **+44**，应作为后续 `TestCatalog` 同步与回归验收的起点，而不是继续把 `275` 视为源码现状总数。
+- 当前源码对 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`、`IMPLEMENT_COMPLEX_AUTOMATION_TEST`、`IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST`、`BEGIN_DEFINE_SPEC`、`DEFINE_SPEC` 的实时扫描命中 **324** 处定义，覆盖 **89** 个文件。
+- 这两组数字不能直接等价：前者是文档化、已整理的基线；后者是当前源码中的实时定义规模。当前差值为 **+49**，应作为后续 `TestCatalog` 同步与回归验收的起点，而不是继续把 `275` 视为源码现状总数。
 
 ### 当前 live inventory 热点
 
@@ -37,25 +37,19 @@
 - 旧 helper 兼容别名已从 `Shared/AngelscriptTestUtilities.h` 删除。
 - `Plugins/Angelscript/Source/AngelscriptTest/` 下的 helper 调用点已完成向显式命名迁移；后续不再把 `Initialized` / `Shared` / `Production` 的混合语义保留为并行入口。
 
-## 3. 构建与运行时开放债务锚点
+## 3. 已关闭的构建与运行时债务
 
-- `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:26`：仍保留 `// TODO: 不要删除, 开发期间，关闭优化方便debug`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs:27`：仍无条件 `OptimizeCode = CodeOptimization.Never`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:731`：仍保留 `//WILL-EDIT`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:732`：仍无条件声明 `TBaseStructure<FBox>`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h:737`：仍无条件声明 `TBaseStructure<FBoxSphereBounds>`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:144`：`ExecutePreamble()` 仍缺事件签名校验
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:169`：`ExecuteEvent()` 仍缺事件签名校验
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:343`：delegate 调用路径仍保留 `// TODO: Signature checking?`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp:353`：multicast delegate 调用路径仍保留 `// TODO: Signature checking?`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp:161`：仍保留线程挂起策略待审计注释
-- `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp:185`：异常路径多线程保护仍为 TODO
-- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.cpp:255`：异常路径返回对象销毁仍未收口
+- `Plugins/Angelscript/Source/AngelscriptRuntime/AngelscriptRuntime.Build.cs`：`OptimizeCode = CodeOptimization.Never` 已收口为仅 `Debug` / `DebugGame` 生效的配置感知策略。
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Core/AngelscriptType.h`：`FBox` / `FBoxSphereBounds` 的旧入口审计锚点已被显式 provider 路径替代，不再保留“无条件特化 + WILL-EDIT”作为开放债务。
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintEvent.cpp`：`ExecutePreamble()` / `ExecuteEvent()` / delegate / multicast delegate 入口均已补齐签名校验。
+- `Plugins/Angelscript/Source/AngelscriptRuntime/Debugging/AngelscriptDebugServer.cpp`：data breakpoint 共享状态已改为 snapshot/atomic containment；剩余 `FAngelscriptEngine::Get()` 仅用于 line-callback 状态刷新，不再作为本计划里的开放性并发 TODO。
+- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.cpp`：异常路径对象生命周期已完成本计划范围内的收口，不再保留开放性销毁 TODO。
 
-## 4. 弃用 API 与警告压制盘点
+## 4. 弃用 API 与警告压制结论
 
-- `Plugins/Angelscript/Source/AngelscriptRuntime/ThirdParty/angelscript/source/as_string.h:108`：仍使用 `FCrc::Strihash_DEPRECATED`
-- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.h:65`：仍在文件级使用 `PRAGMA_DISABLE_DEPRECATION_WARNINGS`
+- `Plugins/Angelscript/Source/AngelscriptRuntime/ThirdParty/angelscript/source/as_string.h`：`FCrc::Strihash_DEPRECATED` 已替换为保语义的大小写无关 CRC 实现。
+- `Plugins/Angelscript/Source/AngelscriptRuntime/StaticJIT/StaticJITHeader.h`：文件级 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 已移除。
+- Phase 2 验证时对 `Plugins/Angelscript/Source/AngelscriptRuntime/` 的 `_DEPRECATED` 与 `PRAGMA_DISABLE_DEPRECATION_WARNINGS` 定向扫描均为 **0 命中**。
 
 ## 5. 全局状态依赖盘点
 
@@ -86,18 +80,18 @@
   - `Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_FVector2f.cpp`
 - 其中已明确存在的本地逻辑缺口锚点：`Plugins/Angelscript/Source/AngelscriptRuntime/Binds/Bind_BlueprintType.cpp:156`，`CPF_TObjectPtr` 判断仍处于注释状态。
 - 当前执行环境已配置 `AgentConfig.ini` 的 `References.HazelightAngelscriptEngineRoot`，因此 `P0.4` 可直接进入参考源对照，而不需要先补本地引用路径。
-- 需要额外注意：当前 clean `HEAD` 上存在 `Documents/Plans/Plan_InterfaceBinding.md` 与 `Documents/Plans/Plan_AS238LambdaPort.md`，但 `Plan_TechnicalDebt.md` 中提到的 `Plan_AS238NonLambdaPort.md` 与 `Plan_HazelightBindModuleMigration.md` 尚未出现在该基线分支上；后续 `P4.3` 需要决定是补齐 sibling plan 还是回写计划引用。
+- 需要额外注意：`Documents/Plans/Plan_AS238NonLambdaPort.md` 与 `Documents/Plans/Plan_HazelightBindModuleMigration.md` 已创建并在 `BindGapAuditMatrix.md` 中承接对应 high-risk / cross-theme 事项；本节后续只需维护矩阵与 sibling plan 的去向一致性。
 
 ## 7. 宿主工程边界快照
 
-- `Source/AngelscriptProject/AngelscriptProject.Build.cs:11` 仍公开依赖 `EnhancedInput`。
-- 这说明 `P5.3` 不是空白任务：当前宿主工程最小化边界尚未形成文档结论。
+- `Source/AngelscriptProject/AngelscriptProject.Build.cs` 已移除 `InputCore` / `EnhancedInput`，宿主模块当前只保留 `Core`、`CoreUObject`、`Engine` 三个公开依赖。
+- 结论：`P5.3` 已完成宿主工程最小化边界收口；若后续再新增依赖，应先证明其属于宿主验证职责而不是插件逻辑回流。
 
 ## 8. 后续执行建议
 
-- `P0.3` 直接基于当前 worktree 的 `AgentConfig.ini` 做参数展开级 smoke check，优先验证 `ProjectFile` 空值回退是否正确解析到仓库根 `.uproject`。
-- `P0.4` 以本文件第 6 节作为候选文件清单，补齐“本地符号 / 参考行为 / 风险 / 测试落点 / sibling plan 去向”的矩阵列。
-- `P2.4` 与 `P6.2` 更新 `TestCatalog` 时，不再复用单一的 `275/275 PASS` 叙述，而应明确区分“已编目基线”与“实时扫描规模”。
+- `P6.2` 关闭时，确保 `Plan_TechnicalDebt.md` 的引用表已显式包含 `Documents/Guides/GlobalStateContainmentMatrix.md` 与 `Documents/Plans/Plan_FullDeGlobalization.md`。
+- `P6.3` 重新执行最终 `Automation RunTests Angelscript.TestModule` 时，重点确认仍只保留文档中记录的 4 个已知失败项，且没有新增与技术债收口直接相关的回归。
+- 最终结果摘要应同时回写计划、测试目录基线说明与本盘点文档，保持“已编目基线 / 实时扫描规模 / full-suite 已知失败项”三者口径一致。
 
 ## 9. Phase 1 验证快照
 
