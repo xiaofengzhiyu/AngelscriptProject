@@ -202,3 +202,9 @@
   - `Angelscript.TestModule.Shared.EngineHelper.*`：PASS
   - `Angelscript.TestModule.WorldSubsystem.*`：PASS
 - 当前 containment 仍是“低风险入口收口”，不代表 `ClassGenerator` / `AngelscriptEngine` / `GameInstanceSubsystem` 已完成全量去全局化；这些后续边界已转入 `Documents/Plans/Plan_FullDeGlobalization.md`。
+
+## 14. Phase 6.1 结论快照
+
+- `Bind_UEnum.cpp` 当前未见显式的 enum lookup 性能 TODO、专项哈希缓存结构、或仍需单独验证的优化路径。
+- 现有代码主要集中在 `UEnum` 类型适配、属性匹配、默认值转换与 debugger value 构造，不再包含需要单独 benchmark 的“已落地但未验证”性能债务描述。
+- 结论：`Bind_UEnum` 的性能债务按 stale 说法退休；后续若再引入真实的枚举查找优化路径，再单独建立可回归的测量任务。 

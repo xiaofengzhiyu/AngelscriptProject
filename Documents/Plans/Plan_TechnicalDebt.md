@@ -89,7 +89,7 @@
 | **立即修复**（高影响 / 低到中风险） | `TBaseStructure` 条件保护、`OptimizeCode` 条件化、BlueprintEvent 签名校验、DebugServer 并发保护、StaticJIT 异常路径、`Strihash_DEPRECATED` 替换、缩小警告压制范围 | 直接纳入本计划主线，要求测试与文档同步 |
 | **分层推进**（高影响 / 高风险） | helper 命名迁移、全局状态收口 | 只允许分层迁移，不允许一次性大重写 |
 | **先审计再实现**（中影响 / 高不确定） | Bind 差距、宿主工程边界最小化 | 先做矩阵，低风险项留本计划，高风险项拆 sibling plan |
-| **顺手收口**（低影响 / 低风险） | `Bind_UEnum` 性能验证、文档基线同步 | 与相邻 Phase 一起做，不单独开大 Phase |
+| **顺手收口**（低影响 / 低风险） | `Bind_UEnum` stale 性能债务退役、文档基线同步 | 与相邻 Phase 一起做，不单独开大 Phase |
 
 ## 验证命令基线
 
@@ -335,8 +335,9 @@ powershell.exe -Command "Start-Process -FilePath '<EngineRoot>\Engine\Binaries\W
 > 目标：只对仍然存在且已落地的优化点做性能复核，并把整个技术债计划的最终状态同步回文档体系。
 
 - [ ] **P6.1** 验证 `Bind_UEnum.cpp` 的性能优化债务是否仍然成立
-  - 若 `Bind_UEnum.cpp` 里的哈希查找优化仍是当前主线中的显式改动，就用 focused benchmark 或自动化计时验证其收益
-  - 若代码或文档已经不再把这项视为待验证优化，就从技术债列表中移除旧说法，而不是为了“保持 Phase 数量”强行做无意义测量
+  - 当前复核优先看代码事实：`Bind_UEnum.cpp` 是否仍存在显式哈希查找优化路径、性能 TODO、或文档中仍引用的未验证性能结论。
+  - 若 `Bind_UEnum.cpp` 里的哈希查找优化仍是当前主线中的显式改动，就用 focused benchmark 或自动化计时验证其收益。
+  - 若代码或文档已经不再把这项视为待验证优化，就从技术债列表中移除旧说法，而不是为了“保持 Phase 数量”强行做无意义测量。
   - 任何性能结论都需要附带测量口径与场景，不写“体感更快”这种不可回归描述
 - [ ] **P6.1** 📦 Git 提交：`[Binds] Test: verify or retire stale enum lookup performance debt`
 
