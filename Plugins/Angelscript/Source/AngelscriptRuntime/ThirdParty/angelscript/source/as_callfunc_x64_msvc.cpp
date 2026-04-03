@@ -28,6 +28,9 @@
    andreas@angelcode.com
 */
 
+// Hazelight replaced this x64 MSVC native bridge with template-based callers in FunctionCallers.h.
+// Native dispatch now goes through asCContext::CallFunctionCaller(), so this file stays disabled as historical reference.
+
 //
 // Added support for thiscall methods by Jordi Oliveras Rovira in April, 2014.
 //

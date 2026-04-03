@@ -34,11 +34,36 @@ namespace AngelscriptTestSupport
 {
 	using FAngelscriptTestEngineScopeAccess = ::FAngelscriptTestEngineScopeAccess;
 	using FScopedGlobalEngineOverride = ::FScopedGlobalEngineOverride;
+	using FScopedTestEngineGlobalScope = ::FScopedTestEngineGlobalScope;
 
 	inline TUniquePtr<FAngelscriptEngine>& GetSharedTestEngineStorage()
 	{
 		static TUniquePtr<FAngelscriptEngine> Storage;
 		return Storage;
+	}
+
+	inline TUniquePtr<FScopedGlobalEngineOverride>& GetSharedTestEngineGlobalScopeStorage()
+	{
+		static TUniquePtr<FScopedGlobalEngineOverride> ScopeStorage;
+		return ScopeStorage;
+	}
+
+	inline void SyncSharedTestEngineGlobalRegistration()
+	{
+		TUniquePtr<FAngelscriptEngine>& SharedEngine = GetSharedTestEngineStorage();
+		if (!SharedEngine.IsValid())
+		{
+			return;
+		}
+
+		if (SharedEngine->OwnsEngine() && FAngelscriptTestEngineScopeAccess::GetGlobalEngine() == nullptr)
+		{
+			TUniquePtr<FScopedGlobalEngineOverride>& ScopeStorage = GetSharedTestEngineGlobalScopeStorage();
+			if (!ScopeStorage.IsValid())
+			{
+				ScopeStorage = MakeUnique<FScopedGlobalEngineOverride>(SharedEngine.Get());
+			}
+		}
 	}
 
 	struct FScopedTestWorldContextScope
@@ -91,14 +116,20 @@ namespace AngelscriptTestSupport
 
 	inline FAngelscriptEngine& GetOrCreateSharedCloneEngine()
 	{
-		static TUniquePtr<FAngelscriptEngine> SharedCloneEngine;
+		TUniquePtr<FAngelscriptEngine>& SharedCloneEngine = GetSharedTestEngineStorage();
 		if (!SharedCloneEngine.IsValid())
 		{
 			SharedCloneEngine = CreateIsolatedCloneEngine();
 		}
 
 		check(SharedCloneEngine.IsValid());
+		SyncSharedTestEngineGlobalRegistration();
 		return *SharedCloneEngine;
+	}
+
+	inline FAngelscriptEngine& GetSharedTestEngine()
+	{
+		return GetOrCreateSharedCloneEngine();
 	}
 
 	inline void ResetSharedCloneEngine(FAngelscriptEngine& Engine)
@@ -112,11 +143,21 @@ namespace AngelscriptTestSupport
 		CollectGarbage(RF_NoFlags, true);
 	}
 
+	inline void ResetSharedInitializedTestEngine(FAngelscriptEngine& Engine)
+	{
+		ResetSharedCloneEngine(Engine);
+	}
+
 	inline FAngelscriptEngine& AcquireCleanSharedCloneEngine()
 	{
 		FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
 		ResetSharedCloneEngine(Engine);
 		return Engine;
+	}
+
+	inline FAngelscriptEngine& GetResetSharedTestEngine()
+	{
+		return AcquireCleanSharedCloneEngine();
 	}
 
 	inline FAngelscriptEngine& AcquireCleanSharedCloneEngineAndOverrideGlobal(FScopedGlobalEngineOverride& OutScope)
@@ -125,6 +166,67 @@ namespace AngelscriptTestSupport
 		ResetSharedCloneEngine(Engine);
 		OutScope = FScopedGlobalEngineOverride(&Engine);
 		return Engine;
+	}
+
+	inline void DestroySharedTestEngine()
+	{
+		TUniquePtr<FAngelscriptEngine>& SharedEngine = GetSharedTestEngineStorage();
+		if (SharedEngine.IsValid() && FAngelscriptTestEngineScopeAccess::GetGlobalEngine() == SharedEngine.Get())
+		{
+			GetSharedTestEngineGlobalScopeStorage().Reset();
+		}
+
+		SharedEngine.Reset();
+	}
+
+	inline void DestroySharedAndStrayGlobalTestEngine()
+	{
+		DestroySharedTestEngine();
+		if (!UAngelscriptGameInstanceSubsystem::HasAnyTickOwner() && FAngelscriptTestEngineScopeAccess::GetGlobalEngine() != nullptr)
+		{
+			FAngelscriptTestEngineScopeAccess::DestroyGlobalEngine();
+		}
+	}
+
+	inline TUniquePtr<FAngelscriptEngine> CreateFullTestEngine()
+	{
+		return CreateIsolatedFullEngine();
+	}
+
+	struct FResolvedProductionLikeEngine
+	{
+		TUniquePtr<FAngelscriptEngine> OwnedEngine;
+		TUniquePtr<FScopedGlobalEngineOverride> GlobalScope;
+		FAngelscriptEngine* Engine = nullptr;
+
+		FAngelscriptEngine& Get() const
+		{
+			check(Engine != nullptr);
+			return *Engine;
+		}
+	};
+
+	inline bool AcquireProductionLikeEngine(FAutomationTestBase& Test, const TCHAR* ErrorContext, FResolvedProductionLikeEngine& OutResolved)
+	{
+		if (FAngelscriptEngine* ProductionEngine = TryGetRunningProductionEngine())
+		{
+			OutResolved.GlobalScope = MakeUnique<FScopedGlobalEngineOverride>(ProductionEngine);
+			OutResolved.Engine = ProductionEngine;
+			return true;
+		}
+
+		// Shared test storage may currently own the single live Full epoch.
+		DestroySharedTestEngine();
+
+		OutResolved.OwnedEngine = CreateFullTestEngine();
+		if (!Test.TestNotNull(ErrorContext, OutResolved.OwnedEngine.Get()))
+		{
+			return false;
+		}
+
+		OutResolved.GlobalScope = MakeUnique<FScopedGlobalEngineOverride>(OutResolved.OwnedEngine.Get());
+		OutResolved.Engine = OutResolved.OwnedEngine.Get();
+		return true;
 	}
 
 	inline FAngelscriptEngine* RequireRunningProductionEngine(FAutomationTestBase& Test, const TCHAR* ErrorContext)

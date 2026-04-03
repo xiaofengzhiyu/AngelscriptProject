@@ -1,6 +1,7 @@
 #include "AngelscriptBinds.h"
 #include "AngelscriptEngine.h"
 #include "AngelscriptSettings.h"
+#include "../Shared/AngelscriptTestUtilities.h"
 #include "Testing/AngelscriptBindExecutionObservation.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/Guid.h"
@@ -110,6 +111,7 @@ namespace
 
 	FAngelscriptBindExecutionSnapshot ObserveStartupBindPass(const FAngelscriptEngineConfig& Config)
 	{
+		AngelscriptTestSupport::DestroySharedTestEngine();
 		if (FAngelscriptEngine::IsInitialized())
 		{
 			FAngelscriptBindConfigTestAccess::DestroyGlobalEngine();
@@ -121,6 +123,7 @@ namespace
 		check(Engine.IsValid());
 		FAngelscriptBindExecutionSnapshot Snapshot = FAngelscriptBindExecutionObservation::GetLastSnapshot();
 		Engine.Reset();
+		AngelscriptTestSupport::DestroySharedTestEngine();
 
 		if (FAngelscriptEngine::IsInitialized())
 		{

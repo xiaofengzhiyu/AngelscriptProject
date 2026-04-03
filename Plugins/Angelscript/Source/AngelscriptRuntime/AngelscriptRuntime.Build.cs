@@ -20,11 +20,6 @@ namespace UnrealBuildTool.Rules
 			PublicIncludePaths.Add(Path.Combine(AngelscriptThirdPartyPath, "source"));
 			PublicIncludePaths.Add(AngelscriptThirdPartyPath);
 
-			if (Target.Platform == UnrealTargetPlatform.Win64)
-			{
-				PublicAdditionalLibraries.Add(Path.Combine(PluginDirectory, "Intermediate", "Build", "as_callfunc_x64_msvc_asm.lib"));
-			}
-
 			if (Target.Configuration == UnrealTargetConfiguration.Debug || Target.Configuration == UnrealTargetConfiguration.DebugGame)
 			{
 				OptimizeCode = CodeOptimization.Never;

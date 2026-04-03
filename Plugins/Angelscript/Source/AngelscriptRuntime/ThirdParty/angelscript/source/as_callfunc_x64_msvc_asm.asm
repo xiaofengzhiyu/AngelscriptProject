@@ -27,6 +27,8 @@
 ;  Andreas Jonsson
 ;  andreas@angelcode.com
 ;
+; Hazelight replaced this x64 MSVC assembly bridge with template-based callers in FunctionCallers.h.
+; The runtime now dispatches through asCContext::CallFunctionCaller(), so this file is kept only for historical reference and is no longer linked.
 
 .code
 PUBLIC CallX64

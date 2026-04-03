@@ -14,6 +14,12 @@ namespace
 {
 	using namespace AngelscriptScenarioTestUtils;
 
+	FAngelscriptEngine& AcquireFreshHotReloadEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+
 	void InitializeHotReloadScenarioSpawner(FActorTestSpawner& Spawner)
 	{
 		Spawner.InitializeGameSubsystems();
@@ -42,7 +48,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioHotReloadPropertyPreservedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshHotReloadEngine();
 	static const FName ModuleName(TEXT("ScenarioHotReloadPropertyPreserved"));
 	ON_SCOPE_EXIT
 	{
@@ -149,7 +155,7 @@ class AScenarioHotReloadPropertyPreserved : AAngelscriptActor
 
 bool FAngelscriptScenarioHotReloadAddPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshHotReloadEngine();
 	static const FName ModuleName(TEXT("ScenarioHotReloadAddProperty"));
 	ON_SCOPE_EXIT
 	{
@@ -233,7 +239,7 @@ class AScenarioHotReloadAddProperty : AAngelscriptActor
 
 bool FAngelscriptScenarioHotReloadFunctionChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshHotReloadEngine();
 	static const FName ModuleName(TEXT("ScenarioHotReloadFunctionChange"));
 	ON_SCOPE_EXIT
 	{
@@ -332,7 +338,7 @@ class AScenarioHotReloadFunctionChange : AAngelscriptActor
 
 bool FAngelscriptScenarioHotReloadPIEStructuralChangeNeedsFullReloadTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshHotReloadEngine();
 	static const FName ModuleName(TEXT("ScenarioHotReloadPIEStructuralChange"));
 	ON_SCOPE_EXIT
 	{

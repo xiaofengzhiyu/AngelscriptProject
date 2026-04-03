@@ -23,6 +23,12 @@ using namespace AngelscriptScenarioTestUtils;
 
 namespace
 {
+	FAngelscriptEngine& AcquireFreshLearningEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+
 	UBlueprint* CreateTransientLearningBlueprintChild(
 		FAutomationTestBase& Test,
 		UClass* ParentClass,
@@ -115,7 +121,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptLearningScriptClassToBlueprintTraceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshLearningEngine();
 	static const FName ModuleName(TEXT("LearningScriptClassToBlueprintModule"));
 	ON_SCOPE_EXIT
 	{

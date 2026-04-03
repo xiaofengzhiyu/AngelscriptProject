@@ -40,6 +40,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptTestModuleLifecycleTest::RunTest(const FString& Parameters)
 {
+	AngelscriptTestSupport::DestroySharedTestEngine();
 	FAngelscriptEngineConfig Config;
 	FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
 
@@ -63,7 +64,7 @@ bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters
 	}
 	AngelscriptTestSupport::FScopedTestEngineGlobalScope GlobalScope(&Engine);
 
-	asIScriptModule* Module = Engine->GetScriptEngine()->GetModule("CompileSnippet", asGM_ALWAYS_CREATE);
+	asIScriptModule* Module = Engine.GetScriptEngine()->GetModule("CompileSnippet", asGM_ALWAYS_CREATE);
 	if (!TestNotNull(TEXT("Compile test should create a script module"), Module))
 	{
 		return false;
@@ -90,7 +91,7 @@ bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters
 	}
 	AngelscriptTestSupport::FScopedTestEngineGlobalScope GlobalScope(&Engine);
 
-	asIScriptModule* Module = Engine->GetScriptEngine()->GetModule("ExecuteSnippet", asGM_ALWAYS_CREATE);
+	asIScriptModule* Module = Engine.GetScriptEngine()->GetModule("ExecuteSnippet", asGM_ALWAYS_CREATE);
 	if (!TestNotNull(TEXT("Execute test should create a script module"), Module))
 	{
 		return false;
@@ -109,7 +110,7 @@ bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters
 		return false;
 	}
 
-	asIScriptContext* Context = Engine->CreateContext();
+	asIScriptContext* Context = Engine.CreateContext();
 	if (!TestNotNull(TEXT("Execute test should create a script context"), Context))
 	{
 		return false;

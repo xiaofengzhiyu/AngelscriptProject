@@ -173,6 +173,7 @@ namespace AngelscriptTestSupport
 				return false;
 			}
 
+			FScopedGlobalEngineOverride GlobalScope(Engine);
 			FString AbsoluteFilename;
 
 			if (FPaths::IsRelative(Filename))
@@ -218,7 +219,6 @@ namespace AngelscriptTestSupport
 			TArray<TSharedRef<FAngelscriptModuleDesc>> CompiledModules;
 			TGuardValue<bool> AutomaticImportGuard(FAngelscriptEngine::bUseAutomaticImportMethod, false);
 			FScopedAutomaticImportsOverride AutomaticImportsOverride(Engine->GetScriptEngine());
-			FScopedGlobalEngineOverride GlobalScope(Engine);
 			const ECompileResult CompileResult = Engine->CompileModules(CompileType, ModulesToCompile, CompiledModules);
 			if (OutCompileResult != nullptr)
 			{

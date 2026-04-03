@@ -19,13 +19,13 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptFunctionSourceNavigationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine* ProductionEngine = RequireRunningProductionEngine(*this, TEXT("Source navigation tests require a production engine."));
-	if (ProductionEngine == nullptr)
+	FResolvedProductionLikeEngine ResolvedEngine;
+	if (!AcquireProductionLikeEngine(*this, TEXT("Source navigation tests require a production-like engine."), ResolvedEngine))
 	{
 		return false;
 	}
 
-	FAngelscriptEngine& Engine = *ProductionEngine;
+	FAngelscriptEngine& Engine = ResolvedEngine.Get();
 
 	const FString Script = TEXT(R"AS(
 UCLASS()

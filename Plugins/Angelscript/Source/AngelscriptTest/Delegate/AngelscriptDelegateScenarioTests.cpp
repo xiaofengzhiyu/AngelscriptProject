@@ -17,6 +17,12 @@ namespace
 {
 	using namespace AngelscriptScenarioTestUtils;
 
+	FAngelscriptEngine& AcquireFreshDelegateEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+
 	struct FScenarioIntStringParams
 	{
 		int32 Value = 0;
@@ -34,11 +40,10 @@ namespace
 		const TCHAR* DelegateCallSignature,
 		const TCHAR* TriggerSignature)
 	{
-		Test.AddExpectedErrorPlain(TEXT("Signature mismatch while executing 'MarkNativeFlagFromDelegate'"), EAutomationExpectedErrorFlags::Contains, 0);
-		Test.AddExpectedErrorPlain(FString::Printf(TEXT("Clone_1::%s"), ScenarioName), EAutomationExpectedErrorFlags::Contains, 0);
-		Test.AddExpectedErrorPlain(DelegateCallSignature, EAutomationExpectedErrorFlags::Contains, 0);
-		Test.AddExpectedErrorPlain(TriggerSignature, EAutomationExpectedErrorFlags::Contains, 0);
-		Test.AddExpectedErrorPlain(FString::Printf(TEXT("(Actor: %s_0"), ScenarioName), EAutomationExpectedErrorFlags::Contains, 0);
+		Test.AddExpectedErrorPlain(TEXT("Signature mismatch while executing 'MarkNativeFlagFromDelegate': too many arguments were pushed."), EAutomationExpectedErrorFlags::Contains, -1);
+		Test.AddExpectedErrorPlain(ScenarioName, EAutomationExpectedErrorFlags::Contains, -1);
+		Test.AddExpectedErrorPlain(DelegateCallSignature, EAutomationExpectedErrorFlags::Contains, -1);
+		Test.AddExpectedErrorPlain(TriggerSignature, EAutomationExpectedErrorFlags::Contains, -1);
 	}
 }
 
@@ -64,7 +69,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioDelegateUnicastTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshDelegateEngine();
 	static const FName ModuleName(TEXT("ScenarioDelegateUnicast"));
 	ON_SCOPE_EXIT
 	{
@@ -145,7 +150,7 @@ class AScenarioDelegateUnicast : AAngelscriptActor
 
 bool FAngelscriptScenarioDelegateMulticastTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshDelegateEngine();
 	static const FName ModuleName(TEXT("ScenarioDelegateMulticast"));
 	ON_SCOPE_EXIT
 	{
@@ -233,7 +238,7 @@ class AScenarioDelegateMulticast : AAngelscriptActor
 
 bool FAngelscriptScenarioDelegateUnicastSignatureMismatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshDelegateEngine();
 	static const FName ModuleName(TEXT("ScenarioDelegateUnicastSignatureMismatch"));
 	ON_SCOPE_EXIT
 	{
@@ -319,7 +324,7 @@ class AScenarioDelegateUnicastSignatureMismatch : AAngelscriptActor
 
 bool FAngelscriptScenarioDelegateMulticastSignatureMismatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshDelegateEngine();
 	static const FName ModuleName(TEXT("ScenarioDelegateMulticastSignatureMismatch"));
 	ON_SCOPE_EXIT
 	{

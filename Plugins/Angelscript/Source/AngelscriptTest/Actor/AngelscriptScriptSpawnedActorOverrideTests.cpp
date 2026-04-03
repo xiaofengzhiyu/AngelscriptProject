@@ -18,6 +18,12 @@ namespace
 	constexpr float ScriptActorScenarioDeltaTime = 0.016f;
 	constexpr int32 ScriptActorScenarioTickCount = 3;
 
+	FAngelscriptEngine& AcquireFreshScriptActorEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+
 	struct FSingleIntParam
 	{
 		int32 Value = 0;
@@ -117,7 +123,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioScriptActorBeginPlayRunsInWorldTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorBeginPlayRunsInWorld"));
 	ON_SCOPE_EXIT
 	{
@@ -172,7 +178,7 @@ class AScenarioScriptActorBeginPlayRunsInWorld : AAngelscriptActor
 
 bool FAngelscriptScenarioScriptActorNativeUFunctionCanBeInvokedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorNativeUFunctionCanBeInvoked"));
 	ON_SCOPE_EXIT
 	{
@@ -251,7 +257,7 @@ class AScenarioScriptActorNativeUFunctionCanBeInvoked : AAngelscriptActor
 
 bool FAngelscriptScenarioScriptActorBeginPlayCallsAnotherScriptUFunctionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorBeginPlayCallsAnotherScriptUFunction"));
 	ON_SCOPE_EXIT
 	{
@@ -312,7 +318,7 @@ class AScenarioScriptActorBeginPlayCallsAnotherScriptUFunction : AAngelscriptAct
 
 bool FAngelscriptScenarioScriptActorTickRunsNTimesTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorTickRunsNTimes"));
 	ON_SCOPE_EXIT
 	{
@@ -390,7 +396,7 @@ class AScenarioScriptActorTickRunsNTimes : AAngelscriptActor
 
 bool FAngelscriptScenarioScriptActorCrossInstanceCallDoesNotLeakStateTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorCrossInstanceCallDoesNotLeakState"));
 	ON_SCOPE_EXIT
 	{
@@ -478,7 +484,7 @@ class AScenarioScriptActorCrossInstanceCallDoesNotLeakState : AAngelscriptActor
 
 bool FAngelscriptScenarioScriptActorDestroyedActorInvocationFailsSafelyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorDestroyedActorInvocationFailsSafely"));
 	ON_SCOPE_EXIT
 	{
@@ -601,7 +607,7 @@ class AScenarioScriptActorDestroyedInvocationSource : AAngelscriptActor
 
 bool FAngelscriptScenarioScriptActorMissingFunctionReportsExplicitFailureTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshScriptActorEngine();
 	static const FName ModuleName(TEXT("ScenarioScriptActorMissingFunctionReportsExplicitFailure"));
 	ON_SCOPE_EXIT
 	{

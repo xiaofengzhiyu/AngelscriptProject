@@ -90,13 +90,13 @@
 ## 8. 后续执行建议
 
 - `P6.2` 关闭时，确保 `Plan_TechnicalDebt.md` 的引用表已显式包含 `Documents/Guides/GlobalStateContainmentMatrix.md` 与 `Documents/Plans/Plan_FullDeGlobalization.md`。
-- `P6.3` 重新执行最终 `Automation RunTests Angelscript.TestModule` 时，重点确认仍只保留文档中记录的 4 个已知失败项，且没有新增与技术债收口直接相关的回归。
-- 最终结果摘要应同时回写计划、测试目录基线说明与本盘点文档，保持“已编目基线 / 实时扫描规模 / full-suite 已知失败项”三者口径一致。
+- `P6.3` 若再次执行最终 `Automation RunTests Angelscript.TestModule`，不应再假设“仍固定保留 4 个已知失败项”；当前口径应以最新日志为准，重新核对 full-suite 是否仍然全绿，或是否出现新的顺序相关污染。
+- 最终结果摘要应同时回写计划、测试目录基线说明与本盘点文档，保持“已编目基线 / 实时扫描规模 / full-suite 最新状态”三者口径一致。
 
 ## 9. Phase 1 验证快照
 
 - 编辑器目标构建验证：`AngelscriptProjectEditor Win64 Development` 在当前 `technical-debt-plan` worktree 中可成功构建。
-- 本地前置说明：构建前需要先生成 `Plugins/Angelscript/Intermediate/Build/as_callfunc_x64_msvc_asm.lib`；这是当前仓库沿用的本地中间产物前置，不是本轮 `P1` 改动新引入的问题。
+- 本地前置说明：此前构建链路曾引用 `Plugins/Angelscript/Intermediate/Build/as_callfunc_x64_msvc_asm.lib` 作为本地中间产物前置；该残留依赖已在后续 `CallfuncDeadCodeCleanup` 中移除，当前构建不再要求预先生成该 `.lib`。
 - `P1.3` 目标测试验证：
   - `Angelscript.TestModule.Delegate.UnicastSignatureMismatch`：PASS
   - `Angelscript.TestModule.Delegate.MulticastSignatureMismatch`：PASS
@@ -222,3 +222,13 @@
     - 失败摘要：`Cannot declare class AExampleActorType in module ScriptExamples.Example_Actor. A class with this name already exists in module Example_Actor.`
     - 证据：`Saved/Logs/AngelscriptProject.log:7225`。
 - 结论：`P6` 最终回归确认本轮技术债关闭工作没有引入新的 full-suite 回归；剩余失败项继续作为独立测试输入 / 路径 / 示例模块冲突问题保留，不回退为本计划中的开放技术债。
+
+## 16. 2026-04-03 补充回归快照
+
+- 编辑器目标构建验证：`AngelscriptProjectEditor Win64 Development` 已重新构建通过。
+- 最新全量回归：`Automation RunTests Angelscript.TestModule` 已在当前仓库通过，结果日志见 `Saved/Logs/TestRun_20260403_170014.log`。
+- 本轮收口并不是 runtime 去全局化已经完成，而是测试侧隔离进一步收紧：
+  - `Shared/AngelscriptTestUtilities.h` 新增 `DestroySharedAndStrayGlobalTestEngine()`，用于同时清理共享测试引擎与“没有 subsystem tick owner 的 stray global engine”。
+  - 多个晚段测试入口统一改为本地 `AcquireFresh*Engine()` 模式：先清 shared / stray global，再重新获取 clean shared clone，切断全量跑时从前序残留 global runtime 上 clone 的污染链。
+  - `HotReload` / `Delegate` 相关 performance 与 mismatch 用例同步对齐了当前 runtime 的返回值和日志格式，避免把预期漂移误判成真实回归。
+- 这次验证也再次证明一个事实：`GAngelscriptEngine` 仍然存在并参与当前 runtime 解析路径；测试变绿不代表全局状态债务已关闭，只说明现有 helper containment 已足以稳定当前 full-suite。

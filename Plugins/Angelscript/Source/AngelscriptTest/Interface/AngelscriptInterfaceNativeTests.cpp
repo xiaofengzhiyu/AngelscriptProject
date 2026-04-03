@@ -15,6 +15,15 @@ using namespace AngelscriptScenarioTestUtils;
 
 namespace
 {
+	FAngelscriptEngine& AcquireFreshInterfaceEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+}
+
+namespace
+{
 	void TestCallInterfaceMethod(asIScriptGeneric* Generic)
 	{
 		FInterfaceMethodSignature* Signature = static_cast<FInterfaceMethodSignature*>(Generic->GetFunction()->GetUserData());
@@ -121,7 +130,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceNativeImplementTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshInterfaceEngine();
 	static const FName ModuleName(TEXT("ScenarioInterfaceNativeImplement"));
 	EnsureNativeInterfaceFixturesBound();
 	ON_SCOPE_EXIT
@@ -228,7 +237,7 @@ class AScenarioInterfaceNativeImplement : AAngelscriptActor, UAngelscriptNativeP
 
 bool FAngelscriptScenarioInterfaceNativeInheritedImplementTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshInterfaceEngine();
 	static const FName ModuleName(TEXT("ScenarioInterfaceNativeInheritedImplement"));
 	EnsureNativeInterfaceFixturesBound();
 	ON_SCOPE_EXIT

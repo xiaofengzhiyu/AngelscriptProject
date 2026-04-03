@@ -342,12 +342,19 @@ class UScenarioComponentActorOwner : UAngelscriptComponent
 
 bool FAngelscriptScenarioDefaultComponentBasicTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	DestroySharedTestEngine();
+	FActorTestSpawner Spawner;
+	InitializeComponentScenarioSpawner(Spawner);
+	FAngelscriptEngine* ProductionEngine = RequireRunningProductionEngine(*this, TEXT("Default component scenario tests require a production engine after subsystem initialization."));
+	if (ProductionEngine == nullptr)
+	{
+		return false;
+	}
+	FAngelscriptEngine& Engine = *ProductionEngine;
 	static const FName ModuleName(TEXT("ScenarioDefaultComponentBasic"));
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -374,8 +381,6 @@ class AScenarioDefaultComponentBasic : AAngelscriptActor
 		return false;
 	}
 
-	FActorTestSpawner Spawner;
-	InitializeComponentScenarioSpawner(Spawner);
 	AActor* Actor = SpawnScriptActor(*this, Spawner, ScriptClass);
 	if (Actor == nullptr)
 	{
@@ -402,12 +407,19 @@ class AScenarioDefaultComponentBasic : AAngelscriptActor
 
 bool FAngelscriptScenarioDefaultComponentMultipleTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	DestroySharedTestEngine();
+	FActorTestSpawner Spawner;
+	InitializeComponentScenarioSpawner(Spawner);
+	FAngelscriptEngine* ProductionEngine = RequireRunningProductionEngine(*this, TEXT("Default component scenario tests require a production engine after subsystem initialization."));
+	if (ProductionEngine == nullptr)
+	{
+		return false;
+	}
+	FAngelscriptEngine& Engine = *ProductionEngine;
 	static const FName ModuleName(TEXT("ScenarioDefaultComponentMultiple"));
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(*ModuleName.ToString());
-		ResetSharedCloneEngine(Engine);
 	};
 
 	UClass* ScriptClass = CompileScriptModule(
@@ -442,8 +454,6 @@ class AScenarioDefaultComponentMultiple : AAngelscriptActor
 		return false;
 	}
 
-	FActorTestSpawner Spawner;
-	InitializeComponentScenarioSpawner(Spawner);
 	AActor* Actor = SpawnScriptActor(*this, Spawner, ScriptClass);
 	if (Actor == nullptr)
 	{

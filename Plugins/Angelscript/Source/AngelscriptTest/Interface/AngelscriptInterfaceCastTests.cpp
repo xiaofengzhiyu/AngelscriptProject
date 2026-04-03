@@ -11,6 +11,15 @@
 using namespace AngelscriptTestSupport;
 using namespace AngelscriptScenarioTestUtils;
 
+namespace
+{
+	FAngelscriptEngine& AcquireFreshInterfaceEngine()
+	{
+		DestroySharedAndStrayGlobalTestEngine();
+		return AcquireCleanSharedCloneEngine();
+	}
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptScenarioInterfaceCastSuccessTest,
 	"Angelscript.TestModule.Interface.CastSuccess",
@@ -28,7 +37,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceCastSuccessTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshInterfaceEngine();
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastSuccess"));
 	ON_SCOPE_EXIT
 	{
@@ -97,7 +106,7 @@ class AScenarioInterfaceCastSuccess : AAngelscriptActor, UIDamageableCastOk
 
 bool FAngelscriptScenarioInterfaceCastFailTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshInterfaceEngine();
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastFail"));
 	ON_SCOPE_EXIT
 	{
@@ -163,7 +172,7 @@ class AScenarioInterfaceCastFail : AAngelscriptActor
 
 bool FAngelscriptScenarioInterfaceMethodCallTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireFreshInterfaceEngine();
 	static const FName ModuleName(TEXT("ScenarioInterfaceMethodCall"));
 	ON_SCOPE_EXIT
 	{

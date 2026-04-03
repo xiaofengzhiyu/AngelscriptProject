@@ -1,5 +1,6 @@
 #include "AngelscriptTestSupport.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
+#include "Misc/FileHelper.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/Paths.h"
 
@@ -237,11 +238,20 @@ class UNativeHotReloadPhase2BMathCarrier : UObject
 
 bool FAngelscriptNativeScriptHotReloadPhase2CTest::RunTest(const FString& Parameters)
 {
-	return VerifyNativeScriptHotReload(
+	const FString RelativeFilename = TEXT("Script/Tests/Test_ExampleActorFixture.as");
+	const FString AbsoluteFilename = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / RelativeFilename);
+	FString Source;
+	if (!FFileHelper::LoadFileToString(Source, *AbsoluteFilename))
+	{
+		AddError(FString::Printf(TEXT("Phase2C should load source from %s"), *RelativeFilename));
+		return false;
+	}
+
+	return VerifyNativeScriptHotReloadInline(
 		*this,
 		TEXT("Phase2C"),
 		{
-			TEXT("Script/Tests/Test_ExampleActorFixture.as"),
+			TPair<FString, FString>(RelativeFilename, Source),
 		});
 }
 
