@@ -38,17 +38,16 @@ class UFunctionNavigationCarrier : UObject
 	}
 }
 )AS");
-	const FString RelativeScriptPath = TEXT("Automation/RuntimeFunctionNavigationTest.as");
-	const FString ScriptPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Automation"), RelativeScriptPath);
+	const FString RelativeScriptFilename = TEXT("RuntimeFunctionNavigationTest.as");
+	const FString ScriptPath = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Automation"), RelativeScriptFilename);
 	ON_SCOPE_EXIT
 	{
-		Engine.DiscardModule(TEXT("Automation.RuntimeFunctionNavigationTest"));
+		Engine.DiscardModule(TEXT("RuntimeFunctionNavigationTest"));
 	};
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("RuntimeFunctionNavigationTest"),
-		ScriptPath,
-
+		RelativeScriptFilename,
 		Script);
 	if (!TestTrue(TEXT("Compile annotated function navigation module should succeed"), bCompiled))
 	{

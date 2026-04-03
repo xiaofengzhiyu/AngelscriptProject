@@ -5,6 +5,8 @@
 #include "Sockets.h"
 
 #include "AngelscriptType.h"
+
+struct FAngelscriptEngine;
 #include "Common/TcpListener.h"
 #include "Common/UdpSocketReceiver.h"
 #include "Serialization/MemoryWriter.h"
@@ -578,6 +580,8 @@ class FAngelscriptDebugServer
 	double NextPingDebuggerAliveTime = 0.0;
 
 	bool HandleConnectionAccepted(class FSocket* ClientSocket, const FIPv4Endpoint& ClientEndpoint);
+
+public:
 	FAngelscriptEngine* GetOwnerEngine() const { return OwnerEngine; }
 
 public:
