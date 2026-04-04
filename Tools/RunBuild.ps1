@@ -70,6 +70,7 @@ try {
     }
 
     $buildMode = if ($SerializeByEngine) { 'SerializedEngine' } else { 'ConcurrentNoEngineChanges' }
+    $ubtLogPath = Join-Path $outputLayout.OutputRoot 'UBT.log'
     $argumentList = @(
         $ubtPaths.UbtDllPath
         $agentConfig.EditorTarget
@@ -77,6 +78,7 @@ try {
         $agentConfig.Configuration
         "-Project=$($agentConfig.ProjectFile)"
         "-architecture=$($agentConfig.Architecture)"
+        "-Log=$ubtLogPath"
         '-NoMutex'
     )
 
@@ -118,6 +120,7 @@ try {
     Write-Host ('DotNet          : {0} ({1})' -f $ubtPaths.DotNetExecutablePath, $ubtPaths.DotNetSource)
     Write-Host ('TimeoutMs       : {0}' -f $resolvedTimeoutMs)
     Write-Host ('LogPath         : {0}' -f $outputLayout.LogPath)
+    Write-Host ('UBT LogPath     : {0}' -f $ubtLogPath)
     if (-not $SerializeByEngine) {
         Write-Host 'Guard           : -NoMutex -NoEngineChanges'
         Write-Host 'Hint            : rerun with -SerializeByEngine if engine outputs must change.'
