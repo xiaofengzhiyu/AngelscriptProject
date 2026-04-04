@@ -1,0 +1,112 @@
+ANGELSCRIPT TEST MACRO SYSTEM - MIGRATION GUIDE
+================================================
+
+PHASE 1: SIMPLE SHARED ENGINE TESTS (Low Risk, High Impact)
+
+Files affected: ~120 tests across:
+- Angelscript/AngelscriptCoreExecutionTests.cpp
+- Bindings/*.cpp
+- Core/*.cpp
+- ClassGenerator/*.cpp
+
+Before:
+    IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMyTest, "Cat.Test", Flags)
+    bool FMyTest::RunTest(const FString& Parameters)
+    {
+        FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+        // test body
+        return true;
+    }
+
+After:
+    ANGELSCRIPT_TEST(FMyTest, "Cat.Test", Flags)
+    {
+        FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+        // test body  
+        return true;
+    }
+
+Reduction: 6-8 lines per test
+
+---
+
+PHASE 2: ISOLATED ENGINE TESTS (Medium Risk, High Impact)
+
+Files affected: ~30 tests across:
+- Actor/AngelscriptActorLifecycleTests.cpp
+- Native/AngelscriptNativeScriptTests.cpp
+
+Before:
+    IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMyTest, "Cat.Test", Flags)
+    bool FMyTest::RunTest(const FString& Parameters)
+    {
+        TUniquePtr<FAngelscriptEngine> EnginePtr = CreateIsolatedCloneEngine();
+        if (!EnginePtr.IsValid())
+        {
+            AddError(TEXT("Failed to create engine"));
+            return false;
+        }
+        FAngelscriptEngine& Engine = *EnginePtr;
+        
+        ON_SCOPE_EXIT
+        {
+            const TArray<TSharedRef<FAngelscriptModuleDesc>> ActiveModules = Engine.GetActiveModules();
+            for (const TSharedRef<FAngelscriptModuleDesc>& Module : ActiveModules)
+            {
+                Engine.DiscardModule(*Module->ModuleName);
+            }
+        };
+        
+        // test body
+        return true;
+    }
+
+After:
+    ANGELSCRIPT_ISOLATED_TEST(FMyTest, "Cat.Test", Flags)
+    {
+        // FAngelscriptEngine& Engine is available
+        // Cleanup is automatic
+        // test body
+        return true;
+    }
+
+Reduction: 12-15 lines per test
+
+---
+
+PHASE 3: HELPER MACRO ADOPTION (No Risk, Incremental)
+
+Available helpers (adopt as needed):
+- ANGELSCRIPT_EXECUTE_INT - function execution with null checks
+- ANGELSCRIPT_COMPILE_ANNOTATED_MODULE - preprocessor compilation
+- ANGELSCRIPT_FIND_GENERATED_CLASS - class lookup with errors
+- ANGELSCRIPT_EXECUTE_REFLECTED_INT - reflected function execution
+- ANGELSCRIPT_MULTI_PHASE_COMPILE - hot reload compilation (two phases)
+- ANGELSCRIPT_TEST_VERIFY_COMPILATION_FAILS - negative compilation tests
+
+Each helper saves 3-10 lines per usage.
+
+---
+
+COMMON PITFALLS:
+
+1. Wrong macro type
+   WRONG: ANGELSCRIPT_ISOLATED_TEST + GetOrCreateSharedCloneEngine
+   RIGHT: ANGELSCRIPT_TEST + GetOrCreateSharedCloneEngine
+
+2. Missing include
+   ADD: #include "Shared/AngelscriptTestMacros.h"
+
+3. Wrong namespace
+   ADD: using namespace AngelscriptTestSupport;
+
+---
+
+SUCCESS METRICS:
+
+Phase 1: 120 tests converted, 6-8 lines each = ~720-960 lines saved
+Phase 2: 30 tests converted, 12-15 lines each = ~360-450 lines saved
+Phase 3: 200 tests using helpers, 3-10 lines each = ~600-2000 lines saved
+
+Total Impact: ~1700-3400 lines of boilerplate eliminated
+Estimated Development Time Saved: 8-10 hours in future test creation
