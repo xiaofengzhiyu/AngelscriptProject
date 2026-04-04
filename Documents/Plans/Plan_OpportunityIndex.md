@@ -3,8 +3,8 @@
 本文档是对当前 Angelscript 插件所有可执行方向的系统性盘点，涵盖 AS 2.38 合入、测试增强、缺陷重构、功能增强、工具链与架构演进六大类。每个条目标注优先级、已有 Plan 状态与建议动作。
 
 **编制时间**：2026-04-04
-**当前基线**：AS 2.33.0 WIP，275/275 C++ 测试通过，148 个 Bind 文件；`Documents/Plans/` 根目录当前含 36 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 2 份已归档 Plan。
-**Plan 状态快照**：36 份活跃 Plan、2 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
+**当前基线**：AS 2.33.0 WIP，275/275 C++ 测试通过，148 个 Bind 文件；`Documents/Plans/` 根目录当前含 37 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 2 份已归档 Plan。
+**Plan 状态快照**：37 份活跃 Plan、2 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
 
 ---
 
@@ -136,7 +136,7 @@
 
 | # | 方向 | 价值说明 | 优先级 | 建议 Plan 名 |
 |---|------|----------|--------|-------------|
-| C | **CI/CD 自动化管线** | 当前测试通过 `Tools\RunTests.ps1` 手动执行。可建立 GitHub Actions 管线：push 触发构建 → 自动运行测试 → 报告结果。确保每次提交不破坏基线。 | **P2** | `Plan_CICDPipeline` |
+| C | **插件工程硬化基线** | 当前仓库已有测试、指南与计划底座，但仍缺顶层 README、`.uplugin` 对外元数据、`BuildPlugin` 打包入口、CI workflow、兼容矩阵、发布 / 安全 / 贡献入口等“可交付”闭环。需要一份总计划把这些 hardening 缺口收口为可验证基线。 | **P1** | `Plan_PluginEngineeringHardening` |
 | D | **Bind 注册性能分析工具** | `Plan_BindParallelization.md` 提到需要先测量各 Bind 的注册耗时。可开发一个轻量 profiling 工具，在 `CallBinds` 过程中记录每个 Bind 函数的耗时，输出 CSV 排行榜。为后续优化提供数据基础。 | P3 | `Plan_BindRegistrationProfiler` |
 | E | **脚本热重载体验优化** | 当前热重载的 `BurstChurnLatency` 测试已知失败。从用户体验角度，热重载应该：保留对象状态、增量编译仅变更模块、提供进度反馈、失败时回退到上一版本。 | P3 | `Plan_HotReloadUXImprovement` |
 
@@ -174,6 +174,7 @@
 | 1 | foreach 语法支持 | AS 2.38 | `Plan_AS238ForeachPort` |
 | 2 | GAS 集成测试 | 测试 | `Plan_GASIntegrationTests` |
 | 3 | Bind 分片收口 | 重构 | `Plan_BindShardConsolidation` |
+| 4 | 插件工程硬化基线 | 工具链 / 交付 | `Plan_PluginEngineeringHardening` |
 
 > 注：C++ UInterface（已有 `Plan_CppInterfaceBinding.md`）和 Bind API GAP（已有 `Plan_AS238NonLambdaPort.md`）也是 P1，但已有完整 Plan 文档。
 
@@ -181,14 +182,13 @@
 
 | # | 方向 | 类别 | 建议 Plan |
 |---|------|------|-----------|
-| 4 | 关键 Bug 修复回移 | AS 2.38 | `Plan_AS238BugfixCherryPick` |
-| 5 | Enhanced Input 测试 | 测试 | `Plan_EnhancedInputTests` |
-| 6 | 网络复制专项测试 | 测试 | `Plan_NetworkReplicationTests` |
-| 7 | StaticJIT 专项测试 | 测试 | `Plan_StaticJITTests` |
-| 8 | Bind 逐文件对齐审计 | 重构 | `Plan_BindFileAlignmentAudit` |
-| 9 | 脚本 API 文档自动生成 | 功能 | `Plan_ScriptAPIDocGeneration` |
-| 10 | 性能基准框架 | 功能 | `Plan_PerformanceBenchmarkFramework` |
-| 11 | CI/CD 自动化管线 | 工具链 | `Plan_CICDPipeline` |
+| 5 | 关键 Bug 修复回移 | AS 2.38 | `Plan_AS238BugfixCherryPick` |
+| 6 | Enhanced Input 测试 | 测试 | `Plan_EnhancedInputTests` |
+| 7 | 网络复制专项测试 | 测试 | `Plan_NetworkReplicationTests` |
+| 8 | StaticJIT 专项测试 | 测试 | `Plan_StaticJITTests` |
+| 9 | Bind 逐文件对齐审计 | 重构 | `Plan_BindFileAlignmentAudit` |
+| 10 | 脚本 API 文档自动生成 | 功能 | `Plan_ScriptAPIDocGeneration` |
+| 11 | 性能基准框架 | 功能 | `Plan_PerformanceBenchmarkFramework` |
 | 12 | ThirdParty 修改追踪体系 | 架构 | `Plan_ThirdPartyModificationTracking` |
 
 ### 🟡 P3（有价值，可根据需求插入）
@@ -229,16 +229,17 @@
 当前 → UInterface 补齐 (已有 Plan)
      → Bind API GAP (已有 Plan)
      ↓
+P1 批次 → 插件工程硬化基线 ← 先把仓库从“可研发”推进到“可交付”
+        ↓
 P1 批次 → foreach 语法 ← 脚本用户体验最大提升
         → GAS 集成测试 ← 验证 AngelPortV2 独有能力
         → Bind 分片收口 ← 结构性变更，越早做越好
-     ↓
+      ↓
 P2 批次 → Bug 修复回移 + ThirdParty 追踪体系 ← 安全网
         → Enhanced Input / Network / StaticJIT 测试 ← 补齐覆盖
         → 性能基准框架 ← 为后续 2.38 性能对比提供基线
-        → CI/CD ← 保护已有的 275 测试基线
         → API 文档生成 ← 降低脚本开发者门槛
-     ↓
+      ↓
 P3/P4 → 按需求穿插
 ```
 
