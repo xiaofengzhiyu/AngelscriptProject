@@ -10,7 +10,9 @@
 >
 > 说明：这里的 `275/275 PASS` 表示**已编目基线**，不是当前源码实时扫描到的全部测试数量。实时扫描规模与新增覆盖请以 `Documents/Guides/TechnicalDebtInventory.md` 的 live inventory / verification snapshot 为准。
 >
-> 最终 closeout 口径：`P6.3` 在独立 worktree 上重新执行 `Automation RunTests Angelscript.TestModule` 后，full-suite 仍只保留 `TechnicalDebtInventory.md` 中记录的 4 个已知失败项，没有新增技术债收口相关回归。
+> 历史 closeout：`P6.3` 曾在独立 worktree 上收口到 4 个已知失败；该结果已被 `TechnicalDebtInventory.md` 第 17 节的最新回归快照覆盖。当前 live full-suite 口径与失败 owner 以 `Documents/Guides/TechnicalDebtInventory.md`、`Documents/Plans/Plan_KnownTestFailureFixes.md`、`Documents/Plans/Plan_TechnicalDebtRefresh.md` 为准。
+>
+> 当前测试债分流：zero/weak coverage 优先进入 `Documents/Plans/Plan_TestCoverageExpansion.md`；StaticJIT 专项优先进入 `Documents/Plans/Plan_StaticJITUnitTests.md`；测试层级/目录/命名规范化优先进入 `Documents/Plans/Plan_TestSystemNormalization.md` 与 `Documents/Plans/Plan_TestModuleStandardization.md`；negative tests 继续作为能力边界证据保留在对应主题中，不与已知失败混写。
 
 ---
 
@@ -303,7 +305,7 @@
 
 ## 4. Bindings — UE API 绑定
 
-> 源文件：`Bindings/` 目录下 13 个测试文件
+> 源文件：`Bindings/` 目录下 15 个测试文件
 
 ### 值类型与引擎核心
 
@@ -314,6 +316,14 @@
 | Bindings.TArrayMutationCompat | `int[]`：`FindIndex`/`AddUnique`/`Insert`/`RemoveSingle`/`Remove`/`Reset` | AngelscriptEngineBindingsTests.cpp |
 | Bindings.ForeachCompat | `int[]`/`TArray` 的 `for (x : arr)` 与 `const FVector&` 范围 for | AngelscriptEngineBindingsTests.cpp |
 | Bindings.TArrayIteratorCompat | `TArrayIterator`/`TArrayConstIterator` 可变迭代、常量遍历、别名迭代器累加 | AngelscriptEngineBindingsTests.cpp |
+
+### 全局变量与控制台
+
+| 测试名 | 验证内容 | 源文件 |
+|--------|----------|--------|
+| Bindings.GlobalVariableCompat | `CollisionProfile::BlockAllDynamic`、`FComponentQueryParams::DefaultComponentQueryParams`、`FGameplayTag::EmptyTag`、`FGameplayTagContainer::EmptyContainer`、`FGameplayTagQuery::EmptyQuery` 等命名空间全局变量可在脚本侧读值 | AngelscriptGlobalBindingsTests.cpp |
+| Bindings.ConsoleVariableCompat | `FConsoleVariable` 的 `int`/`float`/`bool`/`FString` 构造、`Get*`/`Set*` 与底层 `IConsoleManager` 值同步 | AngelscriptConsoleBindingsTests.cpp |
+| Bindings.ConsoleVariableExistingCompat | `FConsoleVariable` 以已有 C++ CVar 名构造时复用现有值，并继续把写回同步到底层 `IConsoleManager` | AngelscriptConsoleBindingsTests.cpp |
 
 ### 容器
 

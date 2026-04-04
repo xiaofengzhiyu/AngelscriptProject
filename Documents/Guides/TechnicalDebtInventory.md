@@ -2,13 +2,25 @@
 
 > 快照提交：`ac16f3a`
 >
-> 目的：将 `Documents/Plans/Plan_TechnicalDebt.md` 中提到的 live inventory 固化为仓库内可追溯文档，避免后续执行阶段重复从零扫描。
+> 目的：保留 Angelscript 插件技术债的 live inventory、历史验证快照与当前 debt owner 入口，避免后续执行阶段重复从零扫描。
+>
+> 当前 debt routing 主入口：`Documents/Plans/Plan_TechnicalDebtRefresh.md`
 
 ## 1. 已编目基线 vs 实时扫描
 
-- `Documents/Guides/TestCatalog.md` 仍以 `275/275 PASS` 作为**已编目基线**。
-- 当前源码对 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`、`IMPLEMENT_COMPLEX_AUTOMATION_TEST`、`IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST`、`BEGIN_DEFINE_SPEC`、`DEFINE_SPEC` 的实时扫描命中 **324** 处定义，覆盖 **89** 个文件。
-- 这两组数字不能直接等价：前者是文档化、已整理的基线；后者是当前源码中的实时定义规模。当前差值为 **+49**，应作为后续 `TestCatalog` 同步与回归验收的起点，而不是继续把 `275` 视为源码现状总数。
+- `Documents/Guides/TestCatalog.md` 仍以 `275/275 PASS` 作为**已编目基线**，它表示“已经整理进目录文档并完成一轮 closeout 的基线”，不是当前 live suite 的总数。
+- 当前源码对 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`、`IMPLEMENT_COMPLEX_AUTOMATION_TEST`、`IMPLEMENT_CUSTOM_SIMPLE_AUTOMATION_TEST`、`BEGIN_DEFINE_SPEC`、`DEFINE_SPEC` 的实时扫描命中 **324** 处定义，覆盖 **89** 个文件；这表示的是源码中自动化入口定义规模，也不等于当前 full-suite 执行总数。
+- 截至 `2026-04-04 Engine Isolation` 回归快照，`Automation RunTests Angelscript.TestModule` 的最新结果是 **443 测试 / 436 通过 / 7 失败 / 0 跳过**；这组数字才是当前 live full-suite 状态。
+- 因此这里至少存在三套需要并存维护的数字：**文档化基线**（275/275）、**源码实时定义规模**（324 定义 / 89 文件）、**最新 full-suite 结果**（443/436/7）。后续整理时不得再把其中任意一组当作另外两组的直接替代。
+
+### 当前测试债 owner 口径
+
+- **零覆盖 / 弱覆盖**：优先由 `Documents/Plans/Plan_TestCoverageExpansion.md` 承接。
+- **StaticJIT 专项零覆盖**：优先由 `Documents/Plans/Plan_StaticJITUnitTests.md` 承接，而不是继续挂在泛化测试 backlog 中。
+- **测试层级 / 目录 / 命名规范化**：优先由 `Documents/Plans/Plan_TestSystemNormalization.md` 与 `Documents/Plans/Plan_TestModuleStandardization.md` 承接。
+- **当前应通过但未通过的已知失败**：优先由 `Documents/Plans/Plan_KnownTestFailureFixes.md` 承接。
+- **negative tests（当前明确不支持、作为能力边界证据存在）**：保留在相应测试主题中作为能力边界证据，不应和 zero/weak coverage 或 known failures 混写。
+- **总分流 / owner 解释**：以 `Documents/Plans/Plan_TechnicalDebtRefresh.md` 为准。
 
 ### 当前 live inventory 热点
 

@@ -3,8 +3,8 @@
 本文档是对当前 Angelscript 插件所有可执行方向的系统性盘点，涵盖 AS 2.38 合入、测试增强、缺陷重构、功能增强、工具链与架构演进六大类。每个条目标注优先级、已有 Plan 状态与建议动作。
 
 **编制时间**：2026-04-04
-**当前基线**：AS 2.33.0 WIP，275/275 C++ 测试通过，148 个 Bind 文件；`Documents/Plans/` 根目录当前含 39 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 4 份已归档 Plan。
-**Plan 状态快照**：39 份活跃 Plan、4 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
+**当前基线**：AS 2.33.0 WIP，文档化 C++ 基线为 `275/275 PASS`，当前 live automation / full-suite 状态以测试增强章节、`Documents/Guides/TestCatalog.md` 与 `Documents/Guides/TechnicalDebtInventory.md` 为准；当前有 148 个 Bind 文件，`Documents/Plans/` 根目录含 44 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 4 份已归档 Plan。
+**Plan 状态快照**：44 份活跃 Plan、4 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
 
 ---
 
@@ -37,7 +37,7 @@
 
 ## 二、测试增强
 
-> 当前 452 个自动化测试用例（134 个测试 .cpp 文件），覆盖了引擎核心、语言行为、绑定、场景集成等。但仍有多个功能域缺乏专项测试。
+> 当前 452 个自动化测试用例（134 个测试 `.cpp` 文件），覆盖了引擎核心、语言行为、绑定、场景集成等；其中 `275/275` 表示文档化 C++ 基线，live suite / known failures 由 `TechnicalDebtInventory.md` 继续维护。但仍有多个功能域缺乏专项测试。
 
 ### 2.1 已有 Plan
 
@@ -52,17 +52,20 @@
 | G | Learning trace 教学测试 | `Plan_AngelscriptLearningTraceTests.md` | 部分完成，未归档（多数实现已落地，余 P4.2/P5.2/P5.4/P5.7-P5.9/P6.4） |
 | H | 调试器单元测试 | `Plan_ASDebuggerUnitTest.md` | 未开始 |
 | I | Engine Bind 与 FileWatch 验证 | `Plan_AngelscriptEngineBindAndFileWatchValidation.md` | 未开始 |
+| J | 网络复制与 RPC 验证闭环 | `Plan_NetworkReplicationTests.md` | 未开始 |
+| K | Static JIT 单元测试 | `Plan_StaticJITUnitTests.md` | 未开始 |
+| L | 测试模块规范化 | `Plan_TestModuleStandardization.md` | 部分完成 |
+| M | 测试体系规范化 | `Plan_TestSystemNormalization.md` | 未开始 |
+| N | 全局变量 / Console Variable 对齐与专项测试 | `Plan_GlobalVariableAndCVarParity.md` | 部分完成（`FConsoleVariable` bool/string + 首批 `Bindings` 测试已落地，`FConsoleCommand` 与剩余矩阵待收口） |
 
 ### 2.2 新建议 Plan
 
 | # | 方向 | 价值说明 | 优先级 | 建议 Plan 名 |
 |---|------|----------|--------|-------------|
-| J | **GAS 集成测试** | 当前有 6 个 GAS 相关 Bind 文件（`Bind_FGameplayAttribute/Spec/EffectSpec`、`Bind_AngelscriptGASLibrary` 等）以及 `AngelscriptAbilitySystemComponent`、`AngelscriptAttributeSet` 等核心类，但 **AngelscriptTest 中零个 GAS 专项测试**。GAS 是项目额外新增的能力（UEAS2 没有），更需要验证。 | **P1** | `Plan_GASIntegrationTests` |
-| K | **Enhanced Input 测试** | 3 个 Bind 文件（`Bind_FInputActionValue`、`Bind_FInputBindingHandle`、`Bind_UEnhancedInputComponent`）为 AngelPortV2 新增，无任何测试覆盖。Enhanced Input 是 UE5 的标准输入框架。 | **P2** | `Plan_EnhancedInputTests` |
-| L | **网络复制专项测试** | Runtime 中有 `ReplicatedUsing`、`NetMulticast`、`Server`/`Client` RPC 元数据支持，`Testing/` 有 `FakeNetDriver`，但 **AngelscriptTest 中无网络复制专项测试文件**。需验证脚本类的 `DOREPLIFETIME` 路径、RPC 调用语义。 | **P2** | `Plan_NetworkReplicationTests` |
+| K | **GAS 集成测试** | 当前有 6 个 GAS 相关 Bind 文件（`Bind_FGameplayAttribute/Spec/EffectSpec`、`Bind_AngelscriptGASLibrary` 等）以及 `AngelscriptAbilitySystemComponent`、`AngelscriptAttributeSet` 等核心类，但 **AngelscriptTest 中零个 GAS 专项测试**。GAS 是项目额外新增的能力（UEAS2 没有），更需要验证。 | **P1** | `Plan_GASIntegrationTests` |
+| L | **Enhanced Input 测试** | 3 个 Bind 文件（`Bind_FInputActionValue`、`Bind_FInputBindingHandle`、`Bind_UEnhancedInputComponent`）为 AngelPortV2 新增，无任何测试覆盖。Enhanced Input 是 UE5 的标准输入框架。 | **P2** | `Plan_EnhancedInputTests` |
 | M | **Editor 功能测试扩展** | `Editor/` 目录仅 1 个文件（源码导航，83 行）。`AngelscriptEditor` 模块有代码着色、目录监视、编译通知、调试器集成等功能均未覆盖。 | P3 | `Plan_EditorFeatureTests` |
-| N | **StaticJIT 专项测试** | `StaticJIT/` 有 14 个源文件（字节码处理、JIT 数据库、预编译数据等），是性能关键路径。当前仅 `AngelscriptPrecompiledDataTests.cpp` 1 个测试文件。 | **P2** | `Plan_StaticJITTests` |
-| O | **热重载稳健性测试** | 已有 5 个 HotReload 测试文件，但 `BurstChurnLatency` 测试已知失败（需 full reload 环境）。需补充边界场景：属性类型变更、函数签名变更、类层次变更等。 | P3 | `Plan_HotReloadRobustnessTests` |
+| N | **热重载稳健性测试** | 已有 5 个 HotReload 测试文件，但 `BurstChurnLatency` 测试已知失败（需 full reload 环境）。需补充边界场景：属性类型变更、函数签名变更、类层次变更等。 | P3 | `Plan_HotReloadRobustnessTests` |
 
 ---
 
@@ -80,6 +83,7 @@
 | D | 测试引擎隔离 | `Plan_TestEngineIsolation.md` | 部分完成 |
 | E | 文件系统重构 | `Plan_ScriptFileSystemRefactor.md` | 未开始 |
 | F | Hazelight Bind 模块迁移 | `Plan_HazelightBindModuleMigration.md` | 未开始 |
+| G | 新一轮技术债刷新与分流 | `Plan_TechnicalDebtRefresh.md` | 未开始（先校准 debt baseline 与 owner，再进入下一批实施） |
 
 ### 3.2 新建议 Plan
 
@@ -131,6 +135,7 @@
 |---|------|-----------|------|
 | A | DAP 调试适配器 | `Plan_DebugAdapter.md` | 未开始 |
 | B | Hazelight 能力差距盘点 | `Plan_HazelightCapabilityGap.md` | 未开始 |
+| C | 手动 Bind 函数与成员 CSV 导出 | `Plan_ManualBindCsvDump.md` | 未开始 |
 
 ### 5.2 新建议 Plan
 
@@ -154,6 +159,7 @@
 | B | 测试引擎隔离 | `Plan_TestEngineIsolation.md` | 部分完成 |
 | C | 文件系统重构 | `Plan_ScriptFileSystemRefactor.md` | 未开始 |
 | D | UnrealCSharp 架构吸收 | `Plan_UnrealCSharpArchitectureAbsorption.md` | 未开始 |
+| E | 调研结论整合执行闸门 | `Plan_AngelscriptResearchRoadmap.md` | 未开始 |
 
 ### 6.2 新建议 Plan
 
@@ -177,6 +183,8 @@
 | 4 | 插件工程硬化基线 | 工具链 / 交付 | `Plan_PluginEngineeringHardening` |
 
 > 注：C++ UInterface（已有 `Plan_CppInterfaceBinding.md`）和 Bind API GAP（已有 `Plan_AS238NonLambdaPort.md`）也是 P1，但已有完整 Plan 文档。
+>
+> 建议先完成 `Plan_TechnicalDebtRefresh.md` 的 baseline 校准与 owner 分流，再继续推进新的 P1 立项，避免继续基于过期的 active-plan 数、已知失败口径或 Hazelight parity 入口展开工作。
 
 ### 🟠 P2（重要，应在 P1 之后或并行推进）
 
@@ -185,7 +193,7 @@
 | 5 | 关键 Bug 修复回移 | AS 2.38 | `Plan_AS238BugfixCherryPick` |
 | 6 | Enhanced Input 测试 | 测试 | `Plan_EnhancedInputTests` |
 | 7 | 网络复制专项测试 | 测试 | `Plan_NetworkReplicationTests` |
-| 8 | StaticJIT 专项测试 | 测试 | `Plan_StaticJITTests` |
+| 8 | StaticJIT 专项测试 | 测试 | `Plan_StaticJITUnitTests` |
 | 9 | Bind 逐文件对齐审计 | 重构 | `Plan_BindFileAlignmentAudit` |
 | 10 | 脚本 API 文档自动生成 | 功能 | `Plan_ScriptAPIDocGeneration` |
 | 11 | 性能基准框架 | 功能 | `Plan_PerformanceBenchmarkFramework` |
