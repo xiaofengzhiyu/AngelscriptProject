@@ -1,5 +1,4 @@
 #include "Angelscript/AngelscriptTestSupport.h"
-#include "Misc/OutputDevice.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 
@@ -10,32 +9,21 @@ using namespace AngelscriptTestSupport;
 
 namespace
 {
-	class FAngelscriptWarningCapture final : public FOutputDevice
+	bool ContainsWarningDiagnostic(const FAngelscriptEngine& Engine, const FString& Needle)
 	{
-	public:
-		void Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category) override
+		for (const TPair<FString, FAngelscriptEngine::FDiagnostics>& Pair : Engine.Diagnostics)
 		{
-			if (Category == TEXT("Angelscript") && Verbosity == ELogVerbosity::Warning)
+			for (const FAngelscriptEngine::FDiagnostic& Diagnostic : Pair.Value.Diagnostics)
 			{
-				Warnings.Add(V);
-			}
-		}
-
-		bool ContainsWarningText(const FString& Needle) const
-		{
-			for (const FString& Warning : Warnings)
-			{
-				if (Warning.Contains(Needle))
+				if (!Diagnostic.bIsError && Diagnostic.Message.Contains(Needle))
 				{
 					return true;
 				}
 			}
-			return false;
 		}
 
-	private:
-		TArray<FString> Warnings;
-	};
+		return false;
+	}
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -45,7 +33,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowForLoopTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASControlFlowForLoop"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -79,7 +72,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowSwitchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASControlFlowSwitch"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -113,7 +111,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowConditionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASControlFlowCondition"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -147,7 +150,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowNeverVisitedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASControlFlowNeverVisited"));
@@ -178,14 +181,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowNotInitializedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-	FAngelscriptWarningCapture WarningCapture;
-	GLog->AddOutputDevice(&WarningCapture);
-	ON_SCOPE_EXIT
-	{
-		GLog->RemoveOutputDevice(&WarningCapture);
-	};
-
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASControlFlowNotInitialized"));
@@ -206,7 +202,7 @@ bool FAngelscriptControlFlowNotInitializedTest::RunTest(const FString& Parameter
 		return false;
 	}
 
-	const bool bFoundUninitializedWarning = WarningCapture.ContainsWarningText(TEXT("may not be initialized"));
+	const bool bFoundUninitializedWarning = ContainsWarningDiagnostic(Engine, TEXT("may not be initialized"));
 
 	TestTrue(TEXT("NotInitialized should preserve the compiler warning for reading an uninitialized variable"), bFoundUninitializedWarning);
 	return bFoundUninitializedWarning;

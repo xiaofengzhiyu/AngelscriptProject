@@ -84,6 +84,8 @@ $summaryScript = Join-Path $repoRoot 'Tools\GetAutomationReportSummary.ps1'
 $runnerScript = Join-Path $repoRoot 'Tools\RunAutomationTests.ps1'
 $runnerBat = Join-Path $repoRoot 'Tools\RunAutomationTests.bat'
 $fixtureDir = Join-Path $PSScriptRoot 'Fixtures\FailedReport'
+$missingReportFixtureDir = Join-Path $PSScriptRoot 'Fixtures\MissingReport'
+$warningsFixtureDir = Join-Path $PSScriptRoot 'Fixtures\SucceededWithWarningsReport'
 
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("AutomationToolSelfTests-{0}" -f ([guid]::NewGuid().ToString('N')))
 New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
@@ -114,6 +116,49 @@ try {
     Assert-Equal 1 (@($summary.FailedTests).Count) 'FailedTests should contain one entry.'
     Assert-Equal 'Angelscript.TestModule.Synthetic.Fail' $summary.FailedTests[0].Name 'Failed test name mismatch.'
     $results.Add('PASS summary parser fixture')
+
+    $warningsSummaryPath = Join-Path $tempRoot 'WarningsSummary.json'
+    $warningsRun = Invoke-CapturedProcess -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $summaryScript,
+        '-ReportPath', $warningsFixtureDir,
+        '-LogPath', (Join-Path $warningsFixtureDir 'Automation.log'),
+        '-ExitCode', '0',
+        '-BucketName', 'SyntheticWarnings',
+        '-SummaryPath', $warningsSummaryPath
+    ) -WorkingDirectory $repoRoot
+
+    Assert-Equal 0 $warningsRun.ExitCode 'Summary script should succeed on warnings-only fixture.'
+    Assert-True (Test-Path -LiteralPath $warningsSummaryPath -PathType Leaf) 'Summary script should emit warnings-only Summary.json.'
+
+    $warningsSummary = Get-Content -LiteralPath $warningsSummaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    Assert-Equal 'ReportJson' $warningsSummary.SummarySource 'Warnings-only fixture should still parse from JSON.'
+    Assert-Equal 2 ([int]$warningsSummary.Total) 'Warnings-only total count mismatch.'
+    Assert-Equal 2 ([int]$warningsSummary.Passed) 'Warnings-only passed count should include succeededWithWarnings.'
+    Assert-Equal 0 ([int]$warningsSummary.Failed) 'Warnings-only failed count mismatch.'
+    Assert-Equal 0 (@($warningsSummary.LogFailureHints).Count) 'Warnings-only fixture should not surface blocking log hints.'
+    $results.Add('PASS summary parser warnings-only fixture')
+
+    $missingSummaryPath = Join-Path $tempRoot 'MissingReportSummary.json'
+    $missingReportRun = Invoke-CapturedProcess -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $summaryScript,
+        '-ReportPath', $missingReportFixtureDir,
+        '-LogPath', (Join-Path $missingReportFixtureDir 'Automation.log'),
+        '-ExitCode', '0',
+        '-BucketName', 'SyntheticMissingReport',
+        '-SummaryPath', $missingSummaryPath
+    ) -WorkingDirectory $repoRoot
+
+    Assert-Equal 0 $missingReportRun.ExitCode 'Summary script should succeed for missing-report fixture.'
+    Assert-True (Test-Path -LiteralPath $missingSummaryPath -PathType Leaf) 'Summary script should emit Summary.json for missing-report fixture.'
+
+    $missingSummary = Get-Content -LiteralPath $missingSummaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    Assert-Equal 'None' $missingSummary.SummarySource 'Missing-report fixture should not produce a structured summary.'
+    Assert-True (@($missingSummary.LogFailureHints).Count -gt 0) 'Missing-report fixture should surface blocking log hints.'
+    $results.Add('PASS summary parser missing-report fixture')
 
     $unknownGroup = 'DefinitelyMissingAutomationBucket'
     $runnerFailure = Invoke-CapturedProcess -FilePath 'powershell.exe' -ArgumentList @(

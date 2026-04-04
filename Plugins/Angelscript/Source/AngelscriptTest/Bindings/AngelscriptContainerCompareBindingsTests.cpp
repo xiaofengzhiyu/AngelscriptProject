@@ -30,7 +30,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptSetCompareBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASSetCompareCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -79,7 +84,12 @@ int Entry()
 
 bool FAngelscriptMapCompareBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASMapCompareCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -129,7 +139,7 @@ int Entry()
 bool FAngelscriptOptionalTypeCompareTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-	static_cast<void>(Engine);
+	FAngelscriptEngineScope EngineScope(Engine);
 
 	FAngelscriptTypeUsage IntUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("int")));
 	FAngelscriptTypeUsage OptionalUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("TOptional")));
@@ -197,6 +207,8 @@ bool FAngelscriptOptionalTypeCompareTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptMapDebuggerBindingsTest::RunTest(const FString& Parameters)
 {
+	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	FAngelscriptTypeUsage KeyUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("FName")));
 	FAngelscriptTypeUsage ValueUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("int")));
 	FAngelscriptTypeUsage MapUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("TMap")));

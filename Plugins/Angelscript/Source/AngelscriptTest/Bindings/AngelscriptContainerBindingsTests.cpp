@@ -1,5 +1,7 @@
 #include "../Shared/AngelscriptTestUtilities.h"
 
+#include "Misc/ScopeExit.h"
+
 #if WITH_DEV_AUTOMATION_TESTS
 
 using namespace AngelscriptTestSupport;
@@ -36,7 +38,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptOptionalBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASOptionalCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -102,7 +109,12 @@ int Entry()
 
 bool FAngelscriptSetBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASSetCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -168,7 +180,12 @@ int Entry()
 
 bool FAngelscriptMapBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASMapCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -255,7 +272,12 @@ int Entry()
 
 bool FAngelscriptArrayForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASArrayForeachCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -302,7 +324,12 @@ int Entry()
 
 bool FAngelscriptSetForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASSetForeachCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -346,7 +373,12 @@ int Entry()
 
 bool FAngelscriptMapForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASMapForeachCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

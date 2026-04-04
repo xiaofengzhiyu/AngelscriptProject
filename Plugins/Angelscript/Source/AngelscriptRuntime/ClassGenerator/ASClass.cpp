@@ -54,8 +54,13 @@ FORCEINLINE bool CheckGameThreadExecution(UASFunction* Function)
 {
 #if !UE_BUILD_TEST && !UE_BUILD_SHIPPING
 	// During initial compile we are allowed to do gamethread stuff in other threads
-	if (!FAngelscriptEngine::bIsInitialCompileFinished)
-		return true;
+	if (FAngelscriptEngine* CurrentEngine = FAngelscriptEngine::TryGetCurrentEngine())
+	{
+		if (!CurrentEngine->IsInitialCompileFinished())
+		{
+			return true;
+		}
+	}
 
 #if WITH_EDITOR
 	auto* ConstructingObject = UASClass::GetConstructingASObject();

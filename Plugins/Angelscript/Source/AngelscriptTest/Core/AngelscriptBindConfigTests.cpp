@@ -222,7 +222,8 @@ bool FAngelscriptGlobalDisabledBindNamesTest::RunTest(const FString& Parameters)
 
 	FAngelscriptEngineConfig Config;
 	const FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
-	const FAngelscriptEngine Engine(Config, Dependencies);
+	FAngelscriptEngine Engine(Config, Dependencies);
+	FAngelscriptEngineScope EngineScope(Engine);
 	const TSet<FName> MergedDisabledBindNames = FAngelscriptBindConfigTestAccess::CollectDisabledBindNames(Engine);
 	TestTrue(TEXT("BindConfig.GlobalDisabledBindNames should merge the settings-level disabled bind name"), MergedDisabledBindNames.Contains(NamedBindName));
 
@@ -281,7 +282,8 @@ bool FAngelscriptEngineDisabledBindNamesTest::RunTest(const FString& Parameters)
 	FAngelscriptEngineConfig Config;
 	Config.DisabledBindNames.Add(NamedBindName);
 	const FAngelscriptEngineDependencies Dependencies = FAngelscriptEngineDependencies::CreateDefault();
-	const FAngelscriptEngine Engine(Config, Dependencies);
+	FAngelscriptEngine Engine(Config, Dependencies);
+	FAngelscriptEngineScope EngineScope(Engine);
 	const TSet<FName> MergedDisabledBindNames = FAngelscriptBindConfigTestAccess::CollectDisabledBindNames(Engine);
 	TestTrue(TEXT("BindConfig.EngineDisabledBindNames should include the engine-level disabled bind name"), MergedDisabledBindNames.Contains(NamedBindName));
 

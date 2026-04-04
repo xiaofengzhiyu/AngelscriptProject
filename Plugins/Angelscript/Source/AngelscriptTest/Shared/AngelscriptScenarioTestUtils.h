@@ -12,6 +12,13 @@
 
 namespace AngelscriptScenarioTestUtils
 {
+	inline FAngelscriptEngine& RequireCurrentEngine()
+	{
+		FAngelscriptEngine* CurrentEngine = FAngelscriptEngine::TryGetCurrentEngine();
+		checkf(CurrentEngine != nullptr, TEXT("Scenario helpers require an active FAngelscriptEngineScope or subsystem-owned engine."));
+		return *CurrentEngine;
+	}
+
 	inline UClass* CompileScriptModule(
 		FAutomationTestBase& Test,
 		FAngelscriptEngine& Engine,
@@ -65,6 +72,11 @@ namespace AngelscriptScenarioTestUtils
 		}
 	}
 
+	inline void TickWorld(UWorld& World, float DeltaTime, int32 NumTicks)
+	{
+		TickWorld(RequireCurrentEngine(), World, DeltaTime, NumTicks);
+	}
+
 	inline void BeginPlayActor(FAngelscriptEngine& Engine, AActor& Actor)
 	{
 		FAngelscriptEngineScope ActorScope(Engine, &Actor);
@@ -73,6 +85,11 @@ namespace AngelscriptScenarioTestUtils
 		{
 			Actor.DispatchBeginPlay();
 		}
+	}
+
+	inline void BeginPlayActor(AActor& Actor)
+	{
+		BeginPlayActor(RequireCurrentEngine(), Actor);
 	}
 
 	template <typename ActorType = AActor>

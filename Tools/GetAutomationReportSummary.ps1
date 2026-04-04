@@ -148,17 +148,18 @@ function Get-TotalsFromNode {
     param([Parameter(Mandatory = $true)]$Node)
 
     $passed = Get-CaseInsensitivePropertyValue $Node @('Succeeded', 'Passed', 'PassCount')
+    $passedWithWarnings = Get-CaseInsensitivePropertyValue $Node @('SucceededWithWarnings', 'PassedWithWarnings', 'PassWithWarningsCount')
     $failed = Get-CaseInsensitivePropertyValue $Node @('Failed', 'FailureCount', 'Failures')
     $skipped = Get-CaseInsensitivePropertyValue $Node @('NotRun', 'Skipped', 'SkipCount')
     $total = Get-CaseInsensitivePropertyValue $Node @('Total', 'TotalCount', 'NumTests')
 
-    if ($null -eq $passed -and $null -eq $failed -and $null -eq $skipped -and $null -eq $total) {
+    if ($null -eq $passed -and $null -eq $passedWithWarnings -and $null -eq $failed -and $null -eq $skipped -and $null -eq $total) {
         return $null
     }
 
     return [PSCustomObject]@{
         Total   = if ($null -ne $total) { [int]$total } else { $null }
-        Passed  = if ($null -ne $passed) { [int]$passed } else { $null }
+        Passed  = if ($null -ne $passed -or $null -ne $passedWithWarnings) { [int]$(if ($null -ne $passed) { $passed } else { 0 }) + [int]$(if ($null -ne $passedWithWarnings) { $passedWithWarnings } else { 0 }) } else { $null }
         Failed  = if ($null -ne $failed) { [int]$failed } else { $null }
         Skipped = if ($null -ne $skipped) { [int]$skipped } else { $null }
     }
@@ -177,10 +178,11 @@ function Try-GetReportSummaryFromJson {
         $records = [System.Collections.Generic.List[object]]::new()
 
         $topLevelTotals = [PSCustomObject]@{
-            Total   = Get-CaseInsensitivePropertyValue $node @('Total', 'TotalCount', 'NumTests')
-            Passed  = Get-CaseInsensitivePropertyValue $node @('Succeeded', 'Passed', 'PassCount')
-            Failed  = Get-CaseInsensitivePropertyValue $node @('Failed', 'FailureCount', 'Failures')
-            Skipped = Get-CaseInsensitivePropertyValue $node @('NotRun', 'Skipped', 'SkipCount')
+            Total              = Get-CaseInsensitivePropertyValue $node @('Total', 'TotalCount', 'NumTests')
+            Passed             = Get-CaseInsensitivePropertyValue $node @('Succeeded', 'Passed', 'PassCount')
+            PassedWithWarnings = Get-CaseInsensitivePropertyValue $node @('SucceededWithWarnings', 'PassedWithWarnings', 'PassWithWarningsCount')
+            Failed             = Get-CaseInsensitivePropertyValue $node @('Failed', 'FailureCount', 'Failures')
+            Skipped            = Get-CaseInsensitivePropertyValue $node @('NotRun', 'Skipped', 'SkipCount')
         }
 
         $candidateCollections = @(
@@ -209,13 +211,18 @@ function Try-GetReportSummaryFromJson {
             }
         }
 
+        $topLevelPassed = $null
+        if ($null -ne $topLevelTotals.Passed -or $null -ne $topLevelTotals.PassedWithWarnings) {
+            $topLevelPassed = [int]$(if ($null -ne $topLevelTotals.Passed) { $topLevelTotals.Passed } else { 0 }) + [int]$(if ($null -ne $topLevelTotals.PassedWithWarnings) { $topLevelTotals.PassedWithWarnings } else { 0 })
+        }
+
         $passedCount = @($records | Where-Object { $_.State -eq 'Passed' }).Count
         $failedCount = @($records | Where-Object { $_.State -eq 'Failed' }).Count
         $skippedCount = @($records | Where-Object { $_.State -eq 'Skipped' }).Count
         $totalCount = if ($records.Count -gt 0) { $records.Count } else { $null }
         $totals = [PSCustomObject]@{
             Total   = if ($null -ne $topLevelTotals.Total) { [int]$topLevelTotals.Total } else { $totalCount }
-            Passed  = if ($null -ne $topLevelTotals.Passed) { [int]$topLevelTotals.Passed } else { if ($totalCount -ne $null) { $passedCount } else { $null } }
+            Passed  = if ($null -ne $topLevelPassed) { $topLevelPassed } else { if ($totalCount -ne $null) { $passedCount } else { $null } }
             Failed  = if ($null -ne $topLevelTotals.Failed) { [int]$topLevelTotals.Failed } else { if ($totalCount -ne $null) { $failedCount } else { $null } }
             Skipped = if ($null -ne $topLevelTotals.Skipped) { [int]$topLevelTotals.Skipped } else { if ($totalCount -ne $null) { $skippedCount } else { $null } }
         }
@@ -245,7 +252,7 @@ function Get-LogFailureHints {
     $content = Get-Content -LiteralPath $Path -Encoding UTF8
     $matches = foreach ($line in $content) {
         $hasBlockingMessage = $line -match '无法被找到|could not be found|No automation tests matched|Fatal error:'
-        $hasBlockingError = $false
+        $hasBlockingError = $line -match 'LogAutomation(?:Test|Controller): Error:' -or $line -match 'Condition failed'
         if ($hasBlockingMessage -or $hasBlockingError) {
             $line
         }
@@ -258,6 +265,25 @@ function Get-NonEmptyItemCount {
     param($Value)
 
     return @($Value | Where-Object { $null -ne $_ -and -not [string]::IsNullOrWhiteSpace([string]$_) }).Count
+}
+
+function Get-LogFailureHints {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return @()
+    }
+
+    $content = Get-Content -LiteralPath $Path -Encoding UTF8
+    $matches = foreach ($line in $content) {
+        $hasBlockingMessage = $line -match 'could not be found|No matching group named|No automation tests matched|Fatal error!'
+        $hasBlockingError = $line -match 'LogAutomationCommandLine: Error:' -or $line -match 'LogAutomationController: Error:'
+        if ($hasBlockingMessage -or $hasBlockingError) {
+            $line
+        }
+    }
+
+    return @($matches | Select-Object -First 20)
 }
 
 $summary = [ordered]@{
@@ -295,6 +321,9 @@ if ($null -ne $reportSummary) {
 }
 
 $summary.LogFailureHints = @(Get-LogFailureHints -Path $LogPath)
+if ($summary.SummarySource -eq 'None' -and $ExitCode -eq 0) {
+    $summary.LogFailureHints = @($summary.LogFailureHints + 'Structured automation report was not produced.')
+}
 
 $summaryObject = [PSCustomObject]$summary
 $serializableSummary = [PSCustomObject]@{

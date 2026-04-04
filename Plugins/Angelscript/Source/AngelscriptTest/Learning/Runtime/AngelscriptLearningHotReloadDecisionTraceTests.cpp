@@ -92,6 +92,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningHotReloadDecisionTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	ResetSharedCloneEngine(Engine);
 	ON_SCOPE_EXIT
 	{

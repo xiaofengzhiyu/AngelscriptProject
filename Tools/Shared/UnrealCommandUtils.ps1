@@ -600,8 +600,9 @@ function Invoke-StreamingProcess {
     $stderrLineCount = 0
     $process = $null
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $argumentString = ConvertTo-ProcessArgumentString -ArgumentList $ArgumentList
     try {
-        $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -WorkingDirectory $resolvedWorkingDirectory -PassThru -NoNewWindow -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+        $process = Start-Process -FilePath $FilePath -ArgumentList $argumentString -WorkingDirectory $resolvedWorkingDirectory -PassThru -NoNewWindow -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
 
         while ($true) {
             $stdoutLineCount = & $syncOutputFile $stdoutPath $stdoutLineCount 'stdout'

@@ -197,7 +197,7 @@ bool FAngelscriptTypeFloatTest::RunTest(const FString& Parameters)
 bool FAngelscriptTypeFloatDebuggerFormattingTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-	static_cast<void>(Engine);
+	FAngelscriptEngineScope EngineScope(Engine);
 
 	FAngelscriptTypeUsage FloatUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("float")));
 	if (!TestTrue(TEXT("Float debugger formatting test should resolve the float type"), FloatUsage.IsValid()))

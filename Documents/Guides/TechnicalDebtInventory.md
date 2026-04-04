@@ -232,3 +232,44 @@
   - 多个晚段测试入口统一改为本地 `AcquireFresh*Engine()` 模式：先清 shared / stray global，再重新获取 clean shared clone，切断全量跑时从前序残留 global runtime 上 clone 的污染链。
   - `HotReload` / `Delegate` 相关 performance 与 mismatch 用例同步对齐了当前 runtime 的返回值和日志格式，避免把预期漂移误判成真实回归。
 - 这次验证也再次证明一个事实：`GAngelscriptEngine` 仍然存在并参与当前 runtime 解析路径；测试变绿不代表全局状态债务已关闭，只说明现有 helper containment 已足以稳定当前 full-suite。
+
+## 17. 2026-04-04 Engine Isolation 修复后回归快照
+
+- 背景：`Plan_TestEngineIsolation.md` 重构引入了 `FAngelscriptEngineScope` 机制和共享测试引擎 scope 自动管理，同时修复了 `asCScriptEngine::~asCScriptEngine()` 析构循环中的 TOCTOU bug。
+- 全量回归：`Automation RunTests Angelscript.TestModule`，443 测试中 **436 通过 / 7 失败 / 0 跳过**，无崩溃。
+- 相比 Phase 6.3 的 4 个已知失败，本轮变化：
+  - **已修复**：`NativeScriptHotReload.Phase2A`、`Phase2B`、`Editor.SourceNavigation.Functions`、`ScriptExamples.Actor`（这 4 个之前的失败已在中间迭代中修复或不再复现）
+  - **新增 7 个已知失败**：均为功能待补齐或测试 expectation 问题，非 crash 或回归
+
+### 已知失败项清单
+
+#### 类别 A：Testing-Full 引擎类型元数据未注册（3 个）
+
+| 测试 | 失败摘要 | 根因 |
+|------|----------|------|
+| `Engine.LastFullDestroyClearsTypeState` | `should populate type metadata while the full engine is alive` | `CreateTestingFullEngine()` 的 `InitializeForTesting()` 只做最小初始化，不执行完整绑定注册，导致 `FAngelscriptTypeDatabase` 为空 |
+| `Engine.FullDestroyAllowsCleanRecreate` | `should populate type metadata during the first epoch` | 同上 |
+| `Engine.FullDestroyAllowsAnnotatedRecreate` | `Class ARecreateAnnotatedActorA has an unknown super type AAngelscriptActor` | 同上，缺少 `AAngelscriptActor` 类型注册 |
+
+- **修复方向**：在 `InitializeForTesting()` 中补齐最小 bind replay 或按需注册核心类型元数据。属于 Bind API GAP 范畴。
+- **关联计划**：`Plan_HazelightCapabilityGap.md`
+
+#### 类别 B：Restore 序列化错误消息格式不匹配（1 个）
+
+| 测试 | 失败摘要 | 根因 |
+|------|----------|------|
+| `Internals.Restore.EmptyStreamFails` | 期望 `"Unexpected end of file"`，实际 `"Angelscript: :"` | AS 引擎对空流的错误消息格式与测试 expectation 不一致 |
+
+- **修复方向**：调整测试 expectation 以匹配实际错误消息格式，或在 Restore 路径补充更明确的错误输出。
+- **复杂度**：低
+
+#### 类别 C：预处理器 import 功能未完成（3 个）
+
+| 测试 | 失败摘要 | 根因 |
+|------|----------|------|
+| `Preprocessor.ImportParsing` | `should record the imported module name` / `import statement should be removed` | 预处理器未实现 import 语句解析和移除 |
+| `Learning.Runtime.Preprocessor` | `should record the imported module name` / `should strip the import line` | 同上 |
+| `Learning.Runtime.FileSystemAndModuleResolution` | `Discovery with editor scripts should find more files than skip-rule discovery` | 文件发现逻辑在测试环境中发现的文件数量不符预期 |
+
+- **修复方向**：补齐预处理器的 import 解析逻辑；FileSystem 测试需要审查测试环境的脚本文件布局。
+- **关联计划**：预处理器功能补齐属于 Runtime 能力完善范畴

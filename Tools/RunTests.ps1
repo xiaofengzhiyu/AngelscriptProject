@@ -164,11 +164,18 @@ try {
 
         $summaryRecord = @($summaryObject | Select-Object -Last 1)[0]
         if ($processExitCode -eq 0 -and $null -ne $summaryRecord) {
+            $summarySource = if ($null -ne $summaryRecord.SummarySource) { [string]$summaryRecord.SummarySource } else { 'None' }
             $failedCount = if ($null -ne $summaryRecord.Failed) { [int]$summaryRecord.Failed } else { 0 }
             $failedTests = @($summaryRecord.FailedTests)
             $logHints = @($summaryRecord.LogFailureHints)
-            if ($failedCount -gt 0 -or $failedTests.Count -gt 0 -or $logHints.Count -gt 0) {
-                Write-Host '[warn] Structured report indicates failures despite a zero process exit code. Promoting final exit code to 1.' -ForegroundColor Yellow
+            $missingStructuredSummary = $summarySource -eq 'None'
+            if ($failedCount -gt 0 -or $failedTests.Count -gt 0 -or $logHints.Count -gt 0 -or $missingStructuredSummary) {
+                if ($missingStructuredSummary) {
+                    Write-Host '[warn] Automation run exited with code 0 but did not produce a structured summary. Promoting final exit code to 1.' -ForegroundColor Yellow
+                }
+                else {
+                    Write-Host '[warn] Structured report indicates failures despite a zero process exit code. Promoting final exit code to 1.' -ForegroundColor Yellow
+                }
                 $scriptExitCode = $exitCodes.TestFailed
             }
         }

@@ -62,6 +62,19 @@
 - TypeDatabase / BindState / ToString / BindDatabase 目前已经按 isolation key 分桶，并带有销毁/回归测试入口；这显著降低了测试互相污染，但仍不是最终的 engine-instance 去全局化形态。
 - `GAngelscriptEngine`、`TryGetGlobalEngine()` 和 `TryGetCurrentEngine(): ContextStack -> Subsystem -> GAngelscriptEngine` fallback 仍然存在，因此本计划尚未完成；后续剩余工作应集中在移除 legacy global fallback、统一 fixture/API、以及把 keyed state 进一步收口为 engine-local 设计。
 
+### 2026-04-04 实施收尾（ContextPool + Tooling）
+
+- `FAngelscriptPooledContextBase` 与引擎 `RequestContext/ReturnContext` 现在在归还到池前统一调用 `Unprepare()`，复用 context 会回到 `asEXECUTION_UNINITIALIZED`，不再以 `FINISHED`/脏状态重新进入 `Prepare()`。
+- `AngelscriptEngineIsolationTests.cpp` 新增 `Angelscript.CppTests.Engine.Isolation.ContextPool.RequestContextReusedStartsUnprepared`，补齐脚本引擎原生 `RequestContext/ReturnContext` 池化路径的回归覆盖；原有 `ReusedContextStartsUnprepared` 一并转绿。
+- `Tools/GetAutomationReportSummary.ps1` 现在将 `succeededWithWarnings` 计入 passed，并把阻塞失败 hint 收紧到 `LogAutomationCommandLine: Error:`、`LogAutomationController: Error:` 以及明确的 `No matching group` / `No automation tests matched` / `Fatal error!`；启动期噪音 `Condition failed` 不再误报为测试失败。
+- `Tools/Tests/AutomationToolSelfTests.ps1` 新增 warnings-only fixture 回归，`Tools/Tests/Fixtures/MissingReport/Automation.log` 同步改为更接近真实运行时的 missing-group/missing-tests 场景。
+- 本轮验证结果：
+  - `Tools/RunBuild.ps1 -Label final-engine-isolation-build` ✅
+  - `Tools/RunTests.ps1 -TestPrefix 'Angelscript.CppTests.Engine.Isolation' -Label final-engine-isolation-tests` ✅（9/9 通过）
+  - `Tools/Tests/AutomationToolSelfTests.ps1` ✅
+  - `Tools/Tests/RunToolingSmokeTests.ps1` ✅
+- 结论：当前主干已经补齐本轮 worktree 合回后的上下文池隔离缺口，并修复了对应的测试脚本误判；本计划剩余未完成范围仍集中在 Phase 2-4 的 engine-local state、统一 fixture/API、以及 legacy global fallback 清理。
+
 ### 2026-04-03 跟进验证
 
 - 最新一轮 `Automation RunTests Angelscript.TestModule` 已在本仓通过，日志见 `Saved/Logs/TestRun_20260403_170014.log`。

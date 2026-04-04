@@ -150,6 +150,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptMiscDuplicateFunctionTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptEngine* ScriptEngine = Engine.GetScriptEngine();
 	if (!TestNotNull(TEXT("Misc.DuplicateFunction should expose a script engine for the isolated compile-fail probe"), ScriptEngine))
 	{

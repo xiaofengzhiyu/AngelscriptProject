@@ -5,6 +5,7 @@
 #include "Misc/AutomationTest.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/ScopeExit.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -32,7 +33,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScriptDelegateBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASScriptDelegateCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -97,7 +103,12 @@ int Entry()
 
 bool FAngelscriptSoftPathBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASSoftPathCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -167,7 +178,7 @@ int Entry()
 
 bool FAngelscriptSourceMetadataBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
 
 	const FString Script = TEXT(R"AS(
 UCLASS()
@@ -183,6 +194,13 @@ class UBindingSourceMetadataCarrier : UObject
 	const FString ScriptDirectory = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / TEXT("Script/Automation"));
 	IFileManager::Get().MakeDirectory(*ScriptDirectory, true);
 	const FString ScriptPath = ScriptDirectory / TEXT("RuntimeSourceMetadataBindingsTest.as");
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASSourceMetadataQuery"));
+		Engine.DiscardModule(TEXT("RuntimeSourceMetadataBindingsTest"));
+		IFileManager::Get().Delete(*ScriptPath, false, true, true);
+	};
+
 	if (!TestTrue(TEXT("Write source metadata script file should succeed"), FFileHelper::SaveStringToFile(Script, *ScriptPath)))
 	{
 		return false;
@@ -191,7 +209,6 @@ class UBindingSourceMetadataCarrier : UObject
 	const bool bAnnotatedCompiled = CompileAnnotatedModuleFromMemory(&Engine, TEXT("RuntimeSourceMetadataBindingsTest"), ScriptPath, Script);
 	if (!TestTrue(TEXT("Compile annotated source metadata module should succeed"), bAnnotatedCompiled))
 	{
-		IFileManager::Get().Delete(*ScriptPath, false, true, true);
 		return false;
 	}
 
@@ -228,20 +245,17 @@ int Entry()
 	asIScriptModule* Module = BuildModule(*this, Engine, "ASSourceMetadataQuery", RuntimeScript);
 	if (Module == nullptr)
 	{
-		IFileManager::Get().Delete(*ScriptPath, false, true, true);
 		return false;
 	}
 
 	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
 	if (Function == nullptr)
 	{
-		IFileManager::Get().Delete(*ScriptPath, false, true, true);
 		return false;
 	}
 
 	int32 Result = 0;
 	const bool bExecuted = ExecuteIntFunction(*this, Engine, *Function, Result);
-	IFileManager::Get().Delete(*ScriptPath, false, true, true);
 	if (!TestTrue(TEXT("Execute source metadata accessor function should succeed"), bExecuted))
 	{
 		return false;
@@ -253,7 +267,12 @@ int Entry()
 
 bool FAngelscriptFileHelperBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASFileHelperCompat"));
+	};
+
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

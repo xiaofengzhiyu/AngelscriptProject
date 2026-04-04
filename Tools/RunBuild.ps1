@@ -143,6 +143,14 @@ try {
         $exitCodes.BuildFailed
     }
 
+    if ($scriptExitCode -eq $exitCodes.Success -and (Test-Path -LiteralPath $outputLayout.LogPath -PathType Leaf)) {
+        $buildLog = Get-Content -LiteralPath $outputLayout.LogPath -Raw -Encoding UTF8
+        if ($buildLog -match '(?m)^Result:\s+Failed\b') {
+            Write-Host '[warn] Build log reports failure despite a zero process exit code. Promoting final exit code to 1.' -ForegroundColor Yellow
+            $scriptExitCode = $exitCodes.BuildFailed
+        }
+    }
+
     Write-Utf8JsonFile -Path $metadataPath -Value ([PSCustomObject]@{
             Label             = $Label
             Mode              = $buildMode

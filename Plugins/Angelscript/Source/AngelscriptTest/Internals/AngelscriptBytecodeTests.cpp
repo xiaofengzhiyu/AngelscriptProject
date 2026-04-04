@@ -41,6 +41,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeInstructionSequence");
 	if (!TestNotNull(TEXT("Bytecode instruction test should create a backing module"), Module))
@@ -63,6 +64,7 @@ bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Paramet
 bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeAppend");
 	if (!TestNotNull(TEXT("Bytecode append test should create a backing module"), Module))
@@ -87,6 +89,7 @@ bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeJumpResolution");
 	if (!TestNotNull(TEXT("Bytecode jump test should create a backing module"), Module))
@@ -106,6 +109,7 @@ bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 bool FAngelscriptBytecodeOutputTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeOutput");
 	if (!TestNotNull(TEXT("Bytecode output test should create a backing module"), Module))

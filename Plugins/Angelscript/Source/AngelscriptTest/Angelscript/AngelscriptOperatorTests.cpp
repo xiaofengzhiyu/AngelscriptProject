@@ -40,6 +40,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptOperatorGetSetTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptEngine* ScriptEngine = Engine.GetScriptEngine();
 	if (!TestNotNull(TEXT("Operators.GetSet should expose a script engine for the isolated compile-fail probe"), ScriptEngine))
 	{

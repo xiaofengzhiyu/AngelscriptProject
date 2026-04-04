@@ -115,6 +115,32 @@ Invoke-TestCase -Name "StreamingRunnerEmitsIncrementalLines" -Body {
     Assert-True -Condition ($spreadMs -ge 300) -Message "Line callbacks should be spread across the process lifetime."
 }
 
+Invoke-TestCase -Name "StreamingRunnerPreservesArgumentsWithSpaces" -Body {
+    $observedLines = New-Object System.Collections.Generic.List[string]
+    $logPath = Join-Path $tempRoot "args.log"
+    $helperPath = Join-Path $ProjectRoot "Tools\Tests\Helpers\EchoArgs.ps1"
+    $powerShell = Get-ConsolePowerShellPath
+    $spacedArgumentA = '-ExecCmds=Automation RunTests Group:AngelscriptSmoke; Quit'
+    $spacedArgumentB = '-TestExit=Automation Test Queue Empty'
+
+    $result = Invoke-StreamingProcess `
+        -FilePath $powerShell `
+        -ArgumentList @("-NoProfile", "-File", $helperPath, $spacedArgumentA, $spacedArgumentB) `
+        -WorkingDirectory $tempRoot `
+        -TimeoutMs 5000 `
+        -LogPath $logPath `
+        -Label "args-smoke" `
+        -OnLine {
+            param($StreamName, $Line)
+            $observedLines.Add([string]$Line) | Out-Null
+        }
+
+    Assert-Equal -Actual $result.ExitCode -Expected 0 -Message "Argument echo helper should exit successfully."
+    Assert-True -Condition ($observedLines.Contains('arg-count:2')) -Message "Arguments with spaces should be preserved as two arguments."
+    Assert-True -Condition ($observedLines.Contains(("arg[0]:{0}" -f $spacedArgumentA))) -Message "The first spaced argument should be preserved verbatim."
+    Assert-True -Condition ($observedLines.Contains(("arg[1]:{0}" -f $spacedArgumentB))) -Message "The second spaced argument should be preserved verbatim."
+}
+
 Invoke-TestCase -Name "TimeoutKillsProcessTree" -Body {
     $marker = "ANGELSCRIPT_TIMEOUT_{0}" -f ([Guid]::NewGuid().ToString("N"))
     $logPath = Join-Path $tempRoot "timeout.log"
