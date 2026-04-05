@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -40,7 +41,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioHotReloadPropertyPreservedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioHotReloadPropertyPreserved"));
 	ON_SCOPE_EXIT
@@ -148,7 +149,7 @@ class AScenarioHotReloadPropertyPreserved : AActor
 
 bool FAngelscriptScenarioHotReloadAddPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioHotReloadAddProperty"));
 	ON_SCOPE_EXIT
@@ -233,7 +234,7 @@ class AScenarioHotReloadAddProperty : AActor
 
 bool FAngelscriptScenarioHotReloadFunctionChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioHotReloadFunctionChange"));
 	ON_SCOPE_EXIT
@@ -333,7 +334,7 @@ class AScenarioHotReloadFunctionChange : AActor
 
 bool FAngelscriptScenarioHotReloadPIEStructuralChangeNeedsFullReloadTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioHotReloadPIEStructuralChange"));
 	ON_SCOPE_EXIT

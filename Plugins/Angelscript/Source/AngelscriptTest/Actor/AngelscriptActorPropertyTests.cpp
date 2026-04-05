@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -27,7 +28,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioActorUPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioActorUProperty"));
 	ON_SCOPE_EXIT
@@ -86,7 +87,7 @@ class AScenarioActorUProperty : AActor
 
 bool FAngelscriptScenarioActorUFunctionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioActorUFunction"));
 	ON_SCOPE_EXIT
@@ -147,7 +148,7 @@ class AScenarioActorUFunction : AActor
 
 bool FAngelscriptScenarioActorDefaultValuesTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioActorDefaultValues"));
 	ON_SCOPE_EXIT

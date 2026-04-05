@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 
-$script:UnrealCommandUtilsMaxTimeoutMs = 300000
+$script:UnrealCommandUtilsMaxTimeoutMs = 900000
 $script:UnrealBundledDotNetVersion = '8.0.412'
 $script:HeldMutexNames = New-Object 'System.Collections.Generic.HashSet[string]'
 $script:HeldMutexSyncRoot = New-Object object
@@ -812,7 +812,7 @@ function Resolve-AgentConfiguration {
         Configuration         = Get-IniValue -Config $config -Section 'Build' -Key 'Configuration' -DefaultValue 'Development'
         Architecture          = Get-IniValue -Config $config -Section 'Build' -Key 'Architecture' -DefaultValue 'x64'
         BuildDefaultTimeoutMs = [int](Get-IniValue -Config $config -Section 'Build' -Key 'DefaultTimeoutMs' -DefaultValue (Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '180000'))
-        TestDefaultTimeoutMs  = [int](Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '300000')
+        TestDefaultTimeoutMs  = [int](Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '600000')
     }
 }
 

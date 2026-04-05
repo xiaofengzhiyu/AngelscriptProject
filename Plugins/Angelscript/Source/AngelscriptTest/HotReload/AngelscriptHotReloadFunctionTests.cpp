@@ -1,5 +1,6 @@
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "HAL/FileManager.h"
 #include "Misc/AutomationTest.h"
@@ -80,7 +81,7 @@ struct FAngelscriptHotReloadTestAccess
 
 bool FAngelscriptModuleRecordTrackingTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	const FString ScriptA = TEXT(R"AS(
 UCLASS()
 class UTrackedObjectA : UObject
@@ -148,7 +149,7 @@ class UTrackedObjectB : UObject
 
 bool FAngelscriptDiscardModuleTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	const FString ScriptA = TEXT(R"AS(
 UCLASS()
 class UDiscardableObject : UObject
@@ -208,7 +209,7 @@ int SurvivorEntry()
 
 bool FAngelscriptDiscardAndRecompileTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
 class UDiscardRecompileTarget : UObject
@@ -291,7 +292,7 @@ class UDiscardRecompileTargetV2 : UObject
 
 bool FAngelscriptModuleWatcherQueuesFileChangesTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 
 	const FAngelscriptEngine::FFilenamePair FilenamePair{
 		TEXT("J:/UnrealEngine/Temp/UE-Angelscript/Saved/Automation/WatcherTest.as"),
@@ -318,7 +319,7 @@ bool FAngelscriptModuleWatcherQueuesFileChangesTest::RunTest(const FString& Para
 
 bool FAngelscriptHotReloadModifyLookupFlowTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	static const FName ModuleName(TEXT("HotReloadModifyLookupFlow"));
 	ON_SCOPE_EXIT
 	{
@@ -404,7 +405,7 @@ bool FAngelscriptHotReloadFailureKeepsOldCodeTest::RunTest(const FString& Parame
 	AddExpectedError(TEXT("Identifier 'MissingType' is not a data type"), EAutomationExpectedErrorFlags::Contains, 1);
 	AddExpectedError(TEXT("Hot reload failed due to script compile errors. Keeping all old script code."), EAutomationExpectedErrorFlags::Contains, 1);
 
-	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	static const FName ModuleName(TEXT("HotReloadFailureKeepsOldCode"));
 	const FString AbsoluteFilename = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Automation"), TEXT("HotReloadFailureKeepsOldCode.as"));
 	ON_SCOPE_EXIT

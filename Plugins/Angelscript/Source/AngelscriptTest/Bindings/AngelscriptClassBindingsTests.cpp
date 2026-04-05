@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -37,7 +38,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptClassLookupBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -93,7 +94,7 @@ int Entry()
 
 bool FAngelscriptTSubclassOfBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -178,7 +179,7 @@ int Entry()
 
 bool FAngelscriptTSoftClassPtrBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -265,7 +266,7 @@ int Entry()
 
 bool FAngelscriptStaticClassCompatBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 
 	asIScriptModule* PlainModule = BuildModule(
 		*this,
@@ -408,7 +409,7 @@ int Entry()
 
 bool FAngelscriptNativeStaticClassNamespaceBindingTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptEngine* ScriptEngine = Engine.Engine;
 	if (!TestNotNull(TEXT("AngelScript engine should exist"), ScriptEngine))
 	{
@@ -434,7 +435,7 @@ bool FAngelscriptNativeStaticClassNamespaceBindingTest::RunTest(const FString& P
 
 bool FAngelscriptNativeStaticTypeGlobalBindingTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

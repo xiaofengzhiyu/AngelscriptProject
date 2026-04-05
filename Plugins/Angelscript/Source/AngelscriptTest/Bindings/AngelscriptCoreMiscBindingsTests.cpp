@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 
 #include "Misc/AutomationTest.h"
@@ -24,7 +25,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptGuidBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -94,7 +95,7 @@ int Entry()
 
 bool FAngelscriptPathsBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -169,7 +170,7 @@ int Entry()
 
 bool FAngelscriptNumberFormattingOptionsBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

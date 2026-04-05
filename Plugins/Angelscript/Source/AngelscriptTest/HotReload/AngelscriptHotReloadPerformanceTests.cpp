@@ -1,6 +1,7 @@
 #include "../Shared/AngelscriptPerformanceTestUtils.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformTime.h"
@@ -78,7 +79,7 @@ bool FAngelscriptHotReloadSoftLatencyTest::RunTest(const FString& Parameters)
 {
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 		static const FName ModuleName(TEXT("HotReloadPerformanceSoft"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -127,7 +128,7 @@ bool FAngelscriptHotReloadFullLatencyTest::RunTest(const FString& Parameters)
 {
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 		static const FName ModuleName(TEXT("HotReloadPerformanceFull"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -175,7 +176,7 @@ bool FAngelscriptHotReloadRenameWindowLatencyTest::RunTest(const FString& Parame
 
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 		static const FName ModuleName(TEXT("HotReloadPerformanceRename"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -227,7 +228,7 @@ bool FAngelscriptHotReloadBurstChurnLatencyTest::RunTest(const FString& Paramete
 
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 		static const FName ModuleName(TEXT("HotReloadPerformanceBurst"));
 		ResetSharedInitializedTestEngine(Engine);
 

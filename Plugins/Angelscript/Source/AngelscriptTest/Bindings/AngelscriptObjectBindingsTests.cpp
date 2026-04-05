@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -16,7 +17,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptObjectPtrBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -79,7 +80,7 @@ int Entry()
 
 bool FAngelscriptSoftObjectPtrBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

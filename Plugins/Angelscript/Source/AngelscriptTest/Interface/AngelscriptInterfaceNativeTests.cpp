@@ -2,6 +2,7 @@
 #include "Core/AngelscriptEngine.h"
 #include "Shared/AngelscriptNativeInterfaceTestTypes.h"
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -124,7 +125,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceNativeImplementTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceNativeImplement"));
 	EnsureNativeInterfaceFixturesBound();
@@ -232,7 +233,7 @@ class AScenarioInterfaceNativeImplement : AActor, UAngelscriptNativeParentInterf
 
 bool FAngelscriptScenarioInterfaceNativeInheritedImplementTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceNativeInheritedImplement"));
 	EnsureNativeInterfaceFixturesBound();

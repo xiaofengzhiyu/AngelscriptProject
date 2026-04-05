@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "Misc/ScopeExit.h"
 
@@ -18,7 +19,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptSetIteratorBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetIteratorCompat"));
@@ -68,7 +69,7 @@ int Entry()
 
 bool FAngelscriptMapIteratorBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapIteratorCompat"));

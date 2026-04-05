@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Blueprint.h"
@@ -209,7 +210,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioBlueprintChildInheritsScriptBeginPlayTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildInheritsScriptBeginPlay"));
 	ON_SCOPE_EXIT
@@ -277,7 +278,7 @@ class AScenarioBlueprintChildInheritsScriptBeginPlayParent : AActor
 
 bool FAngelscriptScenarioBlueprintChildInheritsScriptTickTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildInheritsScriptTick"));
 	ON_SCOPE_EXIT
@@ -369,7 +370,7 @@ class AScenarioBlueprintChildInheritsScriptTickParent : AActor
 
 bool FAngelscriptScenarioBlueprintChildScriptUFunctionStillCallableTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildScriptUFunctionStillCallable"));
 	ON_SCOPE_EXIT
@@ -457,7 +458,7 @@ class AScenarioBlueprintChildScriptUFunctionStillCallableParent : AActor
 
 bool FAngelscriptScenarioBlueprintChildRecreateDoesNotLeakPreviousStateTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildRecreateDoesNotLeakPreviousState"));
 	ON_SCOPE_EXIT
@@ -569,7 +570,7 @@ class AScenarioBlueprintChildRecreateStateParent : AActor
 
 bool FAngelscriptScenarioBlueprintChildNoOverrideUsesScriptParentDefaultTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildNoOverrideUsesScriptParentDefault"));
 	ON_SCOPE_EXIT
@@ -676,7 +677,7 @@ class AScenarioBlueprintChildNoOverrideUsesScriptParentDefaultParent : AActor
 
 bool FAngelscriptScenarioBlueprintChildOverrideChainHasDeterministicCountsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildOverrideChainHasDeterministicCounts"));
 	ON_SCOPE_EXIT

@@ -2,6 +2,7 @@
 #include "AngelscriptType.h"
 #include "Angelscript/AngelscriptTestSupport.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -72,7 +73,7 @@ bool FAngelscriptTestModuleLifecycleTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	if (!TestNotNull(TEXT("Compile test should create an initialized engine"), &Engine))
 	{
 		return false;
@@ -99,7 +100,7 @@ bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters
 
 bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	if (!TestNotNull(TEXT("Execute test should create an initialized engine"), &Engine))
 	{
 		return false;

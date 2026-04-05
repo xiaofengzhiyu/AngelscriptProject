@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "HAL/PlatformMisc.h"
 #include "Misc/App.h"
@@ -35,7 +36,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHashBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -92,7 +93,7 @@ int Entry()
 
 bool FAngelscriptUtilityBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 
 	TArray<FString> ExpectedTokens;
 	TArray<FString> ExpectedSwitches;
@@ -156,7 +157,7 @@ int Entry()
 
 bool FAngelscriptParseBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -216,7 +217,7 @@ int Entry()
 
 bool FAngelscriptRandomStreamBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -281,7 +282,7 @@ int Entry()
 
 bool FAngelscriptStringRemoveAtBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,

@@ -5,15 +5,19 @@
 
 using namespace AngelscriptTestSupport;
 
-// Ported from AngelscriptGlobalBindingsTests.cpp using the new ANGELSCRIPT_TEST macro
-ANGELSCRIPT_TEST(
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptGlobalBindingsMacroValidationTest,
 	"Angelscript.TestModule.Validation.GlobalBindingsMacro",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FAngelscriptGlobalBindingsMacroValidationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	asIScriptModule* Module = BuildModule(
-		*this,
+	bool bPassed = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
+
+	int32 Result = 0;
+	ASTEST_COMPILE_RUN_INT(
 		Engine,
 		"ASGlobalVariableCompatMacro",
 		TEXT(R"(
@@ -36,25 +40,14 @@ int Entry()
 
 	return 1;
 }
-)"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
+		)"),
+		TEXT("int Entry()"),
+		Result);
 
-	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
-	if (Function == nullptr)
-	{
-		return false;
-	}
+	bPassed = TestEqual(TEXT("Global variable compat operations via macro should preserve bound namespace globals and defaults"), Result, 1);
 
-	int32 Result = 0;
-	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-	{
-		return false;
-	}
-
-	return TestEqual(TEXT("Global variable compat operations via macro should preserve bound namespace globals and defaults"), Result, 1);
+	ASTEST_END_FULL
+	return bPassed;
 }
 
 #endif

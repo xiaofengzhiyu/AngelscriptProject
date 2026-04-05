@@ -2,6 +2,7 @@
 #include "../../Shared/AngelscriptScenarioTestUtils.h"
 #include "../../Shared/AngelscriptTestEngineHelper.h"
 #include "../../Shared/AngelscriptTestUtilities.h"
+#include "../../Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "GameFramework/Actor.h"
@@ -25,7 +26,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptLearningTimerAndLatentTraceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("LearningTimerModule"));
 	ON_SCOPE_EXIT

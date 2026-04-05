@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -39,7 +40,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptBuilderSingleModulePipelineTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
@@ -68,7 +69,7 @@ bool FAngelscriptBuilderSingleModulePipelineTest::RunTest(const FString& Paramet
 
 bool FAngelscriptBuilderCompileErrorCollectionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBuilderModule(ScriptEngine, "BuilderCompileErrors");
@@ -88,7 +89,7 @@ bool FAngelscriptBuilderCompileErrorCollectionTest::RunTest(const FString& Param
 
 bool FAngelscriptBuilderRebuildModuleTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* ModuleV1 = AngelscriptTestSupport::BuildModule(
 		*this,
@@ -138,7 +139,7 @@ bool FAngelscriptBuilderRebuildModuleTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptBuilderImportBindingTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* SourceModule = AngelscriptTestSupport::BuildModule(
 		*this,

@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -30,7 +31,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerBytecodeGenerationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
@@ -57,7 +58,7 @@ bool FAngelscriptCompilerBytecodeGenerationTest::RunTest(const FString& Paramete
 
 bool FAngelscriptCompilerVariableScopeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
@@ -85,7 +86,7 @@ bool FAngelscriptCompilerVariableScopeTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptCompilerFunctionCallTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
@@ -115,7 +116,7 @@ bool FAngelscriptCompilerFunctionCallTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptCompilerTypeConversionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,

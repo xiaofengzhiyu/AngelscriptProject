@@ -2,6 +2,7 @@
 #include "../../Shared/AngelscriptScenarioTestUtils.h"
 #include "../../Shared/AngelscriptTestEngineHelper.h"
 #include "../../Shared/AngelscriptTestUtilities.h"
+#include "../../Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Blueprint.h"
@@ -114,7 +115,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptLearningScriptClassToBlueprintTraceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("LearningScriptClassToBlueprintModule"));
 	ON_SCOPE_EXIT

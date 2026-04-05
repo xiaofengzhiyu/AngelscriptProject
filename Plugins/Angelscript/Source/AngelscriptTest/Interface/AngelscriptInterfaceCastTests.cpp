@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -31,7 +32,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceCastSuccessTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastSuccess"));
 	ON_SCOPE_EXIT
@@ -101,7 +102,7 @@ class AScenarioInterfaceCastSuccess : AActor, UIDamageableCastOk
 
 bool FAngelscriptScenarioInterfaceCastFailTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastFail"));
 	ON_SCOPE_EXIT
@@ -168,7 +169,7 @@ class AScenarioInterfaceCastFail : AActor
 
 bool FAngelscriptScenarioInterfaceMethodCallTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceMethodCall"));
 	ON_SCOPE_EXIT

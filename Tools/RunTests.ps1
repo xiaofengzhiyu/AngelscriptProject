@@ -43,11 +43,6 @@ try {
     $agentConfig = Resolve-AgentConfiguration -ProjectRoot $projectRoot
 
     $defaultTimeoutMs = $agentConfig.TestDefaultTimeoutMs
-    if ($defaultTimeoutMs -gt 300000) {
-        Write-Host ("[warn] Test.DefaultTimeoutMs={0} exceeds the 300000ms hard cap. Falling back to 300000ms." -f $defaultTimeoutMs) -ForegroundColor Yellow
-        $defaultTimeoutMs = 300000
-    }
-
     $resolvedTimeoutMs = Resolve-TimeoutMs -RequestedTimeoutMs $TimeoutMs -DefaultTimeoutMs $defaultTimeoutMs -ParameterName 'TimeoutMs'
     $editorCmd = Join-Path $agentConfig.EngineRoot 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe'
     if (-not (Test-Path -LiteralPath $editorCmd -PathType Leaf)) {

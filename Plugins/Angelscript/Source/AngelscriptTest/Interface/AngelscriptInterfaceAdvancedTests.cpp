@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -64,7 +65,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceInheritedInterfaceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceInherited"));
 	ON_SCOPE_EXIT
@@ -146,7 +147,7 @@ class AScenarioInterfaceInherited : AActor, UIKillableChild
 
 bool FAngelscriptScenarioInterfaceMissingMethodTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceMissingMethod"));
 	ON_SCOPE_EXIT
@@ -203,7 +204,7 @@ class AScenarioInterfaceMissingMethod : AActor, UIDamageableMissing
 
 bool FAngelscriptScenarioInterfaceNoPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceNoProperty"));
 	ON_SCOPE_EXIT
@@ -243,7 +244,7 @@ interface UINoProperty
 
 bool FAngelscriptScenarioInterfaceGCSafeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceGCSafe"));
 	ON_SCOPE_EXIT
@@ -304,7 +305,7 @@ class AScenarioInterfaceGCSafe : AActor, UIDamageableGC
 #if 1
 bool FAngelscriptScenarioInterfaceHotReloadTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceHotReload"));
 	ON_SCOPE_EXIT
@@ -404,7 +405,7 @@ class AScenarioInterfaceHotReload : AActor, UIDamageableHR
 
 bool FAngelscriptScenarioInterfaceCppInterfaceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceCppInterface"));
 	ON_SCOPE_EXIT
@@ -464,7 +465,7 @@ class AScenarioInterfaceCppBase : AActor, UICppTestInterface
 
 bool FAngelscriptScenarioInterfaceInheritedMethodDispatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceInheritedDispatch"));
 	ON_SCOPE_EXIT
@@ -575,7 +576,7 @@ class AScenarioInterfaceInheritedDispatch : AActor, UIKillableDispatch
 
 bool FAngelscriptScenarioInterfaceMultipleInheritanceChainTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceMultiChain"));
 	ON_SCOPE_EXIT
@@ -661,7 +662,7 @@ class AScenarioInterfaceMultiChain : AActor, UILeafChain
 
 bool FAngelscriptScenarioInterfaceMultipleInheritanceDispatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceMultiDispatch"));
 	ON_SCOPE_EXIT

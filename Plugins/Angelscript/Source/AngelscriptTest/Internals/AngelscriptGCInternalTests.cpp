@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -262,7 +263,7 @@ namespace
 
 bool FAngelscriptGCStatisticsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCGarbageCollector Collector;
 	Collector.engine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
@@ -284,7 +285,7 @@ bool FAngelscriptGCStatisticsTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptGCEmptyCollectTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCGarbageCollector Collector;
 	Collector.engine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
@@ -296,7 +297,7 @@ bool FAngelscriptGCEmptyCollectTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptGCInvalidObjectLookupTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCGarbageCollector Collector;
 	Collector.engine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
@@ -315,7 +316,7 @@ bool FAngelscriptGCInvalidObjectLookupTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptGCReportUndestroyedEmptyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCGarbageCollector Collector;
 	Collector.engine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
@@ -327,7 +328,7 @@ bool FAngelscriptGCReportUndestroyedEmptyTest::RunTest(const FString& Parameters
 
 bool FAngelscriptGCManualCycleCollectionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptEngine* ScriptEngine = Engine.GetScriptEngine();
 	asITypeInfo* GCProbeType = nullptr;
@@ -360,7 +361,7 @@ bool FAngelscriptGCManualCycleCollectionTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptGCCycleDetectionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asIScriptEngine* ScriptEngine = Engine.GetScriptEngine();
 	asITypeInfo* GCProbeType = nullptr;

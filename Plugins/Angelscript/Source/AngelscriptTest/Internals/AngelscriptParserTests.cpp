@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -82,7 +83,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptParserDeclarationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserDeclarations");
@@ -116,7 +117,7 @@ bool FAngelscriptParserDeclarationTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptParserExpressionAstTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserExpressions");
@@ -143,7 +144,7 @@ bool FAngelscriptParserExpressionAstTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptParserControlFlowTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserControlFlow");
@@ -172,7 +173,7 @@ bool FAngelscriptParserControlFlowTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptParserSyntaxErrorTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserSyntaxErrors");

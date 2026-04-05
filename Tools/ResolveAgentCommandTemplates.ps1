@@ -33,8 +33,8 @@ else {
 $agentConfig = Resolve-AgentConfiguration -ProjectRoot $resolvedProjectRoot -ConfigPath $resolvedConfigPath
 $powerShell = Get-ConsolePowerShellPath
 
-$buildTimeoutMs = if ($agentConfig.BuildDefaultTimeoutMs -gt 300000) { 180000 } else { $agentConfig.BuildDefaultTimeoutMs }
-$testTimeoutMs = if ($agentConfig.TestDefaultTimeoutMs -gt 300000) { 300000 } else { $agentConfig.TestDefaultTimeoutMs }
+$buildTimeoutMs = $agentConfig.BuildDefaultTimeoutMs
+$testTimeoutMs = $agentConfig.TestDefaultTimeoutMs
 
 $buildScript = Join-Path $resolvedProjectRoot 'Tools\RunBuild.ps1'
 $testScript = Join-Path $resolvedProjectRoot 'Tools\RunTests.ps1'

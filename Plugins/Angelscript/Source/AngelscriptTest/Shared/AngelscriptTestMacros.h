@@ -3,77 +3,166 @@
 #include "AngelscriptTestUtilities.h"
 #include "AngelscriptTestEngineHelper.h"
 #include "Misc/AutomationTest.h"
+#include "Misc/ScopeExit.h"
 
-namespace AngelscriptTestSupport
-{
-	#define ANGELSCRIPT_TEST(TestClassName, TestPath, TestFlags) \
-		IMPLEMENT_SIMPLE_AUTOMATION_TEST(TestClassName, TestPath, TestFlags) \
-		bool TestClassName::RunTest(const FString& Parameters)
-	
-	#define ANGELSCRIPT_ISOLATED_TEST(TestClassName, TestPath, TestFlags) \
-		IMPLEMENT_SIMPLE_AUTOMATION_TEST(TestClassName, TestPath, TestFlags) \
-		bool TestClassName::RunTest(const FString& Parameters) \
+// ============================================================================
+// Angelscript Test Macros
+// ============================================================================
+//
+// Two-layer macro system for test engine management:
+//
+//   Layer 1 - Engine Creation:  ASTEST_CREATE_ENGINE_*
+//   Layer 2 - Lifecycle:        ASTEST_BEGIN_* / ASTEST_END_*
+//
+// Usage:
+//   FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+//   ASTEST_BEGIN_FULL
+//   // ... test code ...
+//   ASTEST_END_FULL
+//
+// See TESTING_GUIDE.md for detailed usage and decision tree.
+// ============================================================================
+
+// ============================================================================
+// Layer 1: Engine Creation Macros
+// ============================================================================
+
+// FULL - Creates a fresh isolated Full engine each time.
+// Use for: engine core self-tests, bind environment testing, hot-reload tests.
+// Provides: FAngelscriptEngine& Engine
+#define ASTEST_CREATE_ENGINE_FULL() \
+	(*[this]() -> TUniquePtr<FAngelscriptEngine>& { \
+		static thread_local TUniquePtr<FAngelscriptEngine> _FullEngine; \
+		_FullEngine = AngelscriptTestSupport::CreateIsolatedFullEngine(); \
+		check(_FullEngine.IsValid()); \
+		return _FullEngine; \
+	}())
+
+// SHARE - Process-level singleton, reused across tests, no reset.
+// Use for: lightweight compile-and-execute tests with no isolation needs.
+// Provides: FAngelscriptEngine& Engine
+#define ASTEST_CREATE_ENGINE_SHARE() \
+	AngelscriptTestSupport::GetOrCreateSharedCloneEngine()
+
+#define ASTEST_CREATE_ENGINE_SHARE_CLEAN() \
+	AngelscriptTestSupport::AcquireCleanSharedCloneEngine()
+
+#define ASTEST_CREATE_ENGINE_SHARE_FRESH() \
+	AngelscriptTestSupport::AcquireFreshSharedCloneEngine()
+
+// CLONE - Lightweight isolation, shares source engine read-only state.
+// Use for: tests needing isolation without Full engine creation cost.
+// Provides: FAngelscriptEngine& Engine
+#define ASTEST_CREATE_ENGINE_CLONE() \
+	(*[this]() -> TUniquePtr<FAngelscriptEngine>& { \
+		static thread_local TUniquePtr<FAngelscriptEngine> _CloneEngine; \
+		_CloneEngine = AngelscriptTestSupport::CreateIsolatedCloneEngine(); \
+		check(_CloneEngine.IsValid()); \
+		return _CloneEngine; \
+	}())
+
+// NATIVE - Raw asIScriptEngine without FAngelscriptEngine wrapper.
+// Use for: testing AngelScript SDK APIs directly.
+// Provides: asIScriptEngine* NativeEngine
+#define ASTEST_CREATE_ENGINE_NATIVE() \
+	asCreateScriptEngine(ANGELSCRIPT_VERSION)
+
+// ============================================================================
+// Layer 2: Lifecycle Macros (BEGIN / END pairs)
+// ============================================================================
+
+// ---------- FULL lifecycle ----------
+// Establishes EngineScope + auto-discards all modules on exit.
+#define ASTEST_BEGIN_FULL \
+	{ \
+		FAngelscriptEngineScope _AutoEngineScope(Engine); \
+		ON_SCOPE_EXIT \
 		{ \
-			TUniquePtr<FAngelscriptEngine> IsolatedEngine = CreateIsolatedCloneEngine(); \
-			if (!IsolatedEngine.IsValid()) \
+			const TArray<TSharedRef<FAngelscriptModuleDesc>> _ActiveModules = Engine.GetActiveModules(); \
+			for (const TSharedRef<FAngelscriptModuleDesc>& _Module : _ActiveModules) \
 			{ \
-				AddError(TEXT("Failed to create isolated Angelscript engine")); \
-				return false; \
+				Engine.DiscardModule(*_Module->ModuleName); \
 			} \
-			FAngelscriptEngine& Engine = *IsolatedEngine; \
-			ON_SCOPE_EXIT \
+		};
+
+#define ASTEST_END_FULL \
+	}
+
+// ---------- SHARE lifecycle ----------
+// No extra scope, no cleanup (shared engine accumulates modules naturally).
+#define ASTEST_BEGIN_SHARE \
+	{
+
+#define ASTEST_END_SHARE \
+	}
+
+// ---------- CLONE lifecycle ----------
+// Establishes EngineScope + auto-discards all modules on exit.
+#define ASTEST_BEGIN_CLONE \
+	{ \
+		FAngelscriptEngineScope _AutoEngineScope(Engine); \
+		ON_SCOPE_EXIT \
+		{ \
+			const TArray<TSharedRef<FAngelscriptModuleDesc>> _ActiveModules = Engine.GetActiveModules(); \
+			for (const TSharedRef<FAngelscriptModuleDesc>& _Module : _ActiveModules) \
 			{ \
-				const TArray<TSharedRef<FAngelscriptModuleDesc>> ActiveModules = Engine.GetActiveModules(); \
-				for (const TSharedRef<FAngelscriptModuleDesc>& Module : ActiveModules) \
-				{ \
-					Engine.DiscardModule(*Module->ModuleName); \
-				} \
-			};
+				Engine.DiscardModule(*_Module->ModuleName); \
+			} \
+		};
 
-	#define ANGELSCRIPT_SCOPED_ENGINE(Engine, ScopeName) \
-		FAngelscriptEngineScope ScopeName(Engine)
+#define ASTEST_END_CLONE \
+	}
 
-	#define ANGELSCRIPT_ENSURE_ENGINE(EnginePtr, TestObj) \
-		if (!(TestObj.TestNotNull(TEXT("Angelscript engine must be valid"), EnginePtr))) \
-		{ \
-			return false; \
-		}
+// ---------- NATIVE lifecycle ----------
+// Validates engine pointer + auto ShutDownAndRelease on exit.
+// Expects variable name: NativeEngine (asIScriptEngine*)
+#define ASTEST_BEGIN_NATIVE \
+	if (NativeEngine == nullptr) \
+	{ \
+		AddError(TEXT("Failed to create native AngelScript engine")); \
+		return false; \
+	} \
+	{ \
+		ON_SCOPE_EXIT { NativeEngine->ShutDownAndRelease(); };
 
-	#define ANGELSCRIPT_REQUIRE_FUNCTION(Module, FunctionDecl, TestObj) \
-		GetFunctionByDecl(TestObj, Module, FunctionDecl)
+#define ASTEST_END_NATIVE \
+	}
 
-	#define ANGELSCRIPT_EXECUTE_INT(Engine, Function, OutResult, TestObj) \
-		ExecuteIntFunction(TestObj, Engine, Function, OutResult)
+// ============================================================================
+// Helper Macros: Compile + Execute shortcuts
+// ============================================================================
 
-	#define ANGELSCRIPT_COMPILE_ANNOTATED_MODULE(Engine, ModuleName, Filename, ScriptSource, TestObj) \
-		CompileAnnotatedModuleFromMemory(&Engine, FName(ANSI_TO_TCHAR(ModuleName)), FString(ANSI_TO_TCHAR(Filename)), ScriptSource)
+// Compile module + get function + execute int, return false on any failure.
+// Requires: *this is FAutomationTestBase, Engine is FAngelscriptEngine&
+#define ASTEST_COMPILE_RUN_INT(Engine, ModuleName, Source, FuncDecl, OutResult) \
+	do { \
+		asIScriptModule* _Module = AngelscriptTestSupport::BuildModule( \
+			*this, Engine, ModuleName, Source); \
+		if (_Module == nullptr) { return false; } \
+		asIScriptFunction* _Function = AngelscriptTestSupport::GetFunctionByDecl( \
+			*this, *_Module, FuncDecl); \
+		if (_Function == nullptr) { return false; } \
+		if (!AngelscriptTestSupport::ExecuteIntFunction( \
+			*this, Engine, *_Function, OutResult)) { return false; } \
+	} while (false)
 
-	#define ANGELSCRIPT_FIND_GENERATED_CLASS(Engine, ClassName, TestObj) \
-		FindGeneratedClass(&Engine, FName(ClassName))
+// Same as above but for int64 return type.
+#define ASTEST_COMPILE_RUN_INT64(Engine, ModuleName, Source, FuncDecl, OutResult) \
+	do { \
+		asIScriptModule* _Module = AngelscriptTestSupport::BuildModule( \
+			*this, Engine, ModuleName, Source); \
+		if (_Module == nullptr) { return false; } \
+		asIScriptFunction* _Function = AngelscriptTestSupport::GetFunctionByDecl( \
+			*this, *_Module, FuncDecl); \
+		if (_Function == nullptr) { return false; } \
+		if (!AngelscriptTestSupport::ExecuteInt64Function( \
+			*this, Engine, *_Function, OutResult)) { return false; } \
+	} while (false)
 
-	#define ANGELSCRIPT_EXECUTE_REFLECTED_INT(Object, Function, OutResult, TestObj) \
-		ExecuteGeneratedIntEventOnGameThread(Object, Function, OutResult)
-
-	#define ANGELSCRIPT_TEST_VERIFY_COMPILATION_FAILS(Engine, ModuleName, Filename, ScriptSource, TestObj) \
-		([](FAngelscriptEngine* _Engine, const TCHAR* _Name, const TCHAR* _File, const FString& _Source) -> bool \
-		{ \
-			if (_Engine == nullptr) return false; \
-			ECompileResult CompileResult = ECompileResult::Error; \
-			UE_SET_LOG_VERBOSITY(Angelscript, Fatal); \
-			bool bCompiled = CompileModuleWithResult(_Engine, ECompileType::SoftReloadOnly, FName(_Name), FString(_File), _Source, CompileResult); \
-			UE_SET_LOG_VERBOSITY(Angelscript, Log); \
-			return !bCompiled || (CompileResult == ECompileResult::Error || CompileResult == ECompileResult::ErrorNeedFullReload); \
-		})(&Engine, ANSI_TO_TCHAR(ModuleName), ANSI_TO_TCHAR(Filename), ScriptSource)
-
-	#define ANGELSCRIPT_COMPILE_WITH_TRACE(Engine, ModuleName, Filename, ScriptSource, OutTrace, TestObj) \
-		CompileModuleWithSummary(&Engine, ECompileType::Initial, FName(ANSI_TO_TCHAR(ModuleName)), FString(ANSI_TO_TCHAR(Filename)), ScriptSource, false, OutTrace, false)
-
-	#define ANGELSCRIPT_MULTI_PHASE_COMPILE(Engine, ModuleName, Filename, Phase1Source, Phase2Source, OutPhase1Result, OutPhase2Result, TestObj) \
-		do \
-		{ \
-			CompileModuleWithResult(&Engine, ECompileType::FullReload, FName(ANSI_TO_TCHAR(ModuleName)), FString(ANSI_TO_TCHAR(Filename)), Phase1Source, OutPhase1Result); \
-			CompileModuleWithResult(&Engine, ECompileType::SoftReloadOnly, FName(ANSI_TO_TCHAR(ModuleName)), FString(ANSI_TO_TCHAR(Filename)), Phase2Source, OutPhase2Result); \
-		} while (false)
-}
-
-#endif
+// Compile only (no execution). Sets OutModulePtr, returns false on failure.
+#define ASTEST_BUILD_MODULE(Engine, ModuleName, Source, OutModulePtr) \
+	do { \
+		OutModulePtr = AngelscriptTestSupport::BuildModule( \
+			*this, Engine, ModuleName, Source); \
+		if (OutModulePtr == nullptr) { return false; } \
+	} while (false)

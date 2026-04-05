@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -31,7 +32,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceImplementBasicTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceImplementBasic"));
 	ON_SCOPE_EXIT
@@ -90,7 +91,7 @@ class AScenarioInterfaceImplBasic : AActor, UIDamageableImpl
 
 bool FAngelscriptScenarioInterfaceImplementMultipleTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceImplementMultiple"));
 	ON_SCOPE_EXIT
@@ -169,7 +170,7 @@ class AScenarioInterfaceImplMultiple : AActor, UIDamageableMulti, UIHealableMult
 
 bool FAngelscriptScenarioInterfaceImplementsInterfaceMethodTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInterfaceImplMethod"));
 	ON_SCOPE_EXIT

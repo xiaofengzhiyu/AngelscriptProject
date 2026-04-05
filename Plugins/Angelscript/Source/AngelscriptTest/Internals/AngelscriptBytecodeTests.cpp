@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -40,7 +41,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeInstructionSequence");
@@ -63,7 +64,7 @@ bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Paramet
 
 bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeAppend");
@@ -88,7 +89,7 @@ bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeJumpResolution");
@@ -108,7 +109,7 @@ bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptBytecodeOutputTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeOutput");

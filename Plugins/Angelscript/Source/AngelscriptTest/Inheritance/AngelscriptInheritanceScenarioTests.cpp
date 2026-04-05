@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "ClassGenerator/AngelscriptClassGenerator.h"
 #include "Components/ActorTestSpawner.h"
@@ -37,7 +38,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInheritanceScriptToScriptTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInheritanceScriptToScript"));
 	ON_SCOPE_EXIT
@@ -101,7 +102,7 @@ class AScenarioInheritanceDerived : AScenarioInheritanceBase
 
 bool FAngelscriptScenarioInheritanceSuperTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInheritanceSuper"));
 	ON_SCOPE_EXIT
@@ -165,7 +166,7 @@ class AScenarioInheritanceSuperDerived : AScenarioInheritanceSuperBase
 
 bool FAngelscriptScenarioInheritanceIsATest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioInheritanceIsA"));
 	ON_SCOPE_EXIT

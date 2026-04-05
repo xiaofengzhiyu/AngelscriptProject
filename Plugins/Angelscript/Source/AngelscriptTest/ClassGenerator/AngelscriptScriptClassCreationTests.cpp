@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Blueprint.h"
@@ -625,7 +626,7 @@ class UScenarioScriptClassNonUClassTypeCannotSpawn : UObject
 
 bool FAngelscriptScenarioScriptClassRenameReplacesOldClassTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetResetSharedTestEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	static const FName ModuleName(TEXT("ScenarioScriptClassRenameReplacesOldClass"));
 	ON_SCOPE_EXIT

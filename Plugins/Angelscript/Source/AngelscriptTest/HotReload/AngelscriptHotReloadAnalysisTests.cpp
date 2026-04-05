@@ -1,5 +1,6 @@
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "ClassGenerator/AngelscriptClassGenerator.h"
 #include "Misc/AutomationTest.h"
@@ -46,8 +47,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptAnalyzeReloadNoChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -89,8 +90,8 @@ class UReloadNoChangeTarget : UObject
 
 bool FAngelscriptAnalyzeReloadPropertyCountChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -134,8 +135,8 @@ class UReloadPropertyTarget : UObject
 
 bool FAngelscriptAnalyzeReloadSuperClassChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -172,8 +173,8 @@ class UReloadSuperTarget : AActor
 
 bool FAngelscriptAnalyzeReloadSoftReloadRequirementTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -221,8 +222,8 @@ class UReloadSoftRequirementTarget : UObject
 
 bool FAngelscriptAnalyzeReloadClassAddedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -264,8 +265,8 @@ class UNewReloadTarget : UObject
 
 bool FAngelscriptAnalyzeReloadClassRemovedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()
@@ -307,8 +308,8 @@ class UReloadSurvivorTarget : UObject
 
 bool FAngelscriptAnalyzeReloadFunctionSignatureChangedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	FAngelscriptEngineScope EngineScope(Engine);
 	const FString ScriptV1 = TEXT(R"AS(
 UCLASS()

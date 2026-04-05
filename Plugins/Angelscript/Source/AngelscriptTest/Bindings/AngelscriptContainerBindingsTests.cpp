@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "Misc/ScopeExit.h"
 
@@ -38,7 +39,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptOptionalBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASOptionalCompat"));
@@ -109,7 +110,7 @@ int Entry()
 
 bool FAngelscriptSetBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetCompat"));
@@ -180,7 +181,7 @@ int Entry()
 
 bool FAngelscriptMapBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapCompat"));
@@ -272,7 +273,7 @@ int Entry()
 
 bool FAngelscriptArrayForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASArrayForeachCompat"));
@@ -324,7 +325,7 @@ int Entry()
 
 bool FAngelscriptSetForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetForeachCompat"));
@@ -373,7 +374,7 @@ int Entry()
 
 bool FAngelscriptMapForeachBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapForeachCompat"));

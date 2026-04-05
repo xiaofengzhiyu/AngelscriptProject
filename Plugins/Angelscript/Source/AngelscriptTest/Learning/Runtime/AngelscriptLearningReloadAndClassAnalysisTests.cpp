@@ -1,6 +1,7 @@
 #include "../../Shared/AngelscriptLearningTrace.h"
 #include "../../Shared/AngelscriptTestEngineHelper.h"
 #include "../../Shared/AngelscriptTestUtilities.h"
+#include "../../Shared/AngelscriptTestMacros.h"
 
 #include "ClassGenerator/AngelscriptClassGenerator.h"
 #include "Misc/AutomationTest.h"
@@ -91,7 +92,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptLearningReloadAndClassAnalysisTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	FAngelscriptEngineScope EngineScope(Engine);
 	ResetSharedCloneEngine(Engine);
 	ON_SCOPE_EXIT

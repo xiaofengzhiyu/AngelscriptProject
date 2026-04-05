@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "ClassGenerator/ASClass.h"
 
@@ -26,7 +27,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptNativeActorBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeActorBindingTest"),
@@ -86,7 +87,7 @@ class ABindingExampleActor : AActor
 
 bool FAngelscriptNativeComponentBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeComponentBindingTest"),
@@ -202,7 +203,7 @@ class UBindingSceneComponent : USceneComponent
 
 bool FAngelscriptComponentDestroyBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASComponentDestroyCompat"),

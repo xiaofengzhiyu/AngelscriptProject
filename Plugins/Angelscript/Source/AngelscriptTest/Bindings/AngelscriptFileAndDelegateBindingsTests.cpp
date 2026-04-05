@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 
 #include "HAL/FileManager.h"
@@ -33,7 +34,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScriptDelegateBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASScriptDelegateCompat"));
@@ -103,7 +104,7 @@ int Entry()
 
 bool FAngelscriptSoftPathBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSoftPathCompat"));
@@ -178,7 +179,7 @@ int Entry()
 
 bool FAngelscriptSourceMetadataBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 
 	const FString Script = TEXT(R"AS(
 UCLASS()
@@ -267,7 +268,7 @@ int Entry()
 
 bool FAngelscriptFileHelperBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASFileHelperCompat"));
