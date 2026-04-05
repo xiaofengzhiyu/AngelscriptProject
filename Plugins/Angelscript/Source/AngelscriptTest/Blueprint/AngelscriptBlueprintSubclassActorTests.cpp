@@ -90,7 +90,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptScenarioBlueprintSubclassBeginPlayTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioActorBlueprintSubclassBeginPlay"));
 	UBlueprint* Blueprint = nullptr;
 	ON_SCOPE_EXIT
@@ -197,6 +197,8 @@ class AScenarioActorBlueprintSubclassBeginPlay : AActor
 		TickCount >= BlueprintSubclassActorTest::ScenarioTickCount);
 
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

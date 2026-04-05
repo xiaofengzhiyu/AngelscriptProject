@@ -25,6 +25,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptGameplayTagBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 
 	FGameplayTagContainer AllTags;
 	UGameplayTagsManager::Get().RequestAllGameplayTags(AllTags, false);
@@ -90,11 +91,14 @@ int Entry()
 
 	TestEqual(TEXT("GameplayTag compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptGameplayTagContainerBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 
 	FGameplayTagContainer AllTags;
 	UGameplayTagsManager::Get().RequestAllGameplayTags(AllTags, false);
@@ -180,11 +184,14 @@ int Entry()
 
 	TestEqual(TEXT("GameplayTagContainer compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptGameplayTagQueryBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 
 	FGameplayTagContainer AllTags;
 	UGameplayTagsManager::Get().RequestAllGameplayTags(AllTags, false);
@@ -276,6 +283,8 @@ int Entry()
 
 	TestEqual(TEXT("GameplayTagQuery compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

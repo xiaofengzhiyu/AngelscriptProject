@@ -116,7 +116,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningScriptClassToBlueprintTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("LearningScriptClassToBlueprintModule"));
 	ON_SCOPE_EXIT
 	{
@@ -250,6 +250,8 @@ class ALearningScriptClassToBlueprintActor : AActor
 		&& bContainsBlueprintKeyword
 		&& bContainsInheritanceKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #endif

@@ -93,7 +93,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningHotReloadDecisionTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE
 	ResetSharedCloneEngine(Engine);
 	ON_SCOPE_EXIT
 	{
@@ -338,6 +338,8 @@ class ULearningHotReloadFunctionTarget : UObject
 		&& bContainsFullReloadRequiredKeyword
 		&& bContainsTriggerExplanationKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE
 }
 
 #endif

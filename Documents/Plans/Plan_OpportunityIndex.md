@@ -2,9 +2,9 @@
 
 本文档是对当前 Angelscript 插件所有可执行方向的系统性盘点，涵盖 AS 2.38 合入、测试增强、缺陷重构、功能增强、工具链与架构演进六大类。每个条目标注优先级、已有 Plan 状态与建议动作。
 
-**编制时间**：2026-04-04
-**当前基线**：AS 2.33.0 WIP，文档化 C++ 基线为 `275/275 PASS`，当前 live automation / full-suite 状态以测试增强章节、`Documents/Guides/TestCatalog.md` 与 `Documents/Guides/TechnicalDebtInventory.md` 为准；当前有 148 个 Bind 文件，`Documents/Plans/` 根目录含 44 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 4 份已归档 Plan。
-**Plan 状态快照**：44 份活跃 Plan、4 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
+**编制时间**：2026-04-05
+**当前基线**：AS 2.33.0 WIP，文档化 C++ 基线为 `275/275 PASS`，当前 live automation / full-suite 状态以测试增强章节、`Documents/Guides/TestCatalog.md` 与 `Documents/Guides/TechnicalDebtInventory.md` 为准；当前有 148 个 Bind 文件，`Documents/Plans/` 根目录含 45 份活跃 Plan、1 份索引文档与 1 份编写规则文档，`Archives/` 下另有 5 份已归档 Plan。
+**Plan 状态快照**：45 份活跃 Plan、5 份已归档完成 Plan、1 份索引文档（`Plan_OpportunityIndex.md`）、1 份编写规则文档（`Plan.md`）
 
 ---
 
@@ -260,6 +260,7 @@ P3/P4 → 按需求穿插
 | `Archives/Plan_AngelscriptTestExecutionInfrastructure.md` | 2026-04-04 | 已归档（已完成） | 已完成测试 group taxonomy、统一 runner、结构化摘要与执行文档收口，当前主干以 `Tools/RunTests.ps1` / `Tools/RunTestSuite.ps1` 作为正式入口。 |
 | `Archives/Plan_BuildTestScriptStandardization.md` | 2026-04-04 | 已归档（已完成） | 已完成共享执行层、direct UBT 构建 runner、测试 runner、UBT 进程查询与 tooling smoke tests，后续 build/test 全部基于该脚本底座。 |
 | `Archives/Plan_CallfuncDeadCodeCleanup.md` | 2026-04-04 | 已归档（已完成） | 已移除无效 `callfunc` `.lib` 引用并补充旧汇编路径的废弃说明，保留了后续 AS 2.38 合入时的兼容注意点。 |
+| `Archives/Plan_TestMacroOptimization.md` | 2026-04-05 | 已归档（已完成） | 已完成 `ASTEST_BEGIN_* / ASTEST_END_*` 主迁移、`SHARE_CLEAN` / `SHARE_FRESH` 宏与验证测试补齐，并以标准脚本入口完成 build、关键前缀回归和 `AngelscriptFast` / `AngelscriptScenario` group 收口。 |
 | `Archives/Plan_TechnicalDebt.md` | 2026-04-04 | 已归档（已完成） | 已完成 Phase 0-6 技术债收口，并将文档同步、sibling plan 分流与最终回归摘要沉淀到位。 |
 
 ---

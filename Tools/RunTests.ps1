@@ -100,6 +100,18 @@ try {
         $argumentList += $ExtraArgs
     }
 
+    $prewarmResult = Ensure-TargetInfoJson `
+        -EngineRoot $agentConfig.EngineRoot `
+        -ProjectFile $agentConfig.ProjectFile `
+        -ProjectRoot $projectRoot
+
+    if ($prewarmResult.Status -eq 'TimedOut') {
+        Write-Host ("[warn] TargetInfo.json prewarm timed out after {0}ms. Editor startup may be slow." -f $prewarmResult.DurationMs) -ForegroundColor Yellow
+    }
+    elseif ($prewarmResult.Status -eq 'Failed') {
+        Write-Host ("[warn] TargetInfo.json prewarm failed: {0}" -f $prewarmResult.Message) -ForegroundColor Yellow
+    }
+
     Write-Utf8JsonFile -Path $metadataPath -Value ([PSCustomObject]@{
             Label             = $Label
             Target            = $target
@@ -113,6 +125,11 @@ try {
             ReportPath        = $outputLayout.ReportPath
             SummaryPath       = $summaryPath
             Arguments         = $argumentList
+            Prewarm           = [PSCustomObject]@{
+                Status     = $prewarmResult.Status
+                DurationMs = $prewarmResult.DurationMs
+                Message    = $prewarmResult.Message
+            }
             TimedOut          = $false
             ProcessExitCode   = $null
             ExitCode          = $null
@@ -128,7 +145,17 @@ try {
     Write-Host ('LogPath         : {0}' -f $outputLayout.LogPath)
     Write-Host ('ReportPath      : {0}' -f $outputLayout.ReportPath)
     Write-Host ('Render          : {0}' -f ([bool]$Render))
+    Write-Host ('Prewarm         : {0} ({1}ms)' -f $prewarmResult.Status, $prewarmResult.DurationMs)
     Write-Host '----------------------------------------------------------------'
+
+    $shutdownState = @{ TestCompleteAt = $null }
+    $onOutputLine = {
+        param([string]$stream, [string]$text)
+        if ($null -eq $shutdownState.TestCompleteAt -and $text -match 'TEST COMPLETE\. EXIT CODE:') {
+            $shutdownState.TestCompleteAt = [DateTime]::UtcNow
+            Write-Host '[info] Tests finished. Waiting for editor process to shut down...' -ForegroundColor DarkCyan
+        }
+    }
 
     $result = Invoke-StreamingProcess `
         -FilePath $editorCmd `
@@ -136,7 +163,13 @@ try {
         -WorkingDirectory $projectRoot `
         -TimeoutMs $resolvedTimeoutMs `
         -LogPath $outputLayout.LogPath `
-        -Label 'automation-tests'
+        -Label 'automation-tests' `
+        -OnLine $onOutputLine
+
+    if ($null -ne $shutdownState.TestCompleteAt) {
+        $shutdownMs = [int]([DateTime]::UtcNow - $shutdownState.TestCompleteAt).TotalMilliseconds
+        Write-Host ("[info] Editor exited {0}ms after test completion." -f $shutdownMs) -ForegroundColor DarkCyan
+    }
 
     $processExitCode = [int]$result.ExitCode
     $scriptExitCode = if ($result.TimedOut) {

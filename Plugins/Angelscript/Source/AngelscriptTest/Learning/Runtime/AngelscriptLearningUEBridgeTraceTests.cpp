@@ -21,7 +21,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningUEBridgeTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("LearningUEBridgeModule"));
 	ON_SCOPE_EXIT
 	{
@@ -167,6 +167,8 @@ class ALearningUEBridgeActor : AActor
 		&& bContainsPropertyKeyword
 		&& bContainsFunctionKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

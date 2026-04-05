@@ -15,6 +15,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptGlobalVariableBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -58,6 +59,8 @@ int Entry()
 	}
 
 	return TestEqual(TEXT("Global variable compat operations should preserve bound namespace globals and defaults"), Result, 1);
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

@@ -211,7 +211,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptScenarioBlueprintChildInheritsScriptBeginPlayTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildInheritsScriptBeginPlay"));
 	ON_SCOPE_EXIT
 	{
@@ -274,12 +274,14 @@ class AScenarioBlueprintChildInheritsScriptBeginPlayParent : AActor
 
 	TestEqual(TEXT("Blueprint child should inherit and execute the script BeginPlay override"), BeginPlayCount, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioBlueprintChildInheritsScriptTickTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildInheritsScriptTick"));
 	ON_SCOPE_EXIT
 	{
@@ -366,12 +368,14 @@ class AScenarioBlueprintChildInheritsScriptTickParent : AActor
 		LogicalTickCount - InitialLogicalTickCount,
 		BlueprintSubclassRuntimeTest::InheritedTickCount);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioBlueprintChildScriptUFunctionStillCallableTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildScriptUFunctionStillCallable"));
 	ON_SCOPE_EXIT
 	{
@@ -454,12 +458,14 @@ class AScenarioBlueprintChildScriptUFunctionStillCallableParent : AActor
 	TestEqual(TEXT("Blueprint child should preserve script UFUNCTION dispatch through ProcessEvent"), ScriptCallCount, 1);
 	TestEqual(TEXT("Blueprint child should preserve reflected integer parameters when invoking script UFUNCTIONs"), LastCallValue, 77);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioBlueprintChildRecreateDoesNotLeakPreviousStateTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildRecreateDoesNotLeakPreviousState"));
 	ON_SCOPE_EXIT
 	{
@@ -566,12 +572,14 @@ class AScenarioBlueprintChildRecreateStateParent : AActor
 	TestEqual(TEXT("Blueprint child recreate scenario should reset script state when respawning a new blueprint child"), SecondStatefulValue, 11);
 	TestEqual(TEXT("Blueprint child recreate scenario should execute BeginPlay independently for each spawned instance"), SecondBeginPlayCount, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioBlueprintChildNoOverrideUsesScriptParentDefaultTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildNoOverrideUsesScriptParentDefault"));
 	ON_SCOPE_EXIT
 	{
@@ -673,12 +681,14 @@ class AScenarioBlueprintChildNoOverrideUsesScriptParentDefaultParent : AActor
 	TestTrue(TEXT("Blueprint child with no overrides should preserve parent boolean defaults on spawned instances"), bDefaultToggleOnInstance);
 	TestEqual(TEXT("Blueprint child with no overrides should preserve parent string defaults on spawned instances"), DefaultLabelOnInstance, FString(TEXT("ScriptParentDefault")));
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioBlueprintChildOverrideChainHasDeterministicCountsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioBlueprintChildOverrideChainHasDeterministicCounts"));
 	ON_SCOPE_EXIT
 	{
@@ -853,6 +863,8 @@ class AScenarioBlueprintChildOverrideChainScriptChild : AScenarioBlueprintChildO
 		ChildTickCount,
 		BlueprintSubclassRuntimeTest::OverrideChainTickCount);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

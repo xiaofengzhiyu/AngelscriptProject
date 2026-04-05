@@ -28,6 +28,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptNativeActorBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeActorBindingTest"),
@@ -83,11 +84,14 @@ class ABindingExampleActor : AActor
 	}
 	TestEqual(TEXT("Script class should call bridged native AActor and UObject methods"), Result, 1);
 	return Result == 1;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptNativeComponentBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASNativeComponentBindingTest"),
@@ -199,11 +203,14 @@ class UBindingSceneComponent : USceneComponent
 	}
 	TestEqual(TEXT("Script component should call bridged native component methods"), Result, 1);
 	return Result == 1;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptComponentDestroyBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("ASComponentDestroyCompat"),
@@ -264,6 +271,8 @@ class UDestroyBindingComponent : UActorComponent
 
 	TestTrue(TEXT("DestroyComponent binding should mark the component as being destroyed"), RuntimeComponent->IsBeingDestroyed());
 	return RuntimeComponent->IsBeingDestroyed();
+
+	ASTEST_END_SHARE
 }
 
 #endif

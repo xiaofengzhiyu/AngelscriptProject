@@ -35,6 +35,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptScriptDelegateBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASScriptDelegateCompat"));
@@ -100,11 +101,14 @@ int Entry()
 
 	TestEqual(TEXT("Script delegate compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptSoftPathBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSoftPathCompat"));
@@ -175,11 +179,14 @@ int Entry()
 
 	TestEqual(TEXT("SoftPath compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptSourceMetadataBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 
 	const FString Script = TEXT(R"AS(
 UCLASS()
@@ -264,11 +271,14 @@ int Entry()
 
 	TestEqual(TEXT("Source metadata accessors should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptFileHelperBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASFileHelperCompat"));
@@ -313,6 +323,8 @@ int Entry()
 
 	TestEqual(TEXT("FileHelper compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

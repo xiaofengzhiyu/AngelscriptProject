@@ -50,6 +50,7 @@ bool FAngelscriptLearningFileSystemAndModuleTraceTest::RunTest(const FString& Pa
 {
 	CleanLearningFileSystemRoot();
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		ResetSharedCloneEngine(Engine);
@@ -194,6 +195,8 @@ int BrokenEntry()
 		&& bContainsLookupKeyword
 		&& bContainsSkipRulesKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

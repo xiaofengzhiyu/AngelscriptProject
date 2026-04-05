@@ -5021,12 +5021,15 @@ void LogAngelscriptError(asSMessageInfo* Message, void* DataPtr)
 	// Some compilation steps can happen on different threads, so we need to lock sending messages
 	FScopeLock MessageLock(&Manager.CompilationLock);
 
+	const FString Section = ANSI_TO_TCHAR(Message->section);
+	const bool bHasSection = !Section.IsEmpty();
+
 	bool bPrintSection = false;
-	if (Message->section)
+	if (bHasSection)
 	{
-		if (PreviousSection != Message->section || PreviousType != Message->type)
+		if (PreviousSection != Section || PreviousType != Message->type)
 		{
-			PreviousSection = Message->section;
+			PreviousSection = Section;
 			PreviousType = Message->type;
 
 			bPrintSection = true;
@@ -5045,8 +5048,6 @@ void LogAngelscriptError(asSMessageInfo* Message, void* DataPtr)
 	{
 		ErrorMessage = Message->message;
 	}
-
-	FString Section = ANSI_TO_TCHAR(Message->section);
 
 	if (Message->type == asMSGTYPE_INFORMATION)
 	{

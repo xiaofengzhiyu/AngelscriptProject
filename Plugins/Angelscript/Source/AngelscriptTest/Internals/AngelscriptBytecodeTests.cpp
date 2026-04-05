@@ -42,7 +42,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeInstructionSequence");
 	if (!TestNotNull(TEXT("Bytecode instruction test should create a backing module"), Module))
@@ -60,12 +60,14 @@ bool FAngelscriptBytecodeInstructionSequenceTest::RunTest(const FString& Paramet
 	TestEqual(TEXT("First emitted opcode should match asBC_PshC4"), static_cast<int32>(ByteCode.GetFirstInstr()->op), static_cast<int32>(asBC_PshC4));
 	TestEqual(TEXT("Last emitted opcode should match asBC_RET"), ByteCode.GetLastInstr(), static_cast<int32>(asBC_RET));
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeAppend");
 	if (!TestNotNull(TEXT("Bytecode append test should create a backing module"), Module))
@@ -85,12 +87,14 @@ bool FAngelscriptBytecodeAppendTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("AddCode should append the second sequence to the first one"), First.GetSize() > InitialSize);
 	TestEqual(TEXT("The last dword payload should come from the appended sequence"), static_cast<int32>(First.GetLastInstrValueDW()), 20);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeJumpResolution");
 	if (!TestNotNull(TEXT("Bytecode jump test should create a backing module"), Module))
@@ -105,12 +109,14 @@ bool FAngelscriptBytecodeJumpResolutionTest::RunTest(const FString& Parameters)
 
 	TestEqual(TEXT("ResolveJumpAddresses should resolve a forward label jump"), ByteCode.ResolveJumpAddresses(), 0);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBytecodeOutputTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBytecodeModule(ScriptEngine, "BytecodeOutput");
 	if (!TestNotNull(TEXT("Bytecode output test should create a backing module"), Module))
@@ -129,6 +135,8 @@ bool FAngelscriptBytecodeOutputTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Output should preserve the opcode in the first emitted dword"), static_cast<int32>(*reinterpret_cast<asBYTE*>(&Buffer[0])), static_cast<int32>(asBC_PshC4));
 	TestEqual(TEXT("Output should preserve the dword payload for asBC_PshC4"), static_cast<int32>(Buffer[1]), 42);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

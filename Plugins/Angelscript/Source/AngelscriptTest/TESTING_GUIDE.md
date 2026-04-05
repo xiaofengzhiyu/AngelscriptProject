@@ -22,9 +22,13 @@ This project uses a two-layer macro system defined in `Shared/AngelscriptTestMac
 | BEGIN / END | Scope | Cleanup |
 |-------------|-------|---------|
 | `ASTEST_BEGIN_FULL` / `ASTEST_END_FULL` | Creates `FAngelscriptEngineScope` | Auto-discards all active modules |
-| `ASTEST_BEGIN_SHARE` / `ASTEST_END_SHARE` | None (shared engine has persistent scope) | None (modules accumulate) |
+| `ASTEST_BEGIN_SHARE` / `ASTEST_END_SHARE` | Creates `FAngelscriptEngineScope` for the shared engine | None (modules accumulate) |
+| `ASTEST_BEGIN_SHARE_CLEAN` / `ASTEST_END_SHARE_CLEAN` | Creates `FAngelscriptEngineScope` after clean shared-engine reacquire | None (reset semantics come from `ASTEST_CREATE_ENGINE_SHARE_CLEAN()`) |
+| `ASTEST_BEGIN_SHARE_FRESH` / `ASTEST_END_SHARE_FRESH` | Creates `FAngelscriptEngineScope` after fresh shared-engine reacquire | None (reset semantics come from `ASTEST_CREATE_ENGINE_SHARE_FRESH()`) |
 | `ASTEST_BEGIN_CLONE` / `ASTEST_END_CLONE` | Creates `FAngelscriptEngineScope` | Auto-discards all active modules |
 | `ASTEST_BEGIN_NATIVE` / `ASTEST_END_NATIVE` | Validates non-null pointer | Auto `ShutDownAndRelease` |
+
+For the `SHARE` family, `ASTEST_BEGIN_*` is currently the canonical place to establish the engine scope, while `ASTEST_END_*` is intentionally kept as the paired lifecycle closeout point for future global control.
 
 ### Helper Macros
 
@@ -44,10 +48,10 @@ Lightweight compile-and-execute, no isolation needed?
   YES --> ASTEST_CREATE_ENGINE_SHARE + BEGIN/END_SHARE
 
 Need shared full-engine behavior but must reset shared state first?
-  YES --> ASTEST_CREATE_ENGINE_SHARE_CLEAN (+ explicit scope/cleanup when the test needs it)
+  YES --> ASTEST_CREATE_ENGINE_SHARE_CLEAN + BEGIN/END_SHARE_CLEAN
 
 Need shared full-engine behavior and full shared/global teardown before reacquire?
-  YES --> ASTEST_CREATE_ENGINE_SHARE_FRESH (+ explicit scope/cleanup when the test needs it)
+  YES --> ASTEST_CREATE_ENGINE_SHARE_FRESH + BEGIN/END_SHARE_FRESH
 
 Need isolation but don't want Full engine cost?
   YES --> ASTEST_CREATE_ENGINE_CLONE + BEGIN/END_CLONE
@@ -114,12 +118,14 @@ bool FMyShareEngineTest::RunTest(const FString& Parameters)
 bool FMySharedResetTest::RunTest(const FString& Parameters)
 {
     FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+    ASTEST_BEGIN_SHARE_CLEAN
 
     int32 Result = 0;
     ASTEST_COMPILE_RUN_INT(Engine, "MySharedResetModule",
         TEXT("int Run() { return 17; }"),
         TEXT("int Run()"), Result);
 
+    ASTEST_END_SHARE_CLEAN
     return TestEqual(TEXT("Shared clean engine should start from a reset state"), Result, 17);
 }
 ```
@@ -130,9 +136,10 @@ bool FMySharedResetTest::RunTest(const FString& Parameters)
 bool FMySharedFreshScenarioTest::RunTest(const FString& Parameters)
 {
     FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
-    FAngelscriptEngineScope EngineScope(Engine);
+    ASTEST_BEGIN_SHARE_FRESH
 
-    // Keep explicit scope/cleanup when the test depends on legacy fresh-engine behavior.
+    // Keep explicit module teardown/reset logic when the test semantics require it.
+    ASTEST_END_SHARE_FRESH
     return true;
 }
 ```

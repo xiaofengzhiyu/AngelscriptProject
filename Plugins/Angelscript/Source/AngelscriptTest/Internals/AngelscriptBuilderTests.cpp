@@ -41,7 +41,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptBuilderSingleModulePipelineTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
 		Engine,
@@ -65,12 +65,14 @@ bool FAngelscriptBuilderSingleModulePipelineTest::RunTest(const FString& Paramet
 
 	TestEqual(TEXT("Builder single-module pipeline should execute the compiled function"), Result, 42);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBuilderCompileErrorCollectionTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateBuilderModule(ScriptEngine, "BuilderCompileErrors");
 	if (!TestNotNull(TEXT("Builder compile-error test should create a backing module"), Module))
@@ -85,12 +87,14 @@ bool FAngelscriptBuilderCompileErrorCollectionTest::RunTest(const FString& Param
 	TestTrue(TEXT("Builder should report invalid syntax as a build failure"), BuildResult < 0);
 	TestEqual(TEXT("Builder compile-error test should not return a compiled function on failure"), Function, static_cast<asCScriptFunction*>(nullptr));
 	return BuildResult < 0;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBuilderRebuildModuleTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asIScriptModule* ModuleV1 = AngelscriptTestSupport::BuildModule(
 		*this,
 		Engine,
@@ -135,12 +139,14 @@ bool FAngelscriptBuilderRebuildModuleTest::RunTest(const FString& Parameters)
 	}
 	TestEqual(TEXT("Rebuilt builder module should execute the latest function body"), SecondResult, 2);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptBuilderImportBindingTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asIScriptModule* SourceModule = AngelscriptTestSupport::BuildModule(
 		*this,
 		Engine,
@@ -185,6 +191,8 @@ bool FAngelscriptBuilderImportBindingTest::RunTest(const FString& Parameters)
 
 	TestEqual(TEXT("Imported function binding should let the consumer execute the source function"), Result, 77);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

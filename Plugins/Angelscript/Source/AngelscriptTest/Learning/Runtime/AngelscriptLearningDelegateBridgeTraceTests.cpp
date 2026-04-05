@@ -36,7 +36,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningDelegateBridgeTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("LearningDelegateBridgeModule"));
 	ON_SCOPE_EXIT
 	{
@@ -187,6 +187,8 @@ class ALearningDelegateBridgeActor : AActor
 		&& bContainsDelegateKeyword
 		&& bContainsBindKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #endif

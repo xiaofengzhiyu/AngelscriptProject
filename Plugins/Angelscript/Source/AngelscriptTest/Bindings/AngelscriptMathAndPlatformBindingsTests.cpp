@@ -26,6 +26,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptMathExtendedBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -152,11 +153,14 @@ int Entry()
 
 	TestEqual(TEXT("Extended Math helpers should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptPlatformProcessBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -207,6 +211,8 @@ int Entry()
 
 	TestEqual(TEXT("PlatformProcess compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptLoggingBindingsTest::RunTest(const FString& Parameters)
@@ -214,6 +220,7 @@ bool FAngelscriptLoggingBindingsTest::RunTest(const FString& Parameters)
 	AddExpectedError(TEXT("Test error message"), EAutomationExpectedErrorFlags::Contains, 1);
 
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -247,6 +254,8 @@ int Entry()
 
 	TestEqual(TEXT("Headless-safe logging helpers should execute successfully"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

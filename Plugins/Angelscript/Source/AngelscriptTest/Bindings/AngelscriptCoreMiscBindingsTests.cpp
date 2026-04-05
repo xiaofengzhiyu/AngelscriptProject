@@ -26,6 +26,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptGuidBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -91,11 +92,14 @@ int Entry()
 
 	TestEqual(TEXT("Guid compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptPathsBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -166,11 +170,14 @@ int Entry()
 
 	TestEqual(TEXT("Paths compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptNumberFormattingOptionsBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -219,6 +226,8 @@ int Entry()
 
 	TestEqual(TEXT("NumberFormattingOptions compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

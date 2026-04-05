@@ -89,11 +89,30 @@
 	}
 
 // ---------- SHARE lifecycle ----------
-// No extra scope, no cleanup (shared engine accumulates modules naturally).
+// Establishes the current-engine scope, but leaves shared-engine module state intact.
 #define ASTEST_BEGIN_SHARE \
-	{
+	{ \
+		FAngelscriptEngineScope _AutoEngineScope(Engine);
 
 #define ASTEST_END_SHARE \
+	}
+
+// ---------- SHARE_CLEAN lifecycle ----------
+// Establishes the current-engine scope after AcquireCleanSharedCloneEngine() reset semantics.
+#define ASTEST_BEGIN_SHARE_CLEAN \
+	{ \
+		FAngelscriptEngineScope _AutoEngineScope(Engine);
+
+#define ASTEST_END_SHARE_CLEAN \
+	}
+
+// ---------- SHARE_FRESH lifecycle ----------
+// Establishes the current-engine scope after AcquireFreshSharedCloneEngine() reset semantics.
+#define ASTEST_BEGIN_SHARE_FRESH \
+	{ \
+		FAngelscriptEngineScope _AutoEngineScope(Engine);
+
+#define ASTEST_END_SHARE_FRESH \
 	}
 
 // ---------- CLONE lifecycle ----------

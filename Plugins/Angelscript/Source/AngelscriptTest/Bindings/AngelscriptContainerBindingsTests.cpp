@@ -40,6 +40,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptOptionalBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASOptionalCompat"));
@@ -106,11 +107,14 @@ int Entry()
 
 	TestEqual(TEXT("Optional compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptSetBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetCompat"));
@@ -177,11 +181,14 @@ int Entry()
 
 	TestEqual(TEXT("Set compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptMapBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapCompat"));
@@ -269,11 +276,14 @@ int Entry()
 
 	TestEqual(TEXT("Map compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptArrayForeachBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASArrayForeachCompat"));
@@ -321,11 +331,14 @@ int Entry()
 
 	TestEqual(TEXT("TArray should support foreach syntax with value and index"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptSetForeachBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetForeachCompat"));
@@ -370,11 +383,14 @@ int Entry()
 
 	TestEqual(TEXT("TSet should support foreach syntax with values"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptMapForeachBindingsTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapForeachCompat"));
@@ -422,6 +438,8 @@ int Entry()
 
 	TestEqual(TEXT("TMap should support foreach syntax with value and key"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

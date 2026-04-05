@@ -75,7 +75,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FAngelscriptLearningBlueprintSubclassTraceTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("LearningBlueprintSubclassModule"));
 	UBlueprint* Blueprint = nullptr;
 	ON_SCOPE_EXIT
@@ -231,6 +231,8 @@ class ALearningBlueprintSubclassBase : AActor
 		&& bContainsBlueprintKeyword
 		&& bContainsInheritanceKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

@@ -84,6 +84,7 @@ bool FAngelscriptModuleLookupByFilenameTest::RunTest(const FString& Parameters)
 
 	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
 FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+ASTEST_BEGIN_SHARE_CLEAN
 	const FString Script = TEXT(R"AS(
 int PatrolEntry()
 {
@@ -119,6 +120,8 @@ int PatrolEntry()
 
 	CleanFileSystemTestRoot();
 	return true;
+
+ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptCompileFromDiskTest::RunTest(const FString& Parameters)
@@ -127,6 +130,7 @@ bool FAngelscriptCompileFromDiskTest::RunTest(const FString& Parameters)
 
 	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
 FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+ASTEST_BEGIN_SHARE_CLEAN
 	const FString Source = TEXT(R"AS(
 int Entry()
 {
@@ -162,6 +166,8 @@ int Entry()
 	TestEqual(TEXT("Disk-loaded script should return expected value"), Result, 42);
 	CleanFileSystemTestRoot();
 	return true;
+
+ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptPartialFailurePreservesGoodModulesTest::RunTest(const FString& Parameters)
@@ -170,6 +176,7 @@ bool FAngelscriptPartialFailurePreservesGoodModulesTest::RunTest(const FString& 
 
 	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
 FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+ASTEST_BEGIN_SHARE_CLEAN
 	const FString GoodSource = TEXT(R"AS(
 int SurvivorEntry()
 {
@@ -223,6 +230,8 @@ int BrokenEntry()
 
 	CleanFileSystemTestRoot();
 	return true;
+
+ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptDiscoverScriptFilenamesTest::RunTest(const FString& Parameters)
@@ -231,6 +240,7 @@ bool FAngelscriptDiscoverScriptFilenamesTest::RunTest(const FString& Parameters)
 
 	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
 FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+ASTEST_BEGIN_SHARE_CLEAN
 	FString UnusedPath;
 	if (!TestTrue(TEXT("Write root script file should succeed"), WriteFileSystemTestFile(TEXT("RootScript.as"), TEXT("int Entry() { return 1; }"), UnusedPath)) ||
 		!TestTrue(TEXT("Write nested script file should succeed"), WriteFileSystemTestFile(TEXT("Game/Player.as"), TEXT("int Entry() { return 2; }"), UnusedPath)) ||
@@ -264,6 +274,8 @@ FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 
 	CleanFileSystemTestRoot();
 	return true;
+
+ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptDiscoverySkipRulesTest::RunTest(const FString& Parameters)
@@ -272,6 +284,7 @@ bool FAngelscriptDiscoverySkipRulesTest::RunTest(const FString& Parameters)
 
 	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
 FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+ASTEST_BEGIN_SHARE_CLEAN
 	FString UnusedPath;
 	if (!TestTrue(TEXT("Write gameplay script file should succeed"), WriteFileSystemTestFile(TEXT("Gameplay/Main.as"), TEXT("int GameplayEntry() { return 1; }"), UnusedPath)) ||
 		!TestTrue(TEXT("Write examples script file should succeed"), WriteFileSystemTestFile(TEXT("Examples/ExampleOnly.as"), TEXT("int ExampleEntry() { return 2; }"), UnusedPath)) ||
@@ -299,6 +312,8 @@ FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
 
 	CleanFileSystemTestRoot();
 	return true;
+
+ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptRenameUpdatesModuleLookupTest::RunTest(const FString& Parameters)
@@ -306,6 +321,7 @@ bool FAngelscriptRenameUpdatesModuleLookupTest::RunTest(const FString& Parameter
 	CleanFileSystemTestRoot();
 
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	const FString Script = TEXT(R"AS(
 int PatrolEntry()
 {
@@ -347,6 +363,8 @@ int PatrolEntry()
 
 	CleanFileSystemTestRoot();
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptPathNormalizationLookupTest::RunTest(const FString& Parameters)
@@ -354,6 +372,7 @@ bool FAngelscriptPathNormalizationLookupTest::RunTest(const FString& Parameters)
 	CleanFileSystemTestRoot();
 
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	const FString Script = TEXT(R"AS(
 int NormalizeEntry()
 {
@@ -389,6 +408,8 @@ int NormalizeEntry()
 
 	CleanFileSystemTestRoot();
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptMixedSuccessFailureRecoveryAndRemapTest::RunTest(const FString& Parameters)
@@ -399,6 +420,7 @@ bool FAngelscriptMixedSuccessFailureRecoveryAndRemapTest::RunTest(const FString&
 	CleanFileSystemTestRoot();
 
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("Game.Mixed.Good"));
@@ -520,6 +542,8 @@ int BrokenEntry()
 	TestEqual(TEXT("Renamed good module should preserve updated behavior"), GoodResultAfterRename, 17);
 
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

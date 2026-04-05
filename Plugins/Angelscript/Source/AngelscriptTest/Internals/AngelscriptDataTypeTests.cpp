@@ -62,7 +62,7 @@ bool FAngelscriptDataTypeComparisonTest::RunTest(const FString& Parameters)
 bool FAngelscriptDataTypeObjectHandleTest::RunTest(const FString& Parameters)
 {
 	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
-	FAngelscriptEngineScope EngineScope(Engine);
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCTypeInfo* ActorType = static_cast<asCTypeInfo*>(ScriptEngine->GetTypeInfoByName("AActor"));
 	if (!TestNotNull(TEXT("AActor should exist in the script type system for data-type handle tests"), ActorType))
@@ -78,6 +78,8 @@ bool FAngelscriptDataTypeObjectHandleTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("CreateObjectHandle should mark the type as an object handle"), ActorHandleType.IsObjectHandle());
 	TestTrue(TEXT("Object handle should still be considered instantiable as a handle slot"), ActorHandleType.CanBeInstantiated());
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptDataTypeSizeAlignmentTest::RunTest(const FString& Parameters)
