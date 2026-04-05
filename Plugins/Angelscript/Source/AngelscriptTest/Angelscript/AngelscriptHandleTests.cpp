@@ -1,6 +1,7 @@
 #include "AngelscriptTestSupport.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
+#include "Shared/AngelscriptTestMacros.h"
 // Test Layer: Runtime Integration
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -20,13 +21,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleBasicTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
 	const FString ScriptFilename = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("NegativeCompileIsolation"), TEXT("ASHandleBasic.as"));
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASHandleBasic"));
-		ResetSharedCloneEngine(Engine);
-	};
+	ASTEST_BEGIN_FULL
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
 	const bool bCompiled = CompileModuleWithResult(
@@ -42,6 +39,7 @@ bool FAngelscriptHandleBasicTest::RunTest(const FString& Parameters)
 		return false;
 	}
 	return CompileResult == ECompileResult::Error;
+	ASTEST_END_FULL
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -51,7 +49,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleImplicitTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASHandleImplicit"),
@@ -76,6 +75,7 @@ bool FAngelscriptHandleImplicitTest::RunTest(const FString& Parameters)
 	}
 	TestTrue(TEXT("Handles.Implicit currently verifies compile and symbol registration only because executing implicit script-class parameter passing still faults at runtime on this branch"), true);
 	return true;
+	ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -85,13 +85,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleAutoTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
 	const FString ScriptFilename = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("NegativeCompileIsolation"), TEXT("ASHandleAuto.as"));
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASHandleAuto"));
-		ResetSharedCloneEngine(Engine);
-	};
+	ASTEST_BEGIN_FULL
 	ECompileResult CompileResult = ECompileResult::FullyHandled;
 	UE_SET_LOG_VERBOSITY(Angelscript, Fatal);
 	const bool bCompiled = CompileModuleWithResult(
@@ -107,6 +103,7 @@ bool FAngelscriptHandleAutoTest::RunTest(const FString& Parameters)
 		return false;
 	}
 	return CompileResult == ECompileResult::Error;
+	ASTEST_END_FULL
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -116,7 +113,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptHandleRefArgumentTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	const bool bCompiled = CompileModuleFromMemory(
 		&Engine,
 		TEXT("ASHandleRefArgument"),
@@ -148,6 +146,7 @@ bool FAngelscriptHandleRefArgumentTest::RunTest(const FString& Parameters)
 
 	TestEqual(TEXT("Handles.RefArgument should propagate out-ref writes back to the caller"), Result, 42);
 	return true;
+	ASTEST_END_SHARE
 }
 
 #endif

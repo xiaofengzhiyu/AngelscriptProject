@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "Shared/AngelscriptTestMacros.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 
@@ -33,35 +34,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowForLoopTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASControlFlowForLoop"));
-	};
-
-	asIScriptModule* Module = BuildModule(
-		*this,
-		Engine,
-		"ASControlFlowForLoop",
-		TEXT("int Run() { int Sum = 0; for (int Index = 0; Index < 5; ++Index) { Sum += Index; } return Sum; }"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
-
-	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Run()"));
-	if (Function == nullptr)
-	{
-		return false;
-	}
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
 
 	int32 Result = 0;
-	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-	{
-		return false;
-	}
+	ASTEST_COMPILE_RUN_INT(Engine, "ASControlFlowForLoop",
+		TEXT("int Run() { int Sum = 0; for (int Index = 0; Index < 5; ++Index) { Sum += Index; } return Sum; }"),
+		TEXT("int Run()"), Result);
 
 	TestEqual(TEXT("For-loop control flow should sum the expected values"), Result, 10);
+
+	ASTEST_END_FULL
 	return true;
 }
 
@@ -72,35 +55,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowSwitchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASControlFlowSwitch"));
-	};
-
-	asIScriptModule* Module = BuildModule(
-		*this,
-		Engine,
-		"ASControlFlowSwitch",
-		TEXT("int Pick(int Value) { switch (Value) { case 0: return 2; case 1: return 4; default: return 6; } } int Run() { int Base = Pick(1); return Base > 3 ? Base + 3 : Base - 1; }"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
-
-	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Run()"));
-	if (Function == nullptr)
-	{
-		return false;
-	}
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
 
 	int32 Result = 0;
-	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-	{
-		return false;
-	}
+	ASTEST_COMPILE_RUN_INT(Engine, "ASControlFlowSwitch",
+		TEXT("int Pick(int Value) { switch (Value) { case 0: return 2; case 1: return 4; default: return 6; } } int Run() { int Base = Pick(1); return Base > 3 ? Base + 3 : Base - 1; }"),
+		TEXT("int Run()"), Result);
 
 	TestEqual(TEXT("Switch/conditional flow should return the expected branch result"), Result, 7);
+
+	ASTEST_END_FULL
 	return true;
 }
 
@@ -111,35 +76,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowConditionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASControlFlowCondition"));
-	};
-
-	asIScriptModule* Module = BuildModule(
-		*this,
-		Engine,
-		"ASControlFlowCondition",
-		TEXT("int Evaluate(int Value) { return (Value > 0) ? ((Value > 10) ? 2 : 1) : 0; } int Run() { return Evaluate(15) * 100 + Evaluate(5) * 10 + Evaluate(-3); }"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
-
-	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Run()"));
-	if (Function == nullptr)
-	{
-		return false;
-	}
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
 
 	int32 Result = 0;
-	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-	{
-		return false;
-	}
+	ASTEST_COMPILE_RUN_INT(Engine, "ASControlFlowCondition",
+		TEXT("int Evaluate(int Value) { return (Value > 0) ? ((Value > 10) ? 2 : 1) : 0; } int Run() { return Evaluate(15) * 100 + Evaluate(5) * 10 + Evaluate(-3); }"),
+		TEXT("int Run()"), Result);
 
 	TestEqual(TEXT("Condition control flow should preserve nested ternary branches"), Result, 210);
+
+	ASTEST_END_FULL
 	return true;
 }
 
@@ -150,27 +97,22 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowNeverVisitedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASControlFlowNeverVisited"));
-	};
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
 
-	asIScriptModule* Module = BuildModule(
-		*this,
-		Engine,
-		"ASControlFlowNeverVisited",
-		TEXT("void Run(bool bCondition) { if (bCondition) { return; } int Value = 42; }"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
+	asIScriptModule* Module = nullptr;
+	ASTEST_BUILD_MODULE(Engine, "ASControlFlowNeverVisited",
+		TEXT("void Run(bool bCondition) { if (bCondition) { return; } int Value = 42; }"),
+		Module);
+
 	if (GetFunctionByDecl(*this, *Module, TEXT("void Run(bool)")) == nullptr)
 	{
 		return false;
 	}
 
 	TestTrue(TEXT("NeverVisited should compile code with a potentially unreachable block"), true);
+
+	ASTEST_END_FULL
 	return true;
 }
 
@@ -181,30 +123,25 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptControlFlowNotInitializedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	ON_SCOPE_EXIT
-	{
-		Engine.DiscardModule(TEXT("ASControlFlowNotInitialized"));
-	};
+	bool bFoundUninitializedWarning = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
 
-	asIScriptModule* Module = BuildModule(
-		*this,
-		Engine,
-		"ASControlFlowNotInitialized",
-		TEXT("int Run() { int Value; return Value; }"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
+	asIScriptModule* Module = nullptr;
+	ASTEST_BUILD_MODULE(Engine, "ASControlFlowNotInitialized",
+		TEXT("int Run() { int Value; return Value; }"),
+		Module);
 
 	if (GetFunctionByDecl(*this, *Module, TEXT("int Run()")) == nullptr)
 	{
 		return false;
 	}
 
-	const bool bFoundUninitializedWarning = ContainsWarningDiagnostic(Engine, TEXT("may not be initialized"));
+	bFoundUninitializedWarning = ContainsWarningDiagnostic(Engine, TEXT("may not be initialized"));
 
 	TestTrue(TEXT("NotInitialized should preserve the compiler warning for reading an uninitialized variable"), bFoundUninitializedWarning);
+
+	ASTEST_END_FULL
 	return bFoundUninitializedWarning;
 }
 

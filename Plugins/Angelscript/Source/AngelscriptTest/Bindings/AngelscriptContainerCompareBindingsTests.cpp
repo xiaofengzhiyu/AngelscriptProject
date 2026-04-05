@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../../AngelscriptRuntime/Binds/Bind_TMap.h"
 #include "../../AngelscriptRuntime/Binds/Bind_TOptional.h"
 
@@ -30,7 +31,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptSetCompareBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASSetCompareCompat"));
@@ -80,11 +82,14 @@ int Entry()
 
 	TestEqual(TEXT("TSet compare operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptMapCompareBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	ON_SCOPE_EXIT
 	{
 		Engine.DiscardModule(TEXT("ASMapCompareCompat"));
@@ -134,12 +139,14 @@ int Entry()
 
 	TestEqual(TEXT("TMap compare operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptOptionalTypeCompareTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 
 	FAngelscriptTypeUsage IntUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("int")));
 	FAngelscriptTypeUsage OptionalUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("TOptional")));
@@ -203,12 +210,14 @@ bool FAngelscriptOptionalTypeCompareTest::RunTest(const FString& Parameters)
 
 	TestFalse(TEXT("Set and unset optionals should compare unequal"), bSetVsUnsetEqual);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptMapDebuggerBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	FAngelscriptTypeUsage KeyUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("FName")));
 	FAngelscriptTypeUsage ValueUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("int")));
 	FAngelscriptTypeUsage MapUsage(FAngelscriptType::GetByAngelscriptTypeName(TEXT("TMap")));
@@ -252,6 +261,8 @@ bool FAngelscriptMapDebuggerBindingsTest::RunTest(const FString& Parameters)
 
 	TestEqual(TEXT("TMap debugger key lookup should return the mapped value"), AlphaDebugValue.Value, FString(TEXT("2")));
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

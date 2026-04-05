@@ -70,12 +70,12 @@ function Invoke-TestCase {
 Invoke-TestCase -Name 'TimeoutLimitRejectsTooLargeValues' -Body {
     $failed = $false
     try {
-        Resolve-TimeoutMs -RequestedTimeoutMs 300001 -DefaultTimeoutMs 1000 -ParameterName 'TimeoutMs' | Out-Null
+        Resolve-TimeoutMs -RequestedTimeoutMs 900001 -DefaultTimeoutMs 1000 -ParameterName 'TimeoutMs' | Out-Null
     } catch {
-        $failed = $_.Exception.Message -like '*300000*'
+        $failed = $_.Exception.Message -like '*900000*'
     }
 
-    Assert-True -Condition $failed -Message 'Resolve-TimeoutMs should reject values above 300000ms.'
+    Assert-True -Condition $failed -Message 'Resolve-TimeoutMs should reject values above 900000ms.'
 }
 
 Invoke-TestCase -Name 'WorktreeMutexRejectsSecondAcquire' -Body {

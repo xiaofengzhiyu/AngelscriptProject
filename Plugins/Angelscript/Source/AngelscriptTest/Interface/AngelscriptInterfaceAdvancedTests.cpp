@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -64,8 +65,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceInheritedInterfaceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceInherited"));
 	ON_SCOPE_EXIT
 	{
@@ -142,12 +143,14 @@ class AScenarioInterfaceInherited : AActor, UIKillableChild
 		TestTrue(TEXT("Actor implementing child interface should also satisfy parent UIDamageableParent"), Actor->GetClass()->ImplementsInterface(ParentInterface));
 	}
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceMissingMethodTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceMissingMethod"));
 	ON_SCOPE_EXIT
 	{
@@ -199,12 +202,14 @@ class AScenarioInterfaceMissingMethod : AActor, UIDamageableMissing
 	}
 
 	return bCompiled;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceNoPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceNoProperty"));
 	ON_SCOPE_EXIT
 	{
@@ -239,12 +244,14 @@ interface UINoProperty
 
 	TestEqual(TEXT("Interface should have no UPROPERTY members"), PropertyCount, 0);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceGCSafeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceGCSafe"));
 	ON_SCOPE_EXIT
 	{
@@ -299,13 +306,15 @@ class AScenarioInterfaceGCSafe : AActor, UIDamageableGC
 
 	TestTrue(TEXT("Interface actor should be collected after destroy + GC"), !WeakActor.IsValid());
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #if 1
 bool FAngelscriptScenarioInterfaceHotReloadTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceHotReload"));
 	ON_SCOPE_EXIT
 	{
@@ -399,13 +408,15 @@ class AScenarioInterfaceHotReload : AActor, UIDamageableHR
 	}
 
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 #endif
 
 bool FAngelscriptScenarioInterfaceCppInterfaceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceCppInterface"));
 	ON_SCOPE_EXIT
 	{
@@ -460,12 +471,14 @@ class AScenarioInterfaceCppBase : AActor, UICppTestInterface
 	}
 
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceInheritedMethodDispatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceInheritedDispatch"));
 	ON_SCOPE_EXIT
 	{
@@ -571,12 +584,14 @@ class AScenarioInterfaceInheritedDispatch : AActor, UIKillableDispatch
 	TestEqual(TEXT("Parent interface method should dispatch through inherited interface reference"), ParentResult, 3);
 	TestEqual(TEXT("Child interface method should dispatch through child interface reference"), ChildResult, 5);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceMultipleInheritanceChainTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceMultiChain"));
 	ON_SCOPE_EXIT
 	{
@@ -657,12 +672,14 @@ class AScenarioInterfaceMultiChain : AActor, UILeafChain
 	}
 
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceMultipleInheritanceDispatchTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceMultiDispatch"));
 	ON_SCOPE_EXIT
 	{
@@ -777,6 +794,8 @@ class AScenarioInterfaceMultiDispatch : AActor, UILeafDispatchChain
 	TestEqual(TEXT("Mid interface method should dispatch through a leaf implementation"), MidResult, 4);
 	TestEqual(TEXT("Leaf interface method should dispatch through a leaf implementation"), LeafResult, 8);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #endif

@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -31,7 +32,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCoreValueBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -84,11 +86,14 @@ int Entry()
 
 	TestEqual(TEXT("Bound UE value types should behave as expected in script"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptFNameArrayCompatBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -150,11 +155,14 @@ int Entry()
 
 	TestEqual(TEXT("FName arrays should support copy, index, alias, and add operations"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptTArrayMutationCompatBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -211,11 +219,14 @@ int Entry()
 
 	TestEqual(TEXT("TArray mutation helpers should match expected script behaviour"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptForeachCompatBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -298,11 +309,14 @@ int Entry()
 
 	TestEqual(TEXT("TArray should support foreach and range-for compatibility syntax"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptTArrayIteratorCompatBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -378,6 +392,8 @@ int Entry()
 
 	TestEqual(TEXT("TArray iterator helpers should match expected script behaviour"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

@@ -324,6 +324,9 @@
 | Bindings.GlobalVariableCompat | `CollisionProfile::BlockAllDynamic`、`FComponentQueryParams::DefaultComponentQueryParams`、`FGameplayTag::EmptyTag`、`FGameplayTagContainer::EmptyContainer`、`FGameplayTagQuery::EmptyQuery` 等命名空间全局变量可在脚本侧读值 | AngelscriptGlobalBindingsTests.cpp |
 | Bindings.ConsoleVariableCompat | `FConsoleVariable` 的 `int`/`float`/`bool`/`FString` 构造、`Get*`/`Set*` 与底层 `IConsoleManager` 值同步 | AngelscriptConsoleBindingsTests.cpp |
 | Bindings.ConsoleVariableExistingCompat | `FConsoleVariable` 以已有 C++ CVar 名构造时复用现有值，并继续把写回同步到底层 `IConsoleManager` | AngelscriptConsoleBindingsTests.cpp |
+| Bindings.ConsoleCommandCompat | 脚本侧全局 `FConsoleCommand` 可注册到 `IConsoleManager`、执行后将参数数量写回底层 CVar，并在模块丢弃后卸载 | AngelscriptConsoleBindingsTests.cpp |
+| Bindings.ConsoleCommandReplacementCompat | 相同命令名的第二次脚本注册会替换前一个命令实现，执行结果以最新注册版本为准 | AngelscriptConsoleBindingsTests.cpp |
+| Bindings.ConsoleCommandSignatureCompat | `FConsoleCommand` 绑定到错误签名的全局函数时应构造失败，且不会在 `IConsoleManager` 中留下残留命令 | AngelscriptConsoleBindingsTests.cpp |
 
 ### 容器
 

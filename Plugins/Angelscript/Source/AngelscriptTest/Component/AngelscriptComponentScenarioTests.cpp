@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Core/AngelscriptComponent.h"
 #include "Components/ActorTestSpawner.h"
@@ -90,8 +91,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioComponentBeginPlayTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioComponentBeginPlay"));
 	ON_SCOPE_EXIT
 	{
@@ -143,12 +144,14 @@ class UScenarioComponentBeginPlay : UAngelscriptComponent
 
 	TestTrue(TEXT("Scenario component BeginPlay should set the readiness flag"), bReady);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioComponentTickTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioComponentTick"));
 	ON_SCOPE_EXIT
 	{
@@ -203,12 +206,14 @@ class UScenarioComponentTick : UAngelscriptComponent
 
 	TestTrue(TEXT("Scenario component Tick should run during manual world ticking"), TickCount >= 5);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioComponentReceiveEndPlayTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioComponentReceiveEndPlay"));
 	ON_SCOPE_EXIT
 	{
@@ -262,12 +267,14 @@ class UScenarioComponentReceiveEndPlay : UAngelscriptComponent
 
 	TestTrue(TEXT("Scenario component EndPlay should run when the owning actor is destroyed"), bCleanedUp);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioComponentActorOwnerTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioComponentActorOwner"));
 	ON_SCOPE_EXIT
 	{
@@ -341,6 +348,8 @@ class UScenarioComponentActorOwner : UAngelscriptComponent
 
 	TestEqual(TEXT("Scenario component should read the owning script actor's property in BeginPlay"), ReadOwnerValue, 42);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioDefaultComponentBasicTest::RunTest(const FString& Parameters)

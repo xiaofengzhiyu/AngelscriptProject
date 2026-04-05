@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -56,8 +57,8 @@ bool FAngelscriptScriptNodeTypeTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptScriptNodeTraversalTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateScriptNodeModule(ScriptEngine, "ScriptNodeTraversal");
 	if (!TestNotNull(TEXT("ScriptNode traversal test should create a backing module"), Module))
@@ -88,12 +89,14 @@ bool FAngelscriptScriptNodeTraversalTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("First and last child should differ when multiple declarations exist"), Root->firstChild != Root->lastChild);
 	TestEqual(TEXT("Second child should point back to the first child as prev"), Root->lastChild->prev, Root->firstChild);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScriptNodeCopyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateScriptNodeModule(ScriptEngine, "ScriptNodeCopy");
 	if (!TestNotNull(TEXT("ScriptNode copy test should create a backing module"), Module))
@@ -127,6 +130,8 @@ bool FAngelscriptScriptNodeCopyTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Copied node should be a different instance"), Copy != Root);
 	TestTrue(TEXT("Copied first child should be a different instance"), Copy->firstChild != nullptr && Copy->firstChild != Root->firstChild);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

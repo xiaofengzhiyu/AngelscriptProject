@@ -1,5 +1,6 @@
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "Misc/AutomationTest.h"
 #include "UObject/Class.h"
@@ -14,8 +15,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerDelegateEnumClassCompileTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerDelegateEnumClassCompile"),
@@ -75,6 +77,8 @@ class UCompilerTransferObject : UObject
 	TestNotNull(TEXT("Generated Score property should exist"), FindFProperty<FProperty>(GeneratedClass, TEXT("Score")));
 	TestNotNull(TEXT("Generated GetScore function should exist"), AngelscriptTestSupport::FindGeneratedFunction(GeneratedClass, TEXT("GetScore")));
 	return true;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -84,8 +88,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerFunctionDefaultsAndClassLikeCompileTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerFunctionDefaultsAndClassLikeCompile"),
@@ -149,6 +154,8 @@ class UCompilerFunctionCarrier : UObject
 	TestNotNull(TEXT("EchoActorClass function should exist"), AngelscriptTestSupport::FindGeneratedFunction(GeneratedClass, TEXT("EchoActorClass")));
 	TestNotNull(TEXT("EchoSoftActorClass function should exist"), AngelscriptTestSupport::FindGeneratedFunction(GeneratedClass, TEXT("EchoSoftActorClass")));
 	return Result == 42;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -158,8 +165,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerPropertyDefaultsCompileTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerPropertyDefaultsCompile"),
@@ -205,6 +213,8 @@ class UCompilerDefaultsCarrier : UObject
 	const int32 ScoreValue = ScoreProperty->GetPropertyValue_InContainer(DefaultObject);
 	TestEqual(TEXT("Generated default object should materialize overridden int default"), ScoreValue, 21);
 	return ScoreValue == 21;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -214,8 +224,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerGeneratedClassConsistencyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerGeneratedClassConsistency"),
@@ -250,6 +261,8 @@ class UCompilerConsistencyCarrier : UObject
 	TestNotNull(TEXT("Generated consistency class should expose Score property"), FindFProperty<FProperty>(GeneratedClass, TEXT("Score")));
 	TestNotNull(TEXT("Generated consistency class should expose GetScore function"), AngelscriptTestSupport::FindGeneratedFunction(GeneratedClass, TEXT("GetScore")));
 	return true;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -259,8 +272,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerModuleFunctionInspectionTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = AngelscriptTestSupport::BuildModule(
 		*this,
 		Engine,
@@ -297,6 +311,8 @@ int Entry()
 
 	TestEqual(TEXT("Compiled inspection module should preserve executable default values"), Result, 42);
 	return Result == 42;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -306,8 +322,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerEnumAvailabilityTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerEnumAvailability"),
@@ -336,6 +353,8 @@ enum class ECompilerAvailabilityState : uint16
 	TestEqual(TEXT("Compiled enum should have 3 declared values"), EnumDesc->ValueNames.Num(), 3);
 	TestEqual(TEXT("Beta should have explicit value 4"), static_cast<int32>(EnumDesc->EnumValues[1]), 4);
 	return true;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -345,8 +364,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerDelegateSignatureConsistencyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerDelegateSignatureConsistency"),
@@ -382,6 +402,8 @@ class UCompilerDelegateCarrier : UObject
 	TestNotNull(TEXT("Single-cast delegate should materialize a UDelegateFunction"), SingleCast->Function);
 	TestNotNull(TEXT("Multicast delegate should materialize a UDelegateFunction"), MultiCast->Function);
 	return true;
+
+ASTEST_END_SHARE
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -391,8 +413,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptCompilerClassLikeReflectionShapeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& EngineOwner = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
-FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& EngineOwner = ASTEST_CREATE_ENGINE_SHARE();
+FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+ASTEST_BEGIN_SHARE
 	const bool bCompiled = AngelscriptTestSupport::CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerClassLikeReflectionShape"),
@@ -465,6 +488,8 @@ class UCompilerClassLikeShapeCarrier : UObject
 	TestTrue(TEXT("Soft class return MetaClass should be AActor"), SoftReturnProperty->MetaClass == AActor::StaticClass());
 	TestTrue(TEXT("Soft class parameter MetaClass should be AActor"), SoftParamProperty->MetaClass == AActor::StaticClass());
 	return true;
+
+ASTEST_END_SHARE
 }
 
 #endif

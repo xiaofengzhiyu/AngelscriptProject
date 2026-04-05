@@ -1,131 +1,56 @@
-# Angelscript Test Macros
+# Angelscript Test Macro Notes
 
-## Quick Start
+## Status
 
-Add this include to your test file:
+This file previously documented an abandoned `ANGELSCRIPT_TEST` / `ANGELSCRIPT_ISOLATED_TEST` wrapper family.
+
+Those names are not the active macro API for this repository.
+
+The current authoritative macro system is:
+
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestMacros.h`
+- `Plugins/Angelscript/Source/AngelscriptTest/TESTING_GUIDE.md`
+
+## Current Macro Entry Points
+
+Use the current `ASTEST_*` system instead of the older `ANGELSCRIPT_*` names:
+
+- Engine creation: `ASTEST_CREATE_ENGINE_FULL()` / `ASTEST_CREATE_ENGINE_SHARE()` / `ASTEST_CREATE_ENGINE_SHARE_CLEAN()` / `ASTEST_CREATE_ENGINE_SHARE_FRESH()` / `ASTEST_CREATE_ENGINE_CLONE()` / `ASTEST_CREATE_ENGINE_NATIVE()`
+- Lifecycle: `ASTEST_BEGIN_FULL` / `ASTEST_END_FULL`, `ASTEST_BEGIN_SHARE` / `ASTEST_END_SHARE`, `ASTEST_BEGIN_CLONE` / `ASTEST_END_CLONE`, `ASTEST_BEGIN_NATIVE` / `ASTEST_END_NATIVE`
+- Helper macros: `ASTEST_COMPILE_RUN_INT`, `ASTEST_COMPILE_RUN_INT64`, `ASTEST_BUILD_MODULE`
+
+## Quick Example
+
 ```cpp
 #include "Shared/AngelscriptTestMacros.h"
-```
 
-Then use the appropriate macro for your test type:
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FExampleMacroTest,
+	"Angelscript.TestModule.Validation.ExampleMacro",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
-### Simple Shared Engine Test
-```cpp
-ANGELSCRIPT_TEST(FMySimpleTest, "Angelscript.Category.Test", EditorContext | EngineFilter)
+bool FExampleMacroTest::RunTest(const FString& Parameters)
 {
-    FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-    asIScriptModule* Module = BuildModule(*this, Engine, "TestModule", TestScript);
-    if (!Module) return false;
-    
-    // Test body...
-    return true;
+	bool bPassed = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
+
+	int32 Result = 0;
+	ASTEST_COMPILE_RUN_INT(Engine,
+		"ASExampleMacro",
+		TEXT("int Run() { return 42; }"),
+		TEXT("int Run()"),
+		Result);
+
+	bPassed = TestEqual(TEXT("Example macro test should return the expected result"), Result, 42);
+
+	ASTEST_END_FULL
+	return bPassed;
 }
 ```
 
-### Isolated Engine Test  
-```cpp
-ANGELSCRIPT_ISOLATED_TEST(FMyIsolatedTest, "Angelscript.Category.Isolated", EditorContext)
-{
-    // Engine is automatically created and cleaned up
-    asIScriptModule* Module = BuildModule(*this, Engine, "TestModule", TestScript);
-    if (!Module) return false;
-    
-    // Test body...
-    return true;
-}
-```
+## Migration Guidance
 
-## Macros Reference
-
-### Test Declaration
-- `ANGELSCRIPT_TEST` - Shared engine test wrapper
-- `ANGELSCRIPT_ISOLATED_TEST` - Isolated engine test wrapper with auto-cleanup
-
-### Engine Utilities
-- `ANGELSCRIPT_SCOPED_ENGINE` - Create engine context scope
-- `ANGELSCRIPT_ENSURE_ENGINE` - Validate engine is valid
-
-### Function Execution
-- `ANGELSCRIPT_REQUIRE_FUNCTION` - Get function with error reporting
-- `ANGELSCRIPT_EXECUTE_INT` - Execute int-returning function with null checks
-- `ANGELSCRIPT_EXECUTE_REFLECTED_INT` - Execute reflected function on game thread
-
-### Compilation
-- `ANGELSCRIPT_COMPILE_ANNOTATED_MODULE` - Compile with preprocessor
-- `ANGELSCRIPT_COMPILE_WITH_TRACE` - Compile with diagnostics
-- `ANGELSCRIPT_TEST_VERIFY_COMPILATION_FAILS` - Negative compilation test
-- `ANGELSCRIPT_MULTI_PHASE_COMPILE` - Two-phase compilation (hot reload)
-
-### Class Lookup
-- `ANGELSCRIPT_FIND_GENERATED_CLASS` - Find generated UClass with error reporting
-
-## Impact
-
-**Boilerplate Reduction: 60-90% depending on test complexity**
-
-- Simple tests: ~6-8 lines saved
-- Isolated tests: ~12-15 lines saved
-- Function execution: ~8-10 lines per call
-- Compilation tests: ~14-20 lines saved
-
-## Documentation
-
-- `MACRO_ANALYSIS.txt` - Detailed before/after analysis with exact line counts
-- `MACRO_MIGRATION_GUIDE.txt` - Step-by-step migration instructions
-
-## Design Principles
-
-1. **Error Propagation** - Early returns reduce nesting
-2. **Automatic Reporting** - Errors logged via TestObj
-3. **Type Safety** - Compile-time checking via lambdas
-4. **Zero Overhead** - Compile-time macro expansion only
-5. **Backward Compatible** - Works alongside existing tests
-
-## Examples
-
-### Execution with Validation
-```cpp
-int32 Result = 0;
-asIScriptFunction* Func = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
-if (!ANGELSCRIPT_EXECUTE_INT(Engine, Func, Result, *this)) return false;
-
-TestEqual(TEXT("Result"), Result, 42);
-```
-
-### Annotated Module Compilation
-```cpp
-bool bCompiled = ANGELSCRIPT_COMPILE_ANNOTATED_MODULE(
-    Engine, "TestModule", "test.as", AnnotatedScript, *this
-);
-if (!bCompiled) return false;
-```
-
-### Multi-Phase Compilation
-```cpp
-ECompileResult Phase1Result, Phase2Result;
-ANGELSCRIPT_MULTI_PHASE_COMPILE(
-    Engine, "Module", "module.as", Script1, Script2, 
-    Phase1Result, Phase2Result, *this
-);
-```
-
-### Class Lookup and Instantiation
-```cpp
-UClass* ActorClass = ANGELSCRIPT_FIND_GENERATED_CLASS(Engine, TEXT("AMyActor"), *this);
-if (!ActorClass) return false;
-
-AActor* Instance = NewObject<AActor>(GetTransientPackage(), ActorClass);
-```
-
-## Notes
-
-- All macros are in the `AngelscriptTestSupport` namespace
-- Most helper macros are optional (can use raw functions too)
-- Test declaration macros (ANGELSCRIPT_TEST, ANGELSCRIPT_ISOLATED_TEST) provide the most impact
-- Macros use lambdas internally for type safety
-- Zero runtime overhead (all compile-time)
-
-## Migration
-
-See `MACRO_MIGRATION_GUIDE.txt` for phased migration instructions.
-
+- Treat historical `ANGELSCRIPT_*` macro references as deprecated design artifacts.
+- Use `TESTING_GUIDE.md` for active examples and macro-selection guidance.
+- Use `MACRO_MIGRATION_GUIDE.txt` only as a current redirect unless it has been updated to the same `ASTEST_*` terminology.

@@ -2,6 +2,7 @@
 #include "AngelscriptType.h"
 #include "Angelscript/AngelscriptTestSupport.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -20,6 +21,7 @@ namespace
 		TArray<FAngelscriptEngine*> SavedStack;
 		FCoreTestContextStackGuard() { SavedStack = FAngelscriptEngineContextStack::SnapshotAndClear(); }
 		~FCoreTestContextStackGuard() { FAngelscriptEngineContextStack::RestoreSnapshot(MoveTemp(SavedStack)); }
+		void DiscardSavedStack() { SavedStack.Reset(); }
 	};
 }
 
@@ -72,7 +74,8 @@ bool FAngelscriptTestModuleLifecycleTest::RunTest(const FString& Parameters)
 
 bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	if (!TestNotNull(TEXT("Compile test should create an initialized engine"), &Engine))
 	{
 		return false;
@@ -95,11 +98,14 @@ bool FAngelscriptTestModuleCompileSnippetTest::RunTest(const FString& Parameters
 		Function->Release();
 	}
 	return CompileResult == asSUCCESS && bCompiled;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	if (!TestNotNull(TEXT("Execute test should create an initialized engine"), &Engine))
 	{
 		return false;
@@ -139,6 +145,8 @@ bool FAngelscriptTestModuleExecuteSnippetTest::RunTest(const FString& Parameters
 	Context->Release();
 	Function->Release();
 	return PrepareResult == asSUCCESS && ExecuteResult == asEXECUTION_FINISHED;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptFullDestroyClearsTypeStateTest::RunTest(const FString& Parameters)
@@ -149,6 +157,7 @@ bool FAngelscriptFullDestroyClearsTypeStateTest::RunTest(const FString& Paramete
 	{
 		AngelscriptTestSupport::FAngelscriptTestEngineScopeAccess::DestroyGlobalEngine();
 	}
+	ContextGuard.DiscardSavedStack();
 	ON_SCOPE_EXIT
 	{
 		if (FAngelscriptEngine::IsInitialized())
@@ -184,6 +193,7 @@ bool FAngelscriptFullDestroyAllowsCleanRecreateTest::RunTest(const FString& Para
 	{
 		AngelscriptTestSupport::FAngelscriptTestEngineScopeAccess::DestroyGlobalEngine();
 	}
+	ContextGuard.DiscardSavedStack();
 	ON_SCOPE_EXIT
 	{
 		if (FAngelscriptEngine::IsInitialized())
@@ -255,6 +265,7 @@ bool FAngelscriptFullDestroyAllowsAnnotatedRecreateTest::RunTest(const FString& 
 	{
 		AngelscriptTestSupport::FAngelscriptTestEngineScopeAccess::DestroyGlobalEngine();
 	}
+	ContextGuard.DiscardSavedStack();
 	ON_SCOPE_EXIT
 	{
 		if (FAngelscriptEngine::IsInitialized())

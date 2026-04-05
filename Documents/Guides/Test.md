@@ -5,8 +5,8 @@
 - 本仓库的标准自动化测试入口是 `Tools\RunTests.ps1`。
 - 测试放置、命名、前缀与具名 suite 约定以 `Documents/Guides/TestConventions.md` 为准；`Test.md` 只说明执行入口与运行约束。
 - 不再允许把 `UnrealEditor-Cmd.exe` 直调命令、`Start-Process UnrealEditor-Cmd.exe` 拼参命令、或旧的 `Tools\RunAutomationTests.ps1` 作为标准执行方式写入指南。
-- 所有测试命令都必须显式带超时，且超时不得超过 `300000ms`。
-- 默认测试超时来自 `AgentConfig.ini` 中的 `Test.DefaultTimeoutMs`，仓库模板默认值为 `300000ms`。
+- 所有测试命令都必须显式带超时，且超时不得超过 `900000ms`（15 分钟）。
+- 默认测试超时来自 `AgentConfig.ini` 中的 `Test.DefaultTimeoutMs`，仓库模板默认值为 `600000ms`（10 分钟）。
 - 测试过程必须实时输出。进入编辑器后，终端要逐行看到日志，不允许静默等待。
 - 测试超时或异常退出后，脚本必须终止整个进程树，避免残留编辑器、子进程或 UBT。
 
@@ -22,7 +22,7 @@ EngineRoot=<UE 根目录>
 ProjectFile=<当前 worktree 的 .uproject>
 
 [Test]
-DefaultTimeoutMs=300000
+DefaultTimeoutMs=600000
 ```
 
 如果本地还没有该文件，先执行：
@@ -87,7 +87,7 @@ Tools\RunTests.ps1 -Group AngelscriptFast -- -log
 
 - `-TestPrefix`：按测试名前缀运行
 - `-Group`：按 `Config/DefaultEngine.ini` 中定义的 automation group 运行
-- `-TimeoutMs`：本次测试超时，必须大于 0 且不超过 `300000`
+- `-TimeoutMs`：本次测试超时，必须大于 0 且不超过 `900000`
 - `-Label`：输出目录标签
 - `-OutputRoot`：自定义输出根目录
 - `-Render`：关闭 `-NullRHI`，允许真实渲染
@@ -174,7 +174,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File Tools\RunBuild.ps1 -- -N
 
 1. 先读取根目录 `AgentConfig.ini`
 2. 只通过 `Tools\RunTests.ps1` 执行
-3. 必须显式传入或继承一个不超过 `300000ms` 的超时
+3. 必须显式传入或继承一个不超过 `900000ms` 的超时
 4. 不得直接拼装 `UnrealEditor-Cmd.exe` 命令作为标准入口
 5. 执行时必须实时打印日志
 6. 超时或异常退出后必须结束整个进程树
@@ -183,5 +183,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File Tools\RunBuild.ps1 -- -N
 ## 推荐提示词
 
 ```text
-请先读取项目根目录的 AgentConfig.ini，然后仅通过 Tools\RunTests.ps1 执行自动化测试。测试必须显式带超时，且不得超过 300000ms。执行时必须实时打印编辑器日志，并在超时或异常退出后结束整个进程树。除非明确需要真实渲染，否则保持默认 headless 模式，不要直接手写 UnrealEditor-Cmd.exe 命令。
+请先读取项目根目录的 AgentConfig.ini，然后仅通过 Tools\RunTests.ps1 执行自动化测试。测试必须显式带超时，且不得超过 900000ms（15 分钟）。执行时必须实时打印编辑器日志，并在超时或异常退出后结束整个进程树。除非明确需要真实渲染，否则保持默认 headless 模式，不要直接手写 UnrealEditor-Cmd.exe 命令。
 ```

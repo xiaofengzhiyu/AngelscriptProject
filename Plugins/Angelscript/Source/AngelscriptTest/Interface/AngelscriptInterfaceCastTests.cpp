@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -31,8 +32,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInterfaceCastSuccessTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastSuccess"));
 	ON_SCOPE_EXIT
 	{
@@ -97,12 +98,14 @@ class AScenarioInterfaceCastSuccess : AActor, UIDamageableCastOk
 
 	TestEqual(TEXT("Cast to interface should succeed for implementing actor"), CastSucceeded, 1);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceCastFailTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceCastFail"));
 	ON_SCOPE_EXIT
 	{
@@ -164,12 +167,14 @@ class AScenarioInterfaceCastFail : AActor
 
 	TestEqual(TEXT("Cast to interface should fail for non-implementing actor"), CastReturnedNull, 1);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioInterfaceMethodCallTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioInterfaceMethodCall"));
 	ON_SCOPE_EXIT
 	{
@@ -255,6 +260,8 @@ class AScenarioInterfaceMethodCall : AActor, UIDamageableMethodCall
 	TestEqual(TEXT("Method should have been called via interface reference"), MethodCalled, 1);
 
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #endif

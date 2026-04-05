@@ -1,4 +1,5 @@
 #include "Angelscript/AngelscriptTestSupport.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "Misc/AutomationTest.h"
 
 #include "StartAngelscriptHeaders.h"
@@ -82,8 +83,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptParserDeclarationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserDeclarations");
 	if (!TestNotNull(TEXT("Parser declaration test should create a backing module"), Module))
@@ -112,12 +113,14 @@ bool FAngelscriptParserDeclarationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Parser should emit a declaration node for the global variable"), ContainsNodeType(Root, snDeclaration));
 	TestTrue(TEXT("Parser should emit a class node for the class declaration"), ContainsNodeType(Root, snClass));
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptParserExpressionAstTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserExpressions");
 	if (!TestNotNull(TEXT("Parser expression test should create a backing module"), Module))
@@ -139,12 +142,14 @@ bool FAngelscriptParserExpressionAstTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Expression root should be an expression node"), static_cast<int32>(Root->nodeType), static_cast<int32>(snExpression));
 	TestTrue(TEXT("Parser should emit an expression operator node"), ContainsNodeType(Root, snExprOperator));
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptParserControlFlowTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserControlFlow");
 	if (!TestNotNull(TEXT("Parser control-flow test should create a backing module"), Module))
@@ -168,12 +173,14 @@ bool FAngelscriptParserControlFlowTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Parser should emit a for node"), ContainsNodeType(Root, snFor));
 	TestTrue(TEXT("Parser should emit a while node"), ContainsNodeType(Root, snWhile));
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptParserSyntaxErrorTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AngelscriptTestSupport::AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	asCScriptEngine* ScriptEngine = static_cast<asCScriptEngine*>(Engine.GetScriptEngine());
 	asCModule* Module = CreateParserModule(ScriptEngine, "ParserSyntaxErrors");
 	if (!TestNotNull(TEXT("Parser syntax-error test should create a backing module"), Module))
@@ -190,6 +197,8 @@ bool FAngelscriptParserSyntaxErrorTest::RunTest(const FString& Parameters)
 	const int ParseResult = Parser.ParseScript(&Code);
 	TestTrue(TEXT("Parser should reject malformed syntax"), ParseResult < 0);
 	return ParseResult < 0;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

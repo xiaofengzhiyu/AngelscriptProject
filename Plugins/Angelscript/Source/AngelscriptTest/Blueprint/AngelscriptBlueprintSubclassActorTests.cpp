@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Blueprint.h"
@@ -88,8 +89,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioBlueprintSubclassBeginPlayTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioActorBlueprintSubclassBeginPlay"));
 	UBlueprint* Blueprint = nullptr;
 	ON_SCOPE_EXIT
@@ -196,6 +197,8 @@ class AScenarioActorBlueprintSubclassBeginPlay : AActor
 		TickCount >= BlueprintSubclassActorTest::ScenarioTickCount);
 
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -40,8 +41,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioHotReloadPropertyPreservedTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioHotReloadPropertyPreserved"));
 	ON_SCOPE_EXIT
 	{
@@ -144,12 +145,14 @@ class AScenarioHotReloadPropertyPreserved : AActor
 	}
 	TestEqual(TEXT("Scenario hot-reload property-preserved function should observe the preserved property value after reload"), Result, 142);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioHotReloadAddPropertyTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioHotReloadAddProperty"));
 	ON_SCOPE_EXIT
 	{
@@ -229,12 +232,14 @@ class AScenarioHotReloadAddProperty : AActor
 	TestEqual(TEXT("Scenario hot-reload add-property should preserve the original property default"), ExistingValue, 1);
 	TestEqual(TEXT("Scenario hot-reload add-property should expose the newly added property with its default value"), NewValue, 99);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioHotReloadFunctionChangeTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioHotReloadFunctionChange"));
 	ON_SCOPE_EXIT
 	{
@@ -329,12 +334,14 @@ class AScenarioHotReloadFunctionChange : AActor
 	}
 	TestEqual(TEXT("Scenario hot-reload function-change should expose the updated function body on the same actor instance"), AfterReloadResult, 2);
 	return true;
+
+	ASTEST_END_SHARE_FRESH
 }
 
 bool FAngelscriptScenarioHotReloadPIEStructuralChangeNeedsFullReloadTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
 	static const FName ModuleName(TEXT("ScenarioHotReloadPIEStructuralChange"));
 	ON_SCOPE_EXIT
 	{
@@ -395,6 +402,8 @@ class AScenarioHotReloadPIEStructuralChange : AActor
 		TEXT("Structural actor change should not stay on the soft reload path"),
 		ReloadRequirement == FAngelscriptClassGenerator::FullReloadRequired
 		|| ReloadRequirement == FAngelscriptClassGenerator::FullReloadSuggested);
+
+	ASTEST_END_SHARE_FRESH
 }
 
 #endif

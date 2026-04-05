@@ -1,9 +1,11 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 
 #include "HAL/IConsoleManager.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/Guid.h"
+#include "Misc/OutputDeviceNull.h"
 #include "Misc/ScopeExit.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -18,6 +20,21 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptConsoleVariableExistingBindingsTest,
 	"Angelscript.TestModule.Bindings.ConsoleVariableExistingCompat",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptConsoleCommandBindingsTest,
+	"Angelscript.TestModule.Bindings.ConsoleCommandCompat",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptConsoleCommandReplacementBindingsTest,
+	"Angelscript.TestModule.Bindings.ConsoleCommandReplacementCompat",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptConsoleCommandSignatureBindingsTest,
+	"Angelscript.TestModule.Bindings.ConsoleCommandSignatureCompat",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 namespace
@@ -80,11 +97,39 @@ namespace
 
 		return Test.TestEqual(TEXT("Console variable test should preserve the string value in IConsoleManager"), Variable->GetString(), ExpectedValue);
 	}
+
+	IConsoleCommand* FindConsoleCommand(const FString& Name)
+	{
+		return static_cast<IConsoleCommand*>(IConsoleManager::Get().FindConsoleObject(*Name));
+	}
+
+	bool VerifyConsoleCommandExists(FAutomationTestBase& Test, const FString& Name)
+	{
+		return Test.TestNotNull(TEXT("Console command test should register the command in IConsoleManager"), FindConsoleCommand(Name));
+	}
+
+	bool VerifyConsoleCommandMissing(FAutomationTestBase& Test, const FString& Name)
+	{
+		return Test.TestNull(TEXT("Console command test should remove the command from IConsoleManager"), FindConsoleCommand(Name));
+	}
+
+	bool ExecuteConsoleCommand(FAutomationTestBase& Test, const FString& Name, const TArray<FString>& Args)
+	{
+		IConsoleCommand* Command = FindConsoleCommand(Name);
+		if (!Test.TestNotNull(TEXT("Console command test should find a registered command before execution"), Command))
+		{
+			return false;
+		}
+
+		FOutputDeviceNull OutputDevice;
+		return Test.TestTrue(TEXT("Console command test should execute the registered delegate"), Command->Execute(Args, nullptr, OutputDevice));
+	}
 }
 
 bool FAngelscriptConsoleVariableBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 
 	const FString IntName = MakeConsoleVariableName(TEXT("Int"));
 	const FString FloatName = MakeConsoleVariableName(TEXT("Float"));
@@ -162,11 +207,14 @@ int Entry()
 	const bool bBoolPassed = VerifyConsoleVariableBool(*this, BoolName, false);
 	const bool bStringPassed = VerifyConsoleVariableString(*this, StringName, TEXT("UpdatedValue"));
 	return bScriptPassed && bIntPassed && bFloatPassed && bBoolPassed && bStringPassed;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptConsoleVariableExistingBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	const FString ExistingName = MakeConsoleVariableName(TEXT("Existing"));
 	IConsoleVariable* ExistingVariable = IConsoleManager::Get().RegisterConsoleVariable(*ExistingName, 7, TEXT("Existing native cvar for bindings test"));
 	if (!TestNotNull(TEXT("Console variable existing-value test should pre-register a native cvar"), ExistingVariable))
@@ -215,6 +263,237 @@ int Entry()
 	const bool bScriptPassed = TestEqual(TEXT("Console variable existing-value script should reuse the already-registered cvar"), Result, 1);
 	const bool bNativeValuePassed = VerifyConsoleVariableInt(*this, ExistingName, 21);
 	return bScriptPassed && bNativeValuePassed;
+
+	ASTEST_END_SHARE_CLEAN
+}
+
+bool FAngelscriptConsoleCommandBindingsTest::RunTest(const FString& Parameters)
+{
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
+	const FString CommandName = MakeConsoleVariableName(TEXT("Command"));
+	const FString OutputName = MakeConsoleVariableName(TEXT("CommandOutput"));
+
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASConsoleCommandCompat"));
+		UnregisterConsoleObjectIfPresent(CommandName);
+		UnregisterConsoleObjectIfPresent(OutputName);
+	};
+
+	IConsoleManager::Get().RegisterConsoleVariable(*OutputName, -1, TEXT("Console command output sink"));
+
+	asIScriptModule* Module = BuildModule(
+		*this,
+		Engine,
+		"ASConsoleCommandCompat",
+		FString::Printf(TEXT(R"(
+const FConsoleCommand Command("%s", n"OnCommand");
+
+void OnCommand(const TArray<FString>& Args)
+{
+	FConsoleVariable Output("%s", 0, "Command output");
+	Output.SetInt(Args.Num());
+}
+
+int Entry()
+{
+	return 1;
+}
+)"), *CommandName, *OutputName));
+	if (Module == nullptr)
+	{
+		return false;
+	}
+
+	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
+	if (Function == nullptr)
+	{
+		return false;
+	}
+
+	int32 Result = 0;
+	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
+	{
+		return false;
+	}
+
+	const bool bEntryPassed = TestEqual(TEXT("Console command compat script should execute setup entrypoint"), Result, 1);
+	const bool bRegistered = VerifyConsoleCommandExists(*this, CommandName);
+
+	TArray<FString> Args;
+	Args.Add(TEXT("One"));
+	Args.Add(TEXT("Two"));
+	Args.Add(TEXT("Three"));
+	const bool bExecuted = ExecuteConsoleCommand(*this, CommandName, Args);
+	const bool bOutputUpdated = VerifyConsoleVariableInt(*this, OutputName, 3);
+
+	Engine.DiscardModule(TEXT("ASConsoleCommandCompat"));
+	const bool bUnregistered = VerifyConsoleCommandMissing(*this, CommandName);
+
+	return bEntryPassed && bRegistered && bExecuted && bOutputUpdated && bUnregistered;
+
+	ASTEST_END_SHARE_CLEAN
+}
+
+bool FAngelscriptConsoleCommandReplacementBindingsTest::RunTest(const FString& Parameters)
+{
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
+	const FString CommandName = MakeConsoleVariableName(TEXT("ReplacementCommand"));
+	const FString OutputName = MakeConsoleVariableName(TEXT("ReplacementOutput"));
+
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASConsoleCommandOriginalCompat"));
+		Engine.DiscardModule(TEXT("ASConsoleCommandReplacementCompat"));
+		UnregisterConsoleObjectIfPresent(CommandName);
+		UnregisterConsoleObjectIfPresent(OutputName);
+	};
+
+	IConsoleManager::Get().RegisterConsoleVariable(*OutputName, -1, TEXT("Console command replacement output sink"));
+
+	asIScriptModule* OriginalModule = BuildModule(
+		*this,
+		Engine,
+		"ASConsoleCommandOriginalCompat",
+		FString::Printf(TEXT(R"(
+const FConsoleCommand Command("%s", n"OnOriginalCommand");
+
+void OnOriginalCommand(const TArray<FString>& Args)
+{
+	FConsoleVariable Output("%s", 0, "Command output");
+	Output.SetInt(11);
+}
+
+int Entry()
+{
+	return 1;
+}
+)"), *CommandName, *OutputName));
+	if (OriginalModule == nullptr)
+	{
+		return false;
+	}
+
+	asIScriptFunction* OriginalEntry = GetFunctionByDecl(*this, *OriginalModule, TEXT("int Entry()"));
+	if (OriginalEntry == nullptr)
+	{
+		return false;
+	}
+
+	int32 OriginalResult = 0;
+	if (!ExecuteIntFunction(*this, Engine, *OriginalEntry, OriginalResult))
+	{
+		return false;
+	}
+
+	asIScriptModule* ReplacementModule = BuildModule(
+		*this,
+		Engine,
+		"ASConsoleCommandReplacementCompat",
+		FString::Printf(TEXT(R"(
+const FConsoleCommand Command("%s", n"OnReplacementCommand");
+
+void OnReplacementCommand(const TArray<FString>& Args)
+{
+	FConsoleVariable Output("%s", 0, "Command output");
+	Output.SetInt(22);
+}
+
+int Entry()
+{
+	return 1;
+}
+)"), *CommandName, *OutputName));
+	if (ReplacementModule == nullptr)
+	{
+		return false;
+	}
+
+	asIScriptFunction* ReplacementEntry = GetFunctionByDecl(*this, *ReplacementModule, TEXT("int Entry()"));
+	if (ReplacementEntry == nullptr)
+	{
+		return false;
+	}
+
+	int32 ReplacementResult = 0;
+	if (!ExecuteIntFunction(*this, Engine, *ReplacementEntry, ReplacementResult))
+	{
+		return false;
+	}
+
+	const bool bEntryPassed = TestEqual(TEXT("Console command replacement script should execute setup entrypoint"), ReplacementResult, 1);
+	const bool bRegistered = VerifyConsoleCommandExists(*this, CommandName);
+	const bool bExecuted = ExecuteConsoleCommand(*this, CommandName, {});
+	const bool bReplacementObserved = VerifyConsoleVariableInt(*this, OutputName, 22);
+
+	Engine.DiscardModule(TEXT("ASConsoleCommandReplacementCompat"));
+	const bool bUnregistered = VerifyConsoleCommandMissing(*this, CommandName);
+
+	return bEntryPassed && bRegistered && bExecuted && bReplacementObserved && bUnregistered;
+
+	ASTEST_END_SHARE_CLEAN
+}
+
+bool FAngelscriptConsoleCommandSignatureBindingsTest::RunTest(const FString& Parameters)
+{
+	AddExpectedError(TEXT("Global function for console command must have signature"), EAutomationExpectedErrorFlags::Contains, 1);
+	AddExpectedError(TEXT("ASConsoleCommandSignatureCompat"), EAutomationExpectedErrorFlags::Contains, 1);
+	AddExpectedError(TEXT("int Entry() | Line 8 | Col 2"), EAutomationExpectedErrorFlags::Contains, 1);
+
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	const FString CommandName = MakeConsoleVariableName(TEXT("BadSignatureCommand"));
+
+	ON_SCOPE_EXIT
+	{
+		Engine.DiscardModule(TEXT("ASConsoleCommandSignatureCompat"));
+		UnregisterConsoleObjectIfPresent(CommandName);
+	};
+
+	asIScriptModule* Module = BuildModule(
+		*this,
+		Engine,
+		"ASConsoleCommandSignatureCompat",
+		FString::Printf(TEXT(R"(
+void WrongSignature()
+{
+}
+
+int Entry()
+{
+	const FConsoleCommand Command("%s", n"WrongSignature");
+	return 1;
+}
+)"), *CommandName));
+	if (Module == nullptr)
+	{
+		return false;
+	}
+
+	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
+	if (Function == nullptr)
+	{
+		return false;
+	}
+
+	ASTEST_BEGIN_SHARE_CLEAN
+	asIScriptContext* Context = Engine.CreateContext();
+	if (!TestNotNull(TEXT("Console command signature mismatch test should create an execution context"), Context))
+	{
+		return false;
+	}
+
+	const int PrepareResult = Context->Prepare(Function);
+	const int ExecuteResult = PrepareResult == asSUCCESS ? Context->Execute() : PrepareResult;
+	Context->Release();
+
+	const bool bPrepared = TestEqual(TEXT("Console command signature mismatch should still prepare the entry function"), PrepareResult, asSUCCESS);
+	const bool bExecutionFailed = TestTrue(TEXT("Console command signature mismatch should fail command construction during execution"), ExecuteResult != asEXECUTION_FINISHED);
+	const bool bNotRegistered = VerifyConsoleCommandMissing(*this, CommandName);
+	return bPrepared && bExecutionFailed && bNotRegistered;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

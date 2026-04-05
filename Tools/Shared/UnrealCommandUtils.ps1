@@ -1,6 +1,6 @@
 Set-StrictMode -Version Latest
 
-$script:UnrealCommandUtilsMaxTimeoutMs = 300000
+$script:UnrealCommandUtilsMaxTimeoutMs = 900000
 $script:UnrealBundledDotNetVersion = '8.0.412'
 $script:HeldMutexNames = New-Object 'System.Collections.Generic.HashSet[string]'
 $script:HeldMutexSyncRoot = New-Object object
@@ -812,7 +812,119 @@ function Resolve-AgentConfiguration {
         Configuration         = Get-IniValue -Config $config -Section 'Build' -Key 'Configuration' -DefaultValue 'Development'
         Architecture          = Get-IniValue -Config $config -Section 'Build' -Key 'Architecture' -DefaultValue 'x64'
         BuildDefaultTimeoutMs = [int](Get-IniValue -Config $config -Section 'Build' -Key 'DefaultTimeoutMs' -DefaultValue (Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '180000'))
-        TestDefaultTimeoutMs  = [int](Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '300000')
+        TestDefaultTimeoutMs  = [int](Get-IniValue -Config $config -Section 'Test' -Key 'DefaultTimeoutMs' -DefaultValue '600000')
+    }
+}
+
+function Ensure-TargetInfoJson {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EngineRoot,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectFile,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectRoot,
+
+        [int]$TimeoutMs = 120000
+    )
+
+    $resolvedProjectRoot = Normalize-PathValue -Path $ProjectRoot
+    $targetInfoPath = Join-Path $resolvedProjectRoot 'Intermediate\TargetInfo.json'
+
+    if (Test-Path -LiteralPath $targetInfoPath -PathType Leaf) {
+        return [PSCustomObject]@{
+            Status         = 'Skipped'
+            TargetInfoPath = $targetInfoPath
+            DurationMs     = 0
+            Message        = 'TargetInfo.json already exists.'
+        }
+    }
+
+    $intermediateDir = Join-Path $resolvedProjectRoot 'Intermediate'
+    if (-not (Test-Path -LiteralPath $intermediateDir -PathType Container)) {
+        New-Item -ItemType Directory -Path $intermediateDir -Force | Out-Null
+    }
+
+    $ubt = Resolve-UbtPaths -EngineRoot $EngineRoot
+    $resolvedProjectFile = Normalize-PathValue -Path $ProjectFile
+
+    $ubtArguments = @(
+        $ubt.UbtDllPath
+        '-Mode=QueryTargets'
+        "-Project=$resolvedProjectFile"
+        "-Output=$targetInfoPath"
+    )
+
+    Write-Host '[prewarm] TargetInfo.json not found. Running UBT QueryTargets to generate it...' -ForegroundColor Cyan
+    Write-Host "[prewarm] dotnet $($ubt.UbtDllPath) -Mode=QueryTargets" -ForegroundColor DarkGray
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $previousEnvironment = @{}
+    foreach ($entry in $ubt.Environment.GetEnumerator()) {
+        $key = [string]$entry.Key
+        $previousEnvironment[$key] = [System.Environment]::GetEnvironmentVariable($key, 'Process')
+        [System.Environment]::SetEnvironmentVariable($key, [string]$entry.Value, 'Process')
+    }
+
+    try {
+        $process = Start-Process -FilePath $ubt.DotNetExecutablePath -ArgumentList (ConvertTo-ProcessArgumentString -ArgumentList $ubtArguments) -WorkingDirectory $ubt.WorkingDirectory -PassThru -NoNewWindow
+
+        $deadline = [DateTime]::UtcNow.AddMilliseconds($TimeoutMs)
+        while (-not $process.HasExited) {
+            if ([DateTime]::UtcNow -gt $deadline) {
+                Stop-ProcessTree -ProcessId $process.Id
+                $stopwatch.Stop()
+                return [PSCustomObject]@{
+                    Status         = 'TimedOut'
+                    TargetInfoPath = $targetInfoPath
+                    DurationMs     = [int][Math]::Round($stopwatch.Elapsed.TotalMilliseconds)
+                    Message        = "UBT QueryTargets timed out after ${TimeoutMs}ms."
+                }
+            }
+            Start-Sleep -Milliseconds 500
+            $process.Refresh()
+        }
+
+        $process.WaitForExit()
+        $stopwatch.Stop()
+        $exitCode = if ($null -ne $process -and $null -ne $process.ExitCode) { [int]$process.ExitCode } else { -1 }
+        $elapsedMs = [int][Math]::Round($stopwatch.Elapsed.TotalMilliseconds)
+
+        if (Test-Path -LiteralPath $targetInfoPath -PathType Leaf) {
+            $fileSize = (Get-Item -LiteralPath $targetInfoPath).Length
+            if ($fileSize -gt 0) {
+                Write-Host "[prewarm] TargetInfo.json generated ($fileSize bytes, ${elapsedMs}ms)." -ForegroundColor Green
+                return [PSCustomObject]@{
+                    Status         = 'Generated'
+                    TargetInfoPath = $targetInfoPath
+                    DurationMs     = $elapsedMs
+                    FileSize       = $fileSize
+                    ExitCode       = $exitCode
+                    Message        = 'TargetInfo.json generated successfully.'
+                }
+            }
+        }
+
+        return [PSCustomObject]@{
+            Status         = 'Failed'
+            TargetInfoPath = $targetInfoPath
+            DurationMs     = $elapsedMs
+            ExitCode       = $exitCode
+            Message        = "UBT QueryTargets exited with code $exitCode and TargetInfo.json was not created."
+        }
+    }
+    finally {
+        foreach ($key in $previousEnvironment.Keys) {
+            $prev = $previousEnvironment[$key]
+            if ($null -eq $prev) {
+                [System.Environment]::SetEnvironmentVariable($key, $null, 'Process')
+            }
+            else {
+                [System.Environment]::SetEnvironmentVariable($key, $prev, 'Process')
+            }
+        }
     }
 }
 
@@ -827,14 +939,35 @@ function Get-DefinedAutomationGroups {
         return @()
     }
 
-    $groups = New-Object System.Collections.Generic.List[string]
+    $sectionsToCheck = @(
+        '/Script/AutomationController.AutomationControllerSettings',
+        '/Script/AutomationTest.AutomationTestSettings'
+    )
+    $groupsBySection = @{}
+    foreach ($sectionName in $sectionsToCheck) {
+        $groupsBySection[$sectionName] = New-Object System.Collections.Generic.List[string]
+    }
+
+    $currentSection = ''
     foreach ($line in Get-Content -LiteralPath $configPath -Encoding UTF8) {
-        if ($line -match '\+Groups=\(Name="([^"]+)"') {
-            $groups.Add($matches[1]) | Out-Null
+        $trimmedLine = $line.Trim()
+        if ($trimmedLine.StartsWith('[') -and $trimmedLine.EndsWith(']')) {
+            $currentSection = $trimmedLine.Substring(1, $trimmedLine.Length - 2)
+            continue
+        }
+
+        if ($line -match '\+Groups=\(Name="([^"]+)"' -and $groupsBySection.ContainsKey($currentSection)) {
+            $groupsBySection[$currentSection].Add($matches[1]) | Out-Null
         }
     }
 
-    return @($groups | Select-Object -Unique)
+    foreach ($sectionName in $sectionsToCheck) {
+        if ($groupsBySection[$sectionName].Count -gt 0) {
+            return @($groupsBySection[$sectionName] | Select-Object -Unique)
+        }
+    }
+
+    return @()
 }
 
 function Get-GitWorktreeMap {

@@ -5,15 +5,29 @@
 
 using namespace AngelscriptTestSupport;
 
-// Ported from AngelscriptGlobalBindingsTests.cpp using the new ANGELSCRIPT_TEST macro
-ANGELSCRIPT_TEST(
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptGlobalBindingsMacroValidationTest,
 	"Angelscript.TestModule.Validation.GlobalBindingsMacro",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptSharedCleanMacroValidationTest,
+	"Angelscript.TestModule.Validation.SharedCleanMacro",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptSharedFreshMacroValidationTest,
+	"Angelscript.TestModule.Validation.SharedFreshMacro",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FAngelscriptGlobalBindingsMacroValidationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	asIScriptModule* Module = BuildModule(
-		*this,
+	bool bPassed = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
+
+	int32 Result = 0;
+	ASTEST_COMPILE_RUN_INT(
 		Engine,
 		"ASGlobalVariableCompatMacro",
 		TEXT(R"(
@@ -36,25 +50,62 @@ int Entry()
 
 	return 1;
 }
-)"));
-	if (Module == nullptr)
-	{
-		return false;
-	}
+		)"),
+		TEXT("int Entry()"),
+		Result);
 
-	asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
-	if (Function == nullptr)
-	{
-		return false;
-	}
+	bPassed = TestEqual(TEXT("Global variable compat operations via macro should preserve bound namespace globals and defaults"), Result, 1);
 
+	ASTEST_END_FULL
+	return bPassed;
+}
+
+bool FAngelscriptSharedCleanMacroValidationTest::RunTest(const FString& Parameters)
+{
+	bool bPassed = false;
 	int32 Result = 0;
-	if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-	{
-		return false;
-	}
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 
-	return TestEqual(TEXT("Global variable compat operations via macro should preserve bound namespace globals and defaults"), Result, 1);
+	ASTEST_COMPILE_RUN_INT(
+		Engine,
+		"ASSharedCleanMacroValidation",
+		TEXT(R"(
+int Entry()
+{
+	return 17;
+}
+		)"),
+		TEXT("int Entry()"),
+		Result);
+
+	bPassed = TestEqual(TEXT("Shared clean lifecycle macro pair should compile and run"), Result, 17);
+	ASTEST_END_SHARE_CLEAN
+	return bPassed;
+}
+
+bool FAngelscriptSharedFreshMacroValidationTest::RunTest(const FString& Parameters)
+{
+	bool bPassed = false;
+	int32 Result = 0;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+	ASTEST_BEGIN_SHARE_FRESH
+
+	ASTEST_COMPILE_RUN_INT(
+		Engine,
+		"ASSharedFreshMacroValidation",
+		TEXT(R"(
+int Entry()
+{
+	return 23;
+}
+		)"),
+		TEXT("int Entry()"),
+		Result);
+
+	bPassed = TestEqual(TEXT("Shared fresh lifecycle macro pair should compile and run"), Result, 23);
+	ASTEST_END_SHARE_FRESH
+	return bPassed;
 }
 
 #endif

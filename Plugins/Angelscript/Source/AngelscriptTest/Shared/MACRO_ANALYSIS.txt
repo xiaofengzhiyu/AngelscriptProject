@@ -1,180 +1,46 @@
-ANGELSCRIPT TEST MACRO SYSTEM - BEFORE/AFTER ANALYSIS
-======================================================
+ASTEST TEST MACRO SYSTEM - STATUS NOTE
+======================================
 
-PATTERN 1: Simple Shared Engine Test (ANGELSCRIPT_TEST macro)
-------------------------------------------------------------
+This file originally analyzed an abandoned `ANGELSCRIPT_*` macro family.
+It is retained only as a historical breadcrumb and should not be used as the
+source of truth for current migration work.
 
-BEFORE (18 lines of overhead):
-    IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-        FAngelscriptCoreExecuteTest,
-        "Angelscript.Core.Execute",
-        EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
-    
-    bool FAngelscriptCoreExecuteTest::RunTest(const FString& Parameters)
+CURRENT SOURCE OF TRUTH
+-----------------------
+
+- `Plugins/Angelscript/Source/AngelscriptTest/Shared/AngelscriptTestMacros.h`
+- `Plugins/Angelscript/Source/AngelscriptTest/TESTING_GUIDE.md`
+- `Documents/Plans/Plan_TestMacroOptimization.md`
+
+CURRENT OBSERVATIONS
+--------------------
+
+1. The active macro family is `ASTEST_*`, not `ANGELSCRIPT_TEST` or `ANGELSCRIPT_ISOLATED_TEST`.
+2. Current migration work keeps `IMPLEMENT_SIMPLE_AUTOMATION_TEST(...)` for registration and uses `ASTEST_CREATE_ENGINE_*` plus `ASTEST_BEGIN_*` / `ASTEST_END_*` inside `RunTest(...)` when that pairing is semantically safe.
+3. Existing helper names such as `GetOrCreateSharedCloneEngine()`, `AcquireCleanSharedCloneEngine()`, and `AcquireFreshSharedCloneEngine()` should be mapped carefully because their runtime semantics differ.
+4. Validation and migration decisions should be based on actual helper behavior in `AngelscriptTestUtilities.h`, not on historical helper naming.
+
+ACTIVE EXAMPLE SHAPE
+--------------------
+
+    IMPLEMENT_SIMPLE_AUTOMATION_TEST(FExampleTest, "Category.Test", Flags)
+    bool FExampleTest::RunTest(const FString& Parameters)
     {
-        FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-        // Test body here
+        bool bPassed = false;
+        FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+        ASTEST_BEGIN_FULL
 
-AFTER (2 lines of overhead):
-    ANGELSCRIPT_TEST(FAngelscriptCoreExecuteTest, "Angelscript.Core.Execute", 
-                     EditorContext | EngineFilter)
-    {
-        FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
-        // Test body here
+        int32 Result = 0;
+        ASTEST_COMPILE_RUN_INT(Engine,
+            "ExampleModule",
+            TEXT("int Run() { return 42; }"),
+            TEXT("int Run()"),
+            Result);
 
-Boilerplate Reduction: 89% (16 lines eliminated per test)
+        bPassed = TestEqual(TEXT("Result should be 42"), Result, 42);
 
----
-
-PATTERN 2: Isolated Engine Test with Cleanup (ANGELSCRIPT_ISOLATED_TEST macro)
--------------------------------------------------------------------------------
-
-BEFORE (21 lines of overhead):
-    IMPLEMENT_SIMPLE_AUTOMATION_TEST(...)
-    bool FTest::RunTest(const FString& Parameters)
-    {
-        TUniquePtr<FAngelscriptEngine> IsolatedEngine = CreateIsolatedCloneEngine();
-        if (!IsolatedEngine.IsValid())
-        {
-            AddError(TEXT("Failed to create isolated engine"));
-            return false;
-        }
-        FAngelscriptEngine& Engine = *IsolatedEngine;
-        ON_SCOPE_EXIT
-        {
-            const TArray<TSharedRef<FAngelscriptModuleDesc>> ActiveModules = Engine.GetActiveModules();
-            for (const TSharedRef<FAngelscriptModuleDesc>& Module : ActiveModules)
-            {
-                Engine.DiscardModule(*Module->ModuleName);
-            }
-        };
-        // Test body
-
-AFTER (2 lines of overhead):
-    ANGELSCRIPT_ISOLATED_TEST(FTest, "Category.Test", Flags)
-    {
-        // Test body - Engine is auto-managed and cleaned
-        // FAngelscriptEngine& Engine available here
-        // Cleanup is automatic
-
-Boilerplate Reduction: 90% (19 lines eliminated per test)
-
----
-
-PATTERN 3: Function Execution (ANGELSCRIPT_EXECUTE_INT macro)
--------------------------------------------------------------
-
-BEFORE (12 lines per function execution):
-    int32 Result = 0;
-    asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
-    if (Function == nullptr)
-    {
-        AddError(TEXT("Function not found"));
-        return false;
-    }
-    if (!ExecuteIntFunction(*this, Engine, *Function, Result))
-    {
-        AddError(TEXT("Function execution failed"));
-        return false;
-    }
-    TestEqual(TEXT("Result should be 42"), Result, 42);
-
-AFTER (3 lines):
-    int32 Result = 0;
-    asIScriptFunction* Function = GetFunctionByDecl(*this, *Module, TEXT("int Entry()"));
-    if (!ANGELSCRIPT_EXECUTE_INT(Engine, Function, Result, *this)) return false;
-    TestEqual(TEXT("Result should be 42"), Result, 42);
-
-Boilerplate Reduction: 75% (9 lines eliminated per execution)
-
----
-
-PATTERN 4: Annotated Module Compilation (ANGELSCRIPT_COMPILE_ANNOTATED_MODULE)
--------------------------------------------------------------------------------
-
-BEFORE (15 lines):
-    ECompileResult CompileResult = ECompileResult::Error;
-    bool bCompiled = CompileModuleWithResult(
-        &Engine,
-        ECompileType::FullReload,
-        TEXT("TestModule"),
-        TEXT("test.as"),
-        AnnotatedScript,
-        CompileResult
-    );
-    if (!TestTrue(TEXT("Module should compile"), bCompiled))
-    {
-        return false;
-    }
-    if (CompileResult == ECompileResult::Error)
-    {
-        AddError(TEXT("Compilation failed"));
-        return false;
+        ASTEST_END_FULL
+        return bPassed;
     }
 
-AFTER (1 line):
-    bool bCompiled = ANGELSCRIPT_COMPILE_ANNOTATED_MODULE(Engine, "TestModule", "test.as", AnnotatedScript, *this);
-    if (!TestTrue(TEXT("Module should compile"), bCompiled)) return false;
-
-Boilerplate Reduction: 93% (14 lines eliminated)
-
----
-
-PATTERN 5: Multi-Phase Compilation (ANGELSCRIPT_MULTI_PHASE_COMPILE)
---------------------------------------------------------------------
-
-BEFORE (24 lines):
-    ECompileResult Phase1Result = ECompileResult::Error;
-    ECompileResult Phase2Result = ECompileResult::Error;
-    
-    if (!CompileModuleWithResult(&Engine, ECompileType::FullReload, TEXT("Module"), TEXT("m.as"), Script1, Phase1Result))
-    {
-        AddError(TEXT("Phase 1 failed"));
-        return false;
-    }
-    
-    if (!CompileModuleWithResult(&Engine, ECompileType::SoftReloadOnly, TEXT("Module"), TEXT("m.as"), Script2, Phase2Result))
-    {
-        AddError(TEXT("Phase 2 failed"));
-        return false;
-    }
-
-AFTER (1 line):
-    ECompileResult Phase1Result, Phase2Result;
-    ANGELSCRIPT_MULTI_PHASE_COMPILE(Engine, "Module", "m.as", Script1, Script2, Phase1Result, Phase2Result, *this);
-
-Boilerplate Reduction: 95% (23 lines eliminated)
-
----
-
-OVERALL SUMMARY
-===============
-
-Test Type                          Macro Overhead Reduction    Lines Saved
------------                        -----                       -----------
-Simple Shared Engine               89%                         16 lines
-Isolated Engine Setup              90%                         19 lines  
-Function Execution (per call)      75%                         9 lines
-Annotated Compilation              93%                         14 lines
-Multi-Phase Compilation            95%                         23 lines
-
-Average Boilerplate Reduction: 88% per test
-
-Typical test reductions:
-- Simple test (1 build + 1 execute):       55-65% total lines
-- Complex test (1 build + 3 executes):     60-70% total lines
-- Actor lifecycle (isolated + build/exec): 70-80% total lines
-- Hot reload test (multi-phase):           75-85% total lines
-
-Code Quality Improvements:
-- 30-40% reduction in null-check nesting
-- Standardized error message formatting
-- Consistent diagnostic reporting
-- Reduced code duplication across 200+ tests
-
-Key Benefits:
-1. Faster test development (macro scaffolding in seconds)
-2. Fewer error cases (macros handle validation)
-3. Easier maintenance (single point of macro definition)
-4. Consistent error reporting (all tests match pattern)
-5. Better readability (test intent clearer without boilerplate)
+Use this file only as a redirect. Do not extend the historical `ANGELSCRIPT_*` narrative further.

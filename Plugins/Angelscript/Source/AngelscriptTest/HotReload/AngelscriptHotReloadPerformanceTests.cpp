@@ -1,6 +1,7 @@
 #include "../Shared/AngelscriptPerformanceTestUtils.h"
 #include "../Shared/AngelscriptTestEngineHelper.h"
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformTime.h"
@@ -78,7 +79,8 @@ bool FAngelscriptHotReloadSoftLatencyTest::RunTest(const FString& Parameters)
 {
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+		ASTEST_BEGIN_SHARE_FRESH
 		static const FName ModuleName(TEXT("HotReloadPerformanceSoft"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -112,6 +114,8 @@ class UHotReloadPerformanceSoft : UObject
 		const double Elapsed = FPlatformTime::Seconds() - StartTime;
 		Engine.DiscardModule(*ModuleName.ToString());
 		return { Elapsed, ReloadResult };
+
+		ASTEST_END_SHARE_FRESH
 	};
 
 	const TArray<FHotReloadPerformanceSample> Samples = CollectHotReloadSamples(Measure);
@@ -127,7 +131,8 @@ bool FAngelscriptHotReloadFullLatencyTest::RunTest(const FString& Parameters)
 {
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+		ASTEST_BEGIN_SHARE_FRESH
 		static const FName ModuleName(TEXT("HotReloadPerformanceFull"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -158,6 +163,8 @@ class UHotReloadPerformanceFull : UObject
 		const double Elapsed = FPlatformTime::Seconds() - StartTime;
 		Engine.DiscardModule(*ModuleName.ToString());
 		return { Elapsed, ReloadResult };
+
+		ASTEST_END_SHARE_FRESH
 	};
 
 	const TArray<FHotReloadPerformanceSample> Samples = CollectHotReloadSamples(Measure);
@@ -175,7 +182,8 @@ bool FAngelscriptHotReloadRenameWindowLatencyTest::RunTest(const FString& Parame
 
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+		ASTEST_BEGIN_SHARE_FRESH
 		static const FName ModuleName(TEXT("HotReloadPerformanceRename"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -206,6 +214,8 @@ class UHotReloadPerformanceRename : UObject
 		const double Elapsed = FPlatformTime::Seconds() - StartTime;
 		Engine.DiscardModule(*ModuleName.ToString());
 		return { Elapsed, ReloadResult };
+
+		ASTEST_END_SHARE_FRESH
 	};
 
 	const TArray<FHotReloadPerformanceSample> Samples = CollectHotReloadSamples(Measure);
@@ -227,7 +237,8 @@ bool FAngelscriptHotReloadBurstChurnLatencyTest::RunTest(const FString& Paramete
 
 	const auto Measure = [this]() -> FHotReloadPerformanceSample
 	{
-		FAngelscriptEngine& Engine = AcquireFreshSharedCloneEngine();
+		FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_FRESH();
+		ASTEST_BEGIN_SHARE_FRESH
 		static const FName ModuleName(TEXT("HotReloadPerformanceBurst"));
 		ResetSharedInitializedTestEngine(Engine);
 
@@ -285,6 +296,8 @@ class UHotReloadPerformanceBurst : UObject
 			? (StepTwo == ECompileResult::ErrorNeedFullReload || StepThree == ECompileResult::ErrorNeedFullReload ? ECompileResult::ErrorNeedFullReload : ECompileResult::FullyHandled)
 			: ECompileResult::Error;
 		return { Elapsed, AggregateResult };
+
+		ASTEST_END_SHARE_FRESH
 	};
 
 	const TArray<FHotReloadPerformanceSample> Samples = CollectHotReloadSamples(Measure);

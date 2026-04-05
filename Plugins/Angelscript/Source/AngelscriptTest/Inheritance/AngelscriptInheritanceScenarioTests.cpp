@@ -1,4 +1,5 @@
 #include "Shared/AngelscriptScenarioTestUtils.h"
+#include "Shared/AngelscriptTestMacros.h"
 
 #include "ClassGenerator/AngelscriptClassGenerator.h"
 #include "Components/ActorTestSpawner.h"
@@ -37,8 +38,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptScenarioInheritanceScriptToScriptTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioInheritanceScriptToScript"));
 	ON_SCOPE_EXIT
 	{
@@ -97,12 +98,14 @@ class AScenarioInheritanceDerived : AScenarioInheritanceBase
 
 	TestEqual(TEXT("Scenario script-to-script actor inheritance should currently stay in the error state"), ReloadRequirement, FAngelscriptClassGenerator::Error);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioInheritanceSuperTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioInheritanceSuper"));
 	ON_SCOPE_EXIT
 	{
@@ -161,12 +164,14 @@ class AScenarioInheritanceSuperDerived : AScenarioInheritanceSuperBase
 
 	TestEqual(TEXT("Scenario inheritance with Super should currently stay in the error state"), ReloadRequirement, FAngelscriptClassGenerator::Error);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 bool FAngelscriptScenarioInheritanceIsATest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("ScenarioInheritanceIsA"));
 	ON_SCOPE_EXIT
 	{
@@ -224,6 +229,8 @@ class AScenarioInheritanceIsADerived : AScenarioInheritanceIsABase
 		ReloadRequirement == FAngelscriptClassGenerator::FullReloadRequired
 		|| ReloadRequirement == FAngelscriptClassGenerator::FullReloadSuggested);
 	return true;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif

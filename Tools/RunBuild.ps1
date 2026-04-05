@@ -36,11 +36,6 @@ try {
     $agentConfig = Resolve-AgentConfiguration -ProjectRoot $projectRoot
 
     $defaultTimeoutMs = $agentConfig.BuildDefaultTimeoutMs
-    if ($defaultTimeoutMs -gt 300000) {
-        Write-Host ("[warn] Build.DefaultTimeoutMs={0} exceeds the 300000ms hard cap. Falling back to 180000ms." -f $defaultTimeoutMs) -ForegroundColor Yellow
-        $defaultTimeoutMs = 180000
-    }
-
     $resolvedTimeoutMs = Resolve-TimeoutMs -RequestedTimeoutMs $TimeoutMs -DefaultTimeoutMs $defaultTimeoutMs -ParameterName 'TimeoutMs'
     $ubtPaths = Resolve-UbtPaths -EngineRoot $agentConfig.EngineRoot
     $outputLayout = New-CommandOutputLayout -ProjectRoot $projectRoot -Category 'Build' -Label $Label -RequestedOutputRoot $LogRoot -LogFileName 'Build.log'

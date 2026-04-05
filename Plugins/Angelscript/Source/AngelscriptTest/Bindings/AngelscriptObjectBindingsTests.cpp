@@ -1,4 +1,5 @@
 #include "../Shared/AngelscriptTestUtilities.h"
+#include "../Shared/AngelscriptTestMacros.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -16,7 +17,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptObjectPtrBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -75,11 +77,14 @@ int Entry()
 
 	TestEqual(TEXT("TObjectPtr compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 bool FAngelscriptSoftObjectPtrBindingsTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE();
+	ASTEST_BEGIN_SHARE
 	asIScriptModule* Module = BuildModule(
 		*this,
 		Engine,
@@ -183,6 +188,8 @@ int Entry()
 
 	TestEqual(TEXT("TSoftObjectPtr compat operations should behave as expected"), Result, 1);
 	return true;
+
+	ASTEST_END_SHARE
 }
 
 #endif

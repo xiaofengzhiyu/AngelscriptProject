@@ -6,13 +6,22 @@
 
 using namespace AngelscriptTestSupport;
 
-// Ported from AngelscriptCompilerPipelineTests.cpp - simpler test case
-ANGELSCRIPT_TEST(
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 	FAngelscriptCompilerEnumMacroValidationTest,
 	"Angelscript.TestModule.Validation.CompilerEnumMacro",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FAngelscriptCompilerDelegateMacroValidationTest,
+	"Angelscript.TestModule.Validation.CompilerDelegateMacro",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FAngelscriptCompilerEnumMacroValidationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	bool bPassed = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
+
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerEnumAvailabilityMacro"),
@@ -38,18 +47,20 @@ enum class ECompilerAvailabilityState : uint16
 		return false;
 	}
 
-	TestEqual(TEXT("Compiled enum should have 3 declared values"), EnumDesc->ValueNames.Num(), 3);
-	TestEqual(TEXT("Beta should have explicit value 4"), static_cast<int32>(EnumDesc->EnumValues[1]), 4);
-	return true;
+	bPassed =
+		TestEqual(TEXT("Compiled enum should have 3 declared values"), EnumDesc->ValueNames.Num(), 3)
+		&& TestEqual(TEXT("Beta should have explicit value 4"), static_cast<int32>(EnumDesc->EnumValues[1]), 4);
+
+	ASTEST_END_FULL
+	return bPassed;
 }
 
-// Test delegate and class compilation
-ANGELSCRIPT_TEST(
-	FAngelscriptCompilerDelegateMacroValidationTest,
-	"Angelscript.TestModule.Validation.CompilerDelegateMacro",
-	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FAngelscriptCompilerDelegateMacroValidationTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = GetOrCreateSharedCloneEngine();
+	bool bPassed = false;
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_FULL();
+	ASTEST_BEGIN_FULL
+
 	const bool bCompiled = CompileAnnotatedModuleFromMemory(
 		&Engine,
 		TEXT("CompilerDelegateSignatureMacro"),
@@ -80,11 +91,14 @@ class UCompilerDelegateCarrier : UObject
 		return false;
 	}
 
-	TestFalse(TEXT("Single-cast delegate should not be marked multicast"), SingleCast->bIsMulticast);
-	TestTrue(TEXT("Multicast delegate should be marked multicast"), MultiCast->bIsMulticast);
-	TestNotNull(TEXT("Single-cast delegate should materialize a UDelegateFunction"), SingleCast->Function);
-	TestNotNull(TEXT("Multicast delegate should materialize a UDelegateFunction"), MultiCast->Function);
-	return true;
+	bPassed =
+		TestFalse(TEXT("Single-cast delegate should not be marked multicast"), SingleCast->bIsMulticast)
+		&& TestTrue(TEXT("Multicast delegate should be marked multicast"), MultiCast->bIsMulticast)
+		&& TestNotNull(TEXT("Single-cast delegate should materialize a UDelegateFunction"), SingleCast->Function)
+		&& TestNotNull(TEXT("Multicast delegate should materialize a UDelegateFunction"), MultiCast->Function);
+
+	ASTEST_END_FULL
+	return bPassed;
 }
 
 #endif

@@ -2,6 +2,7 @@
 #include "../../Shared/AngelscriptScenarioTestUtils.h"
 #include "../../Shared/AngelscriptTestEngineHelper.h"
 #include "../../Shared/AngelscriptTestUtilities.h"
+#include "../../Shared/AngelscriptTestMacros.h"
 
 #include "Components/ActorTestSpawner.h"
 #include "Misc/AutomationTest.h"
@@ -19,8 +20,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FAngelscriptLearningUEBridgeTraceTest::RunTest(const FString& Parameters)
 {
-	FAngelscriptEngine& Engine = AcquireCleanSharedCloneEngine();
-	FAngelscriptEngineScope EngineScope(Engine);
+	FAngelscriptEngine& Engine = ASTEST_CREATE_ENGINE_SHARE_CLEAN();
+	ASTEST_BEGIN_SHARE_CLEAN
 	static const FName ModuleName(TEXT("LearningUEBridgeModule"));
 	ON_SCOPE_EXIT
 	{
@@ -166,6 +167,8 @@ class ALearningUEBridgeActor : AActor
 		&& bContainsPropertyKeyword
 		&& bContainsFunctionKeyword
 		&& bMinimumEventsOk;
+
+	ASTEST_END_SHARE_CLEAN
 }
 
 #endif
